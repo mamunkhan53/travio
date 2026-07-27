@@ -2,6 +2,7 @@
 // =========================================================================
 // 5. VIEW ENGINE & TEMPLATES
 // =========================================================================
+ob_start();
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -81,3 +82,4 @@ switch ($route) {
 </script>
 </body>
 </html>
+<?php ob_end_flush(); ?>
