@@ -1,0 +1,112 @@
+<?php
+// =========================================================================
+// 3. SAAS MODULE CONFIGURATION
+// =========================================================================
+$statusOptions = ['Pending', 'Processing', 'Submitted', 'Confirmed', 'Completed', 'Paid', 'Unpaid', 'Lost'];
+
+// Multi-currency: supported registration countries and their default currency
+$countryCurrencyMap = [
+    'Bangladesh'           => ['flag' => '🇧🇩', 'code' => 'BDT', 'symbol' => '৳'],
+    'India'                => ['flag' => '🇮🇳', 'code' => 'INR', 'symbol' => '₹'],
+    'Pakistan'             => ['flag' => '🇵🇰', 'code' => 'PKR', 'symbol' => '₨'],
+    'Nepal'                => ['flag' => '🇳🇵', 'code' => 'NPR', 'symbol' => 'रू'],
+    'United Arab Emirates' => ['flag' => '🇦🇪', 'code' => 'AED', 'symbol' => 'د.إ'],
+    'Saudi Arabia'         => ['flag' => '🇸🇦', 'code' => 'SAR', 'symbol' => '﷼'],
+    'Qatar'                => ['flag' => '🇶🇦', 'code' => 'QAR', 'symbol' => 'ر.ق'],
+    'Oman'                 => ['flag' => '🇴🇲', 'code' => 'OMR', 'symbol' => 'ر.ع.'],
+    'Kuwait'               => ['flag' => '🇰🇼', 'code' => 'KWD', 'symbol' => 'د.ك'],
+    'Sri Lanka'            => ['flag' => '🇱🇰', 'code' => 'LKR', 'symbol' => 'Rs'],
+];
+
+$leadCategories = ['Passport Processing', 'Visa Processing', 'Air Ticket', 'Umrah Package', 'Tour Package', 'Hotel Booking', 'Manpower', 'Other'];
+
+// Shared Fields 
+$financialFields = [
+    'service_cost' => ['label' => 'Service Cost', 'type' => 'number'],
+    'selling_price' => ['label' => 'Selling Price', 'type' => 'number'],
+    'status' => ['label' => 'Status', 'type' => 'select', 'options' => $statusOptions]
+];
+
+$modules = [
+    'dashboard' => ['title' => 'Dashboard', 'icon' => 'fa-solid fa-border-all'],
+    'subscription_payment' => ['title' => 'Renew Subscription', 'icon' => 'fa-solid fa-credit-card', 'hidden' => true],
+    'enquiries' => [
+        'title' => 'CRM Leads & History', 'icon' => 'fa-solid fa-users-viewfinder', 'prefix' => 'LD',
+        'fields' => [
+            'date' => ['label' => 'Date', 'type' => 'date'],
+            'customer' => ['label' => 'Customer Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'], 
+            'category' => ['label' => 'Category', 'type' => 'select', 'options' => $leadCategories],
+            'service' => ['label' => 'Service Details', 'type' => 'text'],
+            'status' => ['label' => 'Status', 'type' => 'select', 'options' => $statusOptions],
+            'notes' => ['label' => 'Notes', 'type' => 'text']
+        ]
+    ],
+    'customers' => [
+        'title' => 'Customers', 'icon' => 'fa-solid fa-address-book', 'prefix' => 'CU',
+        'fields' => [
+            'name' => ['label' => 'Full Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'email' => ['label' => 'Email', 'type' => 'email'],
+            'category' => ['label' => 'Category', 'type' => 'text']
+        ]
+    ],
+    'passports' => [
+        'title' => 'Passports', 'icon' => 'fa-solid fa-passport', 'is_service' => true, 'cat' => 'Passport Processing', 'prefix' => 'PA',
+        'fields' => array_merge([
+            'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
+            'name' => ['label' => 'Customer Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'type' => ['label' => 'Passport Type', 'type' => 'text'],
+            'appDate' => ['label' => 'Application Date', 'type' => 'date'],
+        ], $financialFields)
+    ],
+    'visas' => [
+        'title' => 'Visas', 'icon' => 'fa-solid fa-file-signature', 'is_service' => true, 'cat' => 'Visa Processing', 'prefix' => 'VI',
+        'fields' => array_merge([
+            'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
+            'name' => ['label' => 'Customer Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'country' => ['label' => 'Country', 'type' => 'text'],
+            'type' => ['label' => 'Visa Type', 'type' => 'text'],
+        ], $financialFields)
+    ],
+    'tickets' => [
+        'title' => 'Air Tickets', 'icon' => 'fa-solid fa-plane', 'is_service' => true, 'cat' => 'Air Ticket', 'prefix' => 'TK',
+        'fields' => array_merge([
+            'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
+            'name' => ['label' => 'Passenger Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'airline' => ['label' => 'Airline', 'type' => 'text'],
+            'route' => ['label' => 'Route', 'type' => 'text'],
+            'date' => ['label' => 'Travel Date', 'type' => 'date'],
+        ], $financialFields)
+    ],
+    'umrah' => [
+        'title' => 'Umrah', 'icon' => 'fa-solid fa-kaaba', 'is_service' => true, 'cat' => 'Umrah Package', 'prefix' => 'UM',
+        'fields' => array_merge([
+            'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
+            'name' => ['label' => 'Pilgrim Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'package' => ['label' => 'Package Name', 'type' => 'text'],
+            'depDate' => ['label' => 'Departure Date', 'type' => 'date'],
+        ], $financialFields)
+    ],
+    'tours' => [
+        'title' => 'Tours', 'icon' => 'fa-solid fa-map-location-dot', 'is_service' => true, 'cat' => 'Tour Package', 'prefix' => 'TO',
+        'fields' => array_merge([
+            'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
+            'name' => ['label' => 'Customer Name', 'type' => 'text'],
+            'mobile' => ['label' => 'Mobile Number', 'type' => 'text'],
+            'package' => ['label' => 'Package Name', 'type' => 'text'],
+            'date' => ['label' => 'Travel Date', 'type' => 'date'],
+        ], $financialFields)
+    ],
+    'invoices' => ['title' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
+    'accounting' => ['title' => 'Accounting', 'icon' => 'fa-solid fa-calculator'],
+    'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download'],
+    'staff' => ['title' => 'Staff Management', 'icon' => 'fa-solid fa-user-tie', 'admin_only' => true],
+    'staff_history' => ['title' => 'Working History', 'icon' => 'fa-solid fa-clock-rotate-left', 'admin_only' => true],
+    'profile' => ['title' => 'Agency Settings', 'icon' => 'fa-solid fa-sliders', 'admin_only' => true]
+];
+

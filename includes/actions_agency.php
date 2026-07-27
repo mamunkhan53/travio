@@ -1,0 +1,288 @@
+<?php
+        // ------------- AGENCY: SUBMIT A RENEWAL PAYMENT FOR SUPER ADMIN REVIEW -------------
+        if ($action === 'submit_subscription_payment' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
+            $agency_id = $_SESSION['agency_id'];
+            $plan_key = $_POST['plan_key'];
+            $method = trim($_POST['method'] ?? '');
+            $reference = trim($_POST['reference'] ?? '');
+            $note = trim($_POST['note'] ?? '');
+
+            if (!in_array($plan_key, ['monthly', 'yearly']) || $method === '' || $reference === '') {
+                flash("Please select a package, a payment method, and enter your transaction details.", "error");
+                redirect("?route=app&page=subscription_payment");
+            }
+
+            $plans = getSubscriptionPlans($conn);
+            $amount = isset($plans[$plan_key]) ? (float)$plans[$plan_key]['price'] : 0;
+
+            $screenshot = null;
+            if (!empty($_FILES['screenshot']['tmp_name'])) {
+                $shotData = base64_encode(file_get_contents($_FILES['screenshot']['tmp_name']));
+                $screenshot = 'data:' . $_FILES['screenshot']['type'] . ';base64,' . $shotData;
+            }
+
+            $conn->prepare("INSERT INTO subscription_payments (agency_id, plan_key, amount, method, reference, note, screenshot, status, recorded_by) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', 'agency')")
+                 ->execute([$agency_id, $plan_key, $amount, $method, $reference, $note, $screenshot]);
+
+            flash("Payment submitted! Our team will verify your transaction and activate your subscription shortly.");
+            redirect("?route=app&page=subscription_payment");
+        }
+
+        // ------------- PROFILE & APP SETTINGS -------------
+        if ($action === 'update_profile' && isset($_SESSION['agency_id'])) {
+            if ($_SESSION['is_staff']) {
+                $conn->prepare("UPDATE staff SET full_name = ?, phone = ?, email = ? WHERE id = ?")->execute([$_POST['full_name'], $_POST['phone'], $_POST['email'], $_SESSION['staff_id']]);
+                if (!empty($_POST['new_password'])) {
+                    $hash = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+                    $conn->prepare("UPDATE staff SET password_hash = ? WHERE id = ?")->execute([$hash, $_SESSION['staff_id']]);
+                }
+                flash("Profile updated successfully.");
+                redirect("?route=app&page=dashboard");
+            } else {
+                $company = $_POST['company_name'];
+                $address = $_POST['address'];
+                $agency_id = $_SESSION['agency_id'];
+                
+                $logoQuery = ""; $params = [$company, $address];
+                if (!empty($_FILES['logo']['tmp_name'])) {
+                    $logoData = base64_encode(file_get_contents($_FILES['logo']['tmp_name']));
+                    $logoSrc = 'data:' . $_FILES['logo']['type'] . ';base64,' . $logoData;
+                    $logoQuery = ", logo = ?"; $params[] = $logoSrc;
+                }
+                $params[] = $agency_id;
+                
+                $conn->prepare("UPDATE agencies SET company_name = ?, address = ? $logoQuery WHERE id = ?")->execute($params);
+                $conn->prepare("UPDATE users SET full_name = ?, phone = ? WHERE id = ?")->execute([$_POST['full_name'], $_POST['phone'], $_SESSION['user_id']]);
+                
+                if (!empty($_POST['new_password'])) {
+                    $hash = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+                    $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$hash, $_SESSION['user_id']]);
+                }
+                flash("Agency Profile updated successfully.");
+                redirect("?route=app&page=profile");
+            }
+        }
+
+        // ------------- READ NOTIFICATION -------------
+        if ($action === 'read_notification' && isset($_SESSION['agency_id'])) {
+            $n_id = $_POST['notif_id'];
+            $r_by = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+            $conn->prepare("UPDATE service_notifications SET is_read=1, read_by=?, read_at=NOW() WHERE id=? AND agency_id=?")->execute([$r_by, $n_id, $_SESSION['agency_id']]);
+            flash("Notification marked as read.");
+            redirect("?route=app&page=dashboard");
+        }
+
+        // ------------- ADD CUSTOMER FOLLOW UP -------------
+        if ($action === 'add_followup' && isset($_SESSION['agency_id'])) {
+            if (!has_permission('can_manage_customers')) {
+                http_response_code(403); die("403 Access Denied: You do not have permission to modify customers.");
+            }
+            if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
+                flash("Your subscription has expired. Please renew your plan to add follow-ups.", "error");
+                redirect("?route=app&page=dashboard");
+            }
+            $c_id = $_POST['customer_id'];
+            $st_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+            $f_date = !empty($_POST['follow_up_date']) ? $_POST['follow_up_date'] : null;
+            
+            $conn->prepare("INSERT INTO customer_followups (agency_id, customer_id, staff_id, note, follow_up_date) VALUES (?, ?, ?, ?, ?)")->execute([$_SESSION['agency_id'], $c_id, $st_id, $_POST['note'], $f_date]);
+            flash("Follow-up note added.");
+            redirect("?route=app&page=customer_profile&id=$c_id");
+        }
+
+        // ------------- ADD QUERY / SALE FOLLOW UP -------------
+        if ($action === 'add_record_followup' && isset($_SESSION['agency_id'])) {
+            $allowedHistoryTables = ['enquiries', 'passports', 'visas', 'tickets', 'umrah', 'tours', 'invoices'];
+            $table = $_POST['table'] ?? '';
+            $record_id = $_POST['record_id'] ?? '';
+
+            if (!in_array($table, $allowedHistoryTables) || !array_key_exists($table, $modules) || empty($record_id)) {
+                http_response_code(400); die("Invalid follow-up record.");
+            }
+
+            if ($table === 'enquiries' && !has_permission('can_edit_enquiry')) {
+                http_response_code(403); die("403 Access Denied");
+            }
+            if ($table !== 'enquiries' && !has_permission('can_edit_sale')) {
+                http_response_code(403); die("403 Access Denied");
+            }
+            if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
+                flash("Your subscription has expired. Please renew your plan to add follow-ups.", "error");
+                redirect("?route=app&page=dashboard");
+            }
+
+            $agency_id = $_SESSION['agency_id'];
+            $check = $conn->prepare("SELECT reference_staff_id FROM $table WHERE id = ? AND agency_id = ?");
+            $check->execute([$record_id, $agency_id]);
+            $recordRef = $check->fetchColumn();
+            if ($recordRef === false) {
+                flash("Record not found.", "error");
+                redirect("?route=app&page=$table");
+            }
+            if ($_SESSION['is_staff'] && (int)$recordRef !== (int)$_SESSION['staff_id']) {
+                http_response_code(403); die("403 Access Denied");
+            }
+
+            $st_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+            $f_date = !empty($_POST['follow_up_date']) ? $_POST['follow_up_date'] : null;
+            $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note, follow_up_date) VALUES (?, ?, ?, ?, ?, ?)")
+                 ->execute([$agency_id, $table, $record_id, $st_id, $_POST['note'], $f_date]);
+            flash("Follow-up update added.");
+            redirect("?route=app&page=query_history&table=$table&id=$record_id");
+        }
+
+        // SAVE STAFF (Admin Only)
+        if ($action === 'save_staff' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
+            if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
+                flash("Your subscription has expired. Please renew your plan to manage staff.", "error");
+                redirect("?route=app&page=dashboard");
+            }
+            $agency_id = $_SESSION['agency_id'];
+            $id = $_POST['id'] ?? '';
+            $full_name = $_POST['full_name'];
+            $email = $_POST['email'];
+            $phone = $_POST['phone'];
+            $username = $_POST['username'];
+            $role = $_POST['role'];
+            $commission_rate = $_POST['commission_rate'] ?: 20.00;
+            $status = $_POST['status'];
+            
+            // Permissions mapping
+            $perms = [
+                'can_add_enquiry' => isset($_POST['can_add_enquiry']) ? 1 : 0,
+                'can_edit_enquiry' => isset($_POST['can_edit_enquiry']) ? 1 : 0,
+                'can_delete_enquiry' => isset($_POST['can_delete_enquiry']) ? 1 : 0,
+                'can_add_sale' => isset($_POST['can_add_sale']) ? 1 : 0,
+                'can_edit_sale' => isset($_POST['can_edit_sale']) ? 1 : 0,
+                'can_delete_sale' => isset($_POST['can_delete_sale']) ? 1 : 0,
+                'can_add_expense' => isset($_POST['can_add_expense']) ? 1 : 0,
+                'can_edit_expense' => isset($_POST['can_edit_expense']) ? 1 : 0,
+                'can_delete_expense' => isset($_POST['can_delete_expense']) ? 1 : 0,
+                'can_view_reports' => isset($_POST['can_view_reports']) ? 1 : 0,
+                'can_manage_customers' => isset($_POST['can_manage_customers']) ? 1 : 0,
+            ];
+
+            try {
+                $conn->beginTransaction();
+                if (empty($id)) {
+                    // Add
+                    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                    $stmt = $conn->prepare("INSERT INTO staff (agency_id, full_name, email, phone, username, password_hash, role, status, commission_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$agency_id, $full_name, $email, $phone, $username, $pass, $role, $status, $commission_rate]);
+                    $staff_id = $conn->lastInsertId();
+                    
+                    $pSql = "INSERT INTO staff_permissions (staff_id, " . implode(',', array_keys($perms)) . ") VALUES (?, " . implode(',', array_fill(0, count($perms), '?')) . ")";
+                    $pVals = array_merge([$staff_id], array_values($perms));
+                    $conn->prepare($pSql)->execute($pVals);
+                    flash("Staff added successfully.");
+                } else {
+                    // Edit
+                    $updSql = "UPDATE staff SET full_name=?, email=?, phone=?, username=?, role=?, status=?, commission_rate=? WHERE id=? AND agency_id=?";
+                    $updVals = [$full_name, $email, $phone, $username, $role, $status, $commission_rate, $id, $agency_id];
+                    $conn->prepare($updSql)->execute($updVals);
+                    
+                    if (!empty($_POST['password'])) {
+                        $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                        $conn->prepare("UPDATE staff SET password_hash=? WHERE id=?")->execute([$pass, $id]);
+                    }
+                    
+                    $pSql = "UPDATE staff_permissions SET " . implode('=?, ', array_keys($perms)) . "=? WHERE staff_id=?";
+                    $pVals = array_merge(array_values($perms), [$id]);
+                    $conn->prepare($pSql)->execute($pVals);
+                    flash("Staff updated successfully.");
+                }
+                $conn->commit();
+            } catch (Exception $e) {
+                $conn->rollBack();
+                flash("Error: Username or Email might exist.", "error");
+            }
+            redirect("?route=app&page=staff");
+        }
+
+        // SAVE INVOICE (Exact Original Restoration)
+        if ($action === 'save_invoice' && isset($_SESSION['agency_id'])) {
+            if (!has_permission('can_add_sale')) die("403 Access Denied");
+            if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
+                flash("Your subscription has expired. Please renew your plan to create invoices.", "error");
+                redirect("?route=app&page=dashboard");
+            }
+            
+            $agency_id = $_SESSION['agency_id'];
+            $inv_no = generateInvoiceId($conn, $agency_id);
+            
+            // Safely inherit Reference Staff from matching sale via mobile (without altering UI workflow)
+            $ref_id = null;
+            if ($_SESSION['is_staff']) {
+                $ref_id = $_SESSION['staff_id'];
+            } else {
+                $mobile = trim($_POST['mobile'] ?? '');
+                if (!empty($mobile)) {
+                    $tbls = ['passports', 'visas', 'tickets', 'umrah', 'tours'];
+                    foreach ($tbls as $tbl) {
+                        $stmtMatch = $conn->prepare("SELECT reference_staff_id FROM $tbl WHERE agency_id=? AND mobile=? AND reference_staff_id IS NOT NULL ORDER BY created_at DESC LIMIT 1");
+                        $stmtMatch->execute([$agency_id, $mobile]);
+                        $fRef = $stmtMatch->fetchColumn();
+                        if ($fRef) {
+                            $ref_id = $fRef;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $creator_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+            $invoice_id = uniqid('ID-');
+            
+            $sql = "INSERT INTO invoices (id, agency_id, invoice_number, issue_date, customer_name, mobile, email, service_desc, quantity, unit_price, subtotal, discount, tax, grand_total, paid_amount, due_amount, reference_staff_id, created_by_staff_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                $invoice_id, $agency_id, $inv_no, $_POST['issue_date'], $_POST['customer_name'], 
+                $_POST['mobile'], $_POST['email'], $_POST['service_desc'], $_POST['quantity'], $_POST['unit_price'], 
+                $_POST['subtotal'], $_POST['discount'], $_POST['tax'], $_POST['grand_total'], $_POST['paid_amount'], $_POST['due_amount'],
+                $ref_id, $creator_id
+            ]);
+            $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note) VALUES (?, 'invoices', ?, ?, ?)")
+                 ->execute([$agency_id, $invoice_id, $creator_id, "Invoice $inv_no created."]);
+            flash("Invoice $inv_no generated successfully.");
+            redirect("?route=app&page=invoices");
+        }
+
+        // ------------- ACCOUNTING: SAVE (ADD/EDIT) MANUAL EXPENSE -------------
+        // Additive-only module. Does NOT touch the existing Sales Net Profit logic anywhere else in the app;
+        // this only inserts/updates rows in the new accounting_expenses table.
+        if ($action === 'save_expense' && isset($_SESSION['agency_id'])) {
+            $agency_id = $_SESSION['agency_id'];
+            if (isAgencySubscriptionExpired($conn, $agency_id)) {
+                flash("Your subscription has expired. Please renew your plan to manage expenses.", "error");
+                redirect("?route=app&page=dashboard");
+            }
+
+            $isEdit = !empty($_POST['expense_id']);
+            if ($isEdit && !has_permission('can_edit_expense')) { http_response_code(403); die("403 Access Denied: You do not have permission to edit expenses."); }
+            if (!$isEdit && !has_permission('can_add_expense')) { http_response_code(403); die("403 Access Denied: You do not have permission to add expenses."); }
+
+            $expDate = !empty($_POST['expense_date']) ? $_POST['expense_date'] : date('Y-m-d');
+            $category = trim($_POST['category'] ?? '');
+            $title = trim($_POST['title'] ?? '');
+            $amount = (float)($_POST['amount'] ?? 0);
+            $method = trim($_POST['payment_method'] ?? '');
+            $remarks = trim($_POST['remarks'] ?? '');
+
+            if ($isEdit) {
+                $updater_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+                $conn->prepare("UPDATE accounting_expenses SET expense_date=?, category=?, title=?, amount=?, payment_method=?, remarks=?, updated_by_staff_id=? WHERE id=? AND agency_id=?")
+                     ->execute([$expDate, $category, $title, $amount, $method, $remarks, $updater_id, $_POST['expense_id'], $agency_id]);
+                flash("Expense updated successfully.");
+            } else {
+                $newExpId = generateSerialId($conn, 'accounting_expenses', 'EX', $agency_id);
+                $creator_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+                $conn->prepare("INSERT INTO accounting_expenses (id, agency_id, expense_date, category, title, amount, payment_method, remarks, created_by_staff_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                     ->execute([$newExpId, $agency_id, $expDate, $category, $title, $amount, $method, $remarks, $creator_id]);
+                flash("Expense recorded successfully.");
+            }
+
+            $redirectQs = !empty($_POST['redirect_qs']) ? '&' . ltrim($_POST['redirect_qs'], '&') : '';
+            redirect("?route=app&page=accounting" . $redirectQs);
+        }
+
