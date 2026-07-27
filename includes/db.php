@@ -1,14 +1,25 @@
 <?php
 // =========================================================================
-// 1. DATABASE CONFIGURATION (Update for Hostinger)
+// 1. DATABASE CONFIGURATION
+// Credentials come from environment variables so the same code works on
+// Replit (local MariaDB via Unix socket) and on Hostinger (TCP).
 // =========================================================================
-$host = "localhost";
-$db_name = "u873990700_ERP2"; // Update Database Name
-$username = "u873990700_ERP2";          // Update Database Username
-$password = "SuthZNe*7626";              // Update Database Password
+$host     = getenv('DB_HOST')   ?: '127.0.0.1';
+$db_name  = getenv('DB_NAME')   ?: 'southzone_erp';
+$username = getenv('DB_USER')   ?: 'southzone';
+$password = getenv('DB_PASS')   ?: 'southzone_local';
+$socket   = getenv('DB_SOCKET') ?: '/home/runner/mysql.sock';
+
+// On Replit connect via Unix socket (faster, no TCP); on Hostinger use TCP.
+// PDO MySQL requires unix_socket to *replace* host in the DSN, not be appended.
+if (file_exists($socket)) {
+    $dsn = "mysql:unix_socket={$socket};dbname={$db_name}";
+} else {
+    $dsn = "mysql:host={$host};dbname={$db_name}";
+}
 
 try {
-    $conn = new PDO("mysql:host=$host;dbname=$db_name", $username, $password);
+    $conn = new PDO($dsn, $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     // Auto-reset Super Admin password to admin123
