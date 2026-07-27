@@ -132,7 +132,8 @@
                                             'can_add_enquiry'=>'Add Enquiries/Leads', 'can_edit_enquiry'=>'Edit Enquiries', 'can_delete_enquiry'=>'Delete Enquiries',
                                             'can_add_sale'=>'Add Sales (Visa, Ticket, etc)', 'can_edit_sale'=>'Edit Sales', 'can_delete_sale'=>'Delete Sales',
                                             'can_add_expense'=>'Add Expenses', 'can_edit_expense'=>'Edit Expenses', 'can_delete_expense'=>'Delete Expenses',
-                                            'can_view_reports'=>'View Analytics & Reports', 'can_manage_customers'=>'Manage Customer DB'
+                                            'can_view_reports'=>'View Analytics & Reports', 'can_manage_customers'=>'Manage Customer DB',
+                                            'can_send_whatsapp'=>'Send WhatsApp Messages'
                                         ];
                                         foreach($permsList as $k => $v): ?>
                                             <label class="flex items-center gap-3 cursor-pointer hover:bg-slate-100 p-2 rounded">
@@ -173,7 +174,7 @@
                             document.getElementById('st_status').value = data.status;
                             document.getElementById('st_comm').value = data.commission_rate;
                             
-                            ['can_add_enquiry','can_edit_enquiry','can_delete_enquiry','can_add_sale','can_edit_sale','can_delete_sale','can_add_expense','can_edit_expense','can_delete_expense','can_view_reports','can_manage_customers'].forEach(p => {
+                            ['can_add_enquiry','can_edit_enquiry','can_delete_enquiry','can_add_sale','can_edit_sale','can_delete_sale','can_add_expense','can_edit_expense','can_delete_expense','can_view_reports','can_manage_customers','can_send_whatsapp'].forEach(p => {
                                 if (document.getElementById('perm_'+p)) document.getElementById('perm_'+p).checked = (data[p] == 1);
                             });
                         }

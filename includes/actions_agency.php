@@ -286,3 +286,144 @@
             redirect("?route=app&page=accounting" . $redirectQs);
         }
 
+        // ------------- WHATSAPP: SAVE PROVIDER SETTINGS (Agency Admin only) -------------
+        if ($action === 'save_whatsapp_provider' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
+            $agency_id = $_SESSION['agency_id'];
+            if (isAgencySubscriptionExpired($conn, $agency_id)) {
+                flash("Your subscription has expired.", "error");
+                redirect("?route=app&page=whatsapp&tab=settings");
+            }
+
+            $allowedTypes = ['meta_cloud', 'twilio', 'vonage', 'wati', 'custom_webhook'];
+            $providerId  = (int)($_POST['provider_id'] ?? 0);
+            $name        = trim($_POST['provider_name'] ?? 'My WhatsApp Provider');
+            $apiType     = in_array($_POST['api_type'] ?? '', $allowedTypes) ? $_POST['api_type'] : 'custom_webhook';
+            $endpoint    = trim($_POST['api_endpoint'] ?? '');
+            $apiKey      = trim($_POST['api_key'] ?? '');
+            $apiSecret   = trim($_POST['api_secret'] ?? '');
+            $fromNumber  = trim($_POST['from_number'] ?? '');
+            $extraParams = trim($_POST['extra_params'] ?? '');
+            $isActive    = isset($_POST['is_active']) ? 1 : 0;
+
+            // Validate extra_params JSON if supplied
+            if (!empty($extraParams) && json_decode($extraParams) === null) {
+                flash("Extra Parameters must be valid JSON (or leave blank).", "error");
+                redirect("?route=app&page=whatsapp&tab=settings");
+            }
+
+            if ($providerId > 0) {
+                $conn->prepare("UPDATE whatsapp_providers SET provider_name=?, api_type=?, api_endpoint=?, api_key=?, api_secret=?, from_number=?, extra_params=?, is_active=?, updated_at=NOW() WHERE id=? AND agency_id=?")
+                     ->execute([$name, $apiType, $endpoint, $apiKey, $apiSecret, $fromNumber, $extraParams, $isActive, $providerId, $agency_id]);
+            } else {
+                $conn->prepare("INSERT INTO whatsapp_providers (agency_id, provider_name, api_type, api_endpoint, api_key, api_secret, from_number, extra_params, is_active) VALUES (?,?,?,?,?,?,?,?,?)")
+                     ->execute([$agency_id, $name, $apiType, $endpoint, $apiKey, $apiSecret, $fromNumber, $extraParams, $isActive]);
+            }
+
+            flash("WhatsApp provider settings saved successfully.");
+            redirect("?route=app&page=whatsapp&tab=settings");
+        }
+
+        // ------------- WHATSAPP: SEND MESSAGE -------------
+        if ($action === 'send_whatsapp' && isset($_SESSION['agency_id'])) {
+            $agency_id = $_SESSION['agency_id'];
+
+            if (isAgencySubscriptionExpired($conn, $agency_id)) {
+                flash("Your subscription has expired. Please renew your plan to send messages.", "error");
+                redirect("?route=app&page=whatsapp");
+            }
+            if (!has_permission('can_send_whatsapp')) {
+                http_response_code(403); die("403 Access Denied: You do not have permission to send WhatsApp messages.");
+            }
+
+            $messageBody = trim($_POST['message_body'] ?? '');
+            $recipients  = $_POST['recipients'] ?? [];       // Array of customer IDs
+            $sendToAll   = !empty($_POST['send_to_all']);
+
+            if (empty($messageBody)) {
+                flash("Message body cannot be empty.", "error");
+                redirect("?route=app&page=whatsapp");
+            }
+
+            // ---- Resolve recipient list ----
+            if ($sendToAll) {
+                $stmt = $conn->prepare("SELECT id, name, mobile FROM customers WHERE agency_id = ? AND mobile IS NOT NULL AND mobile != '' ORDER BY name ASC");
+                $stmt->execute([$agency_id]);
+                $recipientRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                if (empty($recipients)) {
+                    flash("Please select at least one recipient.", "error");
+                    redirect("?route=app&page=whatsapp");
+                }
+                $placeholders = implode(',', array_fill(0, count($recipients), '?'));
+                $stmt = $conn->prepare("SELECT id, name, mobile FROM customers WHERE agency_id = ? AND id IN ($placeholders)");
+                $stmt->execute(array_merge([$agency_id], $recipients));
+                $recipientRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            if (empty($recipientRows)) {
+                flash("No recipients found with valid phone numbers.", "error");
+                redirect("?route=app&page=whatsapp");
+            }
+
+            // ---- Get active provider (if any) ----
+            $provStmt = $conn->prepare("SELECT * FROM whatsapp_providers WHERE agency_id = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1");
+            $provStmt->execute([$agency_id]);
+            $activeProvider = $provStmt->fetch(PDO::FETCH_ASSOC);
+
+            // ---- Create campaign log entry ----
+            $logId          = generateSerialId($conn, 'whatsapp_message_logs', 'WA', $agency_id);
+            $sentByType     = $_SESSION['is_staff'] ? 'staff' : 'admin';
+            $sentByStaffId  = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+            $providerId     = $activeProvider ? $activeProvider['id'] : null;
+            $overallStatus  = $activeProvider ? 'Processing' : 'No Provider';
+
+            $conn->prepare("INSERT INTO whatsapp_message_logs (id, agency_id, provider_id, message_body, recipient_count, status, sent_by_type, sent_by_staff_id) VALUES (?,?,?,?,?,?,?,?)")
+                 ->execute([$logId, $agency_id, $providerId, $messageBody, count($recipientRows), $overallStatus, $sentByType, $sentByStaffId]);
+
+            // ---- Dispatch to each recipient ----
+            $sentCount = 0; $failedCount = 0;
+            foreach ($recipientRows as $r) {
+                $phone     = preg_replace('/[^\d+]/', '', $r['mobile']); // keep digits and leading +
+                $recStatus = 'Pending'; $recError = null; $recSentAt = null;
+
+                if (!$activeProvider) {
+                    $recStatus = 'No Provider';
+                } elseif (empty($phone)) {
+                    $recStatus = 'Failed'; $recError = 'Invalid/empty phone number'; $failedCount++;
+                } else {
+                    $result = sendWhatsAppViaProvider($activeProvider, $phone, $messageBody);
+                    if ($result['success']) {
+                        $recStatus = 'Sent'; $recSentAt = date('Y-m-d H:i:s'); $sentCount++;
+                    } else {
+                        $recStatus = 'Failed'; $recError = $result['error']; $failedCount++;
+                    }
+                }
+
+                $conn->prepare("INSERT INTO whatsapp_message_recipients (log_id, agency_id, customer_id, customer_name, phone, status, error_message, sent_at) VALUES (?,?,?,?,?,?,?,?)")
+                     ->execute([$logId, $agency_id, $r['id'], $r['name'], $r['mobile'], $recStatus, $recError, $recSentAt]);
+            }
+
+            // ---- Finalise log ----
+            if (!$activeProvider) {
+                $finalStatus = 'No Provider';
+                $sentCount   = count($recipientRows); // all queued, none dispatched
+            } else {
+                $finalStatus = ($failedCount === 0) ? 'Sent' : ($sentCount === 0 ? 'Failed' : 'Partial');
+            }
+
+            $conn->prepare("UPDATE whatsapp_message_logs SET sent_count=?, failed_count=?, status=? WHERE id=?")
+                 ->execute([$sentCount, $failedCount, $finalStatus, $logId]);
+
+            if (!$activeProvider) {
+                flash("Message logged ({$logId}) — no active provider configured. Set up a provider in WhatsApp → Settings to enable actual delivery.");
+            } elseif ($failedCount > 0 && $sentCount === 0) {
+                flash("All {$failedCount} message(s) failed to send. Check provider settings.", "error");
+            } else {
+                $msg = "Message sent to {$sentCount} recipient(s).";
+                if ($failedCount > 0) $msg .= " {$failedCount} failed.";
+                flash($msg);
+            }
+
+            redirect("?route=app&page=whatsapp&tab=history");
+        }
+

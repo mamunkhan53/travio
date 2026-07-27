@@ -102,6 +102,137 @@ function normalizeReportDate($date, $fallback) {
     return $ts ? date('Y-m-d', $ts) : $fallback;
 }
 
+// =========================================================================
+// WHATSAPP API DISPATCHER
+// Dispatches a single message to one recipient via the configured provider.
+// Returns ['success' => bool, 'error' => string|null].
+// To add a new provider type: add a new `if ($apiType === '...')` block below
+// and handle its unique authentication / payload format — nothing else changes.
+// =========================================================================
+function sendWhatsAppViaProvider($provider, $phone, $messageBody) {
+    $apiType = $provider['api_type'] ?? 'custom_webhook';
+
+    if (!function_exists('curl_init')) {
+        return ['success' => false, 'error' => 'cURL is not available on this server.'];
+    }
+
+    // ---- Meta Cloud API (official WhatsApp Business API) ----
+    if ($apiType === 'meta_cloud') {
+        $phoneNumberId = $provider['from_number'] ?? '';
+        $token = $provider['api_key'] ?? '';
+        if (empty($phoneNumberId) || empty($token)) {
+            return ['success' => false, 'error' => 'Meta Cloud: phone_number_id and access token are required.'];
+        }
+        $base = rtrim($provider['api_endpoint'] ?: 'https://graph.facebook.com/v18.0', '/');
+        $url = "{$base}/{$phoneNumberId}/messages";
+        $payload = json_encode([
+            'messaging_product' => 'whatsapp',
+            'to' => $phone,
+            'type' => 'text',
+            'text' => ['body' => $messageBody],
+        ]);
+        return _waHttpPost($url, $payload, ["Authorization: Bearer {$token}", "Content-Type: application/json"]);
+    }
+
+    // ---- Twilio WhatsApp ----
+    if ($apiType === 'twilio') {
+        $accountSid = $provider['api_key'] ?? '';
+        $authToken  = $provider['api_secret'] ?? '';
+        $from = 'whatsapp:+' . ltrim($provider['from_number'] ?? '', '+');
+        $to   = 'whatsapp:+' . ltrim($phone, '+');
+        if (empty($accountSid) || empty($authToken)) {
+            return ['success' => false, 'error' => 'Twilio: Account SID and Auth Token are required.'];
+        }
+        $url = "https://api.twilio.com/2010-04-01/Accounts/{$accountSid}/Messages.json";
+        $payload = http_build_query(['From' => $from, 'To' => $to, 'Body' => $messageBody]);
+        return _waHttpPost($url, $payload, ["Content-Type: application/x-www-form-urlencoded"], "{$accountSid}:{$authToken}");
+    }
+
+    // ---- Vonage (Nexmo) ----
+    if ($apiType === 'vonage') {
+        $apiKey    = $provider['api_key'] ?? '';
+        $apiSecret = $provider['api_secret'] ?? '';
+        $from = $provider['from_number'] ?? '';
+        if (empty($apiKey) || empty($apiSecret)) {
+            return ['success' => false, 'error' => 'Vonage: API Key and API Secret are required.'];
+        }
+        $base = rtrim($provider['api_endpoint'] ?: 'https://messages-sandbox.nexmo.com', '/');
+        $url  = "{$base}/v1/messages";
+        $payload = json_encode([
+            'message_type' => 'text',
+            'text' => $messageBody,
+            'to' => $phone,
+            'from' => $from,
+            'channel' => 'whatsapp',
+        ]);
+        $credentials = base64_encode("{$apiKey}:{$apiSecret}");
+        return _waHttpPost($url, $payload, ["Authorization: Basic {$credentials}", "Content-Type: application/json"]);
+    }
+
+    // ---- WATI (WhatsApp Team Inbox) ----
+    if ($apiType === 'wati') {
+        $endpoint = rtrim($provider['api_endpoint'] ?? '', '/');
+        $token = $provider['api_key'] ?? '';
+        if (empty($endpoint) || empty($token)) {
+            return ['success' => false, 'error' => 'WATI: Endpoint URL and API Token are required.'];
+        }
+        $url = "{$endpoint}/api/v1/sendSessionMessage/{$phone}";
+        $payload = json_encode(['messageText' => $messageBody]);
+        return _waHttpPost($url, $payload, ["Authorization: Bearer {$token}", "Content-Type: application/json"]);
+    }
+
+    // ---- Custom Webhook (generic HTTP POST — user controls the payload format) ----
+    if ($apiType === 'custom_webhook') {
+        $url = $provider['api_endpoint'] ?? '';
+        if (empty($url)) {
+            return ['success' => false, 'error' => 'Custom Webhook: Endpoint URL is required.'];
+        }
+        $extras = json_decode($provider['extra_params'] ?? '{}', true) ?: [];
+        $payload = json_encode(array_merge($extras, [
+            'phone'   => $phone,
+            'message' => $messageBody,
+        ]));
+        $headers = ["Content-Type: application/json"];
+        if (!empty($provider['api_key'])) {
+            $headers[] = "Authorization: Bearer {$provider['api_key']}";
+        }
+        return _waHttpPost($url, $payload, $headers);
+    }
+
+    return ['success' => false, 'error' => "Unknown API type: {$apiType}"];
+}
+
+// Internal cURL helper — not called directly outside this file.
+function _waHttpPost($url, $payload, $headers = [], $basicAuth = null) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => $headers,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+    if ($basicAuth) {
+        curl_setopt($ch, CURLOPT_USERPWD, $basicAuth);
+    }
+    $response  = curl_exec($ch);
+    $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        return ['success' => false, 'error' => "Network error: {$curlError}"];
+    }
+    if ($httpCode >= 200 && $httpCode < 300) {
+        return ['success' => true, 'error' => null];
+    }
+    $decoded = json_decode($response, true);
+    $errMsg  = $decoded['error']['message'] ?? $decoded['message'] ?? $decoded['errorMessage'] ?? "HTTP {$httpCode}";
+    return ['success' => false, 'error' => $errMsg];
+}
+
 function timeAgo($datetime) {
     if (empty($datetime)) return '';
     $ts = is_numeric($datetime) ? (int)$datetime : strtotime($datetime);

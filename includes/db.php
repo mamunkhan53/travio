@@ -310,6 +310,64 @@ try {
         $conn->exec("ALTER TABLE subscription_payments " . implode(', ', $spAlters));
     }
 
+    // =========================================================================
+    // AUTO-MIGRATE: WHATSAPP MESSAGING MODULE
+    // =========================================================================
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS whatsapp_providers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            provider_name VARCHAR(100) NOT NULL DEFAULT 'My WhatsApp Provider',
+            api_type VARCHAR(50) NOT NULL DEFAULT 'custom_webhook',
+            api_endpoint VARCHAR(500) NULL,
+            api_key VARCHAR(500) NULL,
+            api_secret VARCHAR(500) NULL,
+            from_number VARCHAR(100) NULL,
+            extra_params TEXT NULL,
+            is_active TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS whatsapp_message_logs (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            provider_id INT NULL,
+            message_body TEXT NOT NULL,
+            recipient_count INT DEFAULT 0,
+            sent_count INT DEFAULT 0,
+            failed_count INT DEFAULT 0,
+            status VARCHAR(20) DEFAULT 'Pending',
+            sent_by_type VARCHAR(20) DEFAULT 'admin',
+            sent_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            FOREIGN KEY (sent_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+            INDEX idx_wa_logs_agency (agency_id, created_at)
+        );
+
+        CREATE TABLE IF NOT EXISTS whatsapp_message_recipients (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            log_id VARCHAR(50) NOT NULL,
+            agency_id INT NOT NULL,
+            customer_id VARCHAR(50) NULL,
+            customer_name VARCHAR(100),
+            phone VARCHAR(50) NOT NULL,
+            status VARCHAR(20) DEFAULT 'Pending',
+            error_message TEXT NULL,
+            sent_at TIMESTAMP NULL,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_wa_recipients_log (log_id)
+        );
+    ");
+
+    // Add can_send_whatsapp permission to staff_permissions (additive only)
+    $spermCols = $conn->query("SHOW COLUMNS FROM staff_permissions")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('can_send_whatsapp', $spermCols)) {
+        $conn->exec("ALTER TABLE staff_permissions ADD COLUMN can_send_whatsapp TINYINT(1) DEFAULT 0");
+    }
+
 } catch (PDOException $e) {
     die("Database Connection / Migration failed: " . $e->getMessage() . ". Please check credentials.");
 }

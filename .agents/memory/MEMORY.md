@@ -1,0 +1,1 @@
+- [WhatsApp module architecture](whatsapp-module.md) — additive WA messaging module; AJAX handlers must live in actions_get.php (before HTML output), never at the bottom of page files.

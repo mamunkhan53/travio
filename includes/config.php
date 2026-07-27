@@ -102,6 +102,7 @@ $modules = [
             'date' => ['label' => 'Travel Date', 'type' => 'date'],
         ], $financialFields)
     ],
+    'whatsapp' => ['title' => 'WhatsApp', 'icon' => 'fa-brands fa-whatsapp'],
     'invoices' => ['title' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
     'accounting' => ['title' => 'Accounting', 'icon' => 'fa-solid fa-calculator'],
     'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download'],

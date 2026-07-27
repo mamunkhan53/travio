@@ -42,6 +42,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     redirect("?route=app&page=accounting" . $redirectQs);
 }
 
+// ------------- WHATSAPP: AJAX — FETCH RECIPIENTS FOR A LOG ENTRY -------------
+// Must run before any HTML output so header() works.
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_GET['wa_recipients_ajax']) && !empty($_GET['log_id']) && !empty($_SESSION['agency_id'])) {
+    $logIdReq  = $_GET['log_id'];
+    $agencyReq = (int)$_SESSION['agency_id'];
+    $recipRows = $conn->prepare(
+        "SELECT customer_name, phone, status, error_message, sent_at
+         FROM whatsapp_message_recipients
+         WHERE log_id = ? AND agency_id = ?
+         ORDER BY id ASC"
+    );
+    $recipRows->execute([$logIdReq, $agencyReq]);
+    $recipData = $recipRows->fetchAll(PDO::FETCH_ASSOC);
+    header('Content-Type: application/json');
+    echo json_encode($recipData);
+    exit;
+}
+
+// ------------- WHATSAPP: DELETE A MESSAGE LOG (Agency Admin only) -------------
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete_whatsapp_log' && isset($_SESSION['agency_id'])) {
+    if ($_SESSION['is_staff']) { http_response_code(403); die("403 Access Denied."); }
+    $logId = $_GET['id'] ?? '';
+    if (!empty($logId)) {
+        $conn->prepare("DELETE FROM whatsapp_message_recipients WHERE log_id = ? AND agency_id = ?")->execute([$logId, $_SESSION['agency_id']]);
+        $conn->prepare("DELETE FROM whatsapp_message_logs WHERE id = ? AND agency_id = ?")->execute([$logId, $_SESSION['agency_id']]);
+        flash("Message log deleted.");
+    }
+    redirect("?route=app&page=whatsapp&tab=history");
+}
+
 // ------------- 2FA SETUP: GENERATE A PENDING SECRET + QR CODE (JSON) -------------
 // Works for Super Admin, Agency Admin, and Staff.
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'begin_2fa_setup' && !empty($_SESSION['user_id'])) {
