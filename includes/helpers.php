@@ -14,7 +14,7 @@ function verifyCsrf() {
 }
 
 function xss_clean($data) {
-    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars($data ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 function redirect($url) {
