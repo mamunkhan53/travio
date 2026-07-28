@@ -38,6 +38,70 @@
             $salesData[] = $sCount;
         }
 
+        // ---- Calendar Reminders (wide date window for navigation) ----
+        $cal_from = date('Y-m-d', strtotime('-3 months'));
+        $cal_to   = date('Y-m-d', strtotime('+6 months'));
+        $cal_sf_rf = $_SESSION['is_staff'] ? " AND rf.staff_id = "    . (int)$_SESSION['staff_id'] : "";
+        $cal_sf_sn = $_SESSION['is_staff'] ? " AND sn.staff_id = "    . (int)$_SESSION['staff_id'] : "";
+        $cal_sf_tb = $_SESSION['is_staff'] ? " AND reference_staff_id = " . (int)$_SESSION['staff_id'] : "";
+
+        $cal_events = [];
+
+        // 1. Record follow-ups (any module)
+        $rfStmt = $conn->prepare(
+            "SELECT rf.follow_up_date as event_date, rf.module_name, rf.record_id, rf.note
+             FROM record_followups rf
+             WHERE rf.agency_id = ? AND rf.follow_up_date BETWEEN ? AND ? $cal_sf_rf"
+        );
+        $rfStmt->execute([$agency_id, $cal_from, $cal_to]);
+        foreach ($rfStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $moduleLabel = ['enquiries'=>'Lead','passports'=>'Passport','visas'=>'Visa','tickets'=>'Ticket','umrah'=>'Umrah','tours'=>'Tour'][$r['module_name']] ?? $r['module_name'];
+            $cal_events[] = [
+                'date'  => $r['event_date'],
+                'type'  => $r['module_name'] === 'enquiries' ? 'followup_lead' : 'followup_sale',
+                'title' => 'Follow-up — ' . $moduleLabel . ' #' . $r['record_id'],
+                'note'  => $r['note'] ?? '',
+                'url'   => '?route=app&page=query_history&table=' . $r['module_name'] . '&id=' . rawurlencode($r['record_id']),
+            ];
+        }
+
+        // 2. Service deadline notifications
+        $snStmt = $conn->prepare(
+            "SELECT sn.deadline_date as event_date, sn.module_name, sn.sale_id, sn.customer_name, sn.notification_type
+             FROM service_notifications sn
+             WHERE sn.agency_id = ? AND sn.deadline_date BETWEEN ? AND ? $cal_sf_sn"
+        );
+        $snStmt->execute([$agency_id, $cal_from, $cal_to]);
+        foreach ($snStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $cal_events[] = [
+                'date'  => $r['event_date'],
+                'type'  => 'delivery',
+                'title' => $r['notification_type'] . ' — ' . ($r['customer_name'] ?? $r['sale_id']),
+                'note'  => $r['module_name'],
+                'url'   => '?route=app&page=query_history&table=' . $r['module_name'] . '&id=' . rawurlencode($r['sale_id']),
+            ];
+        }
+
+        // 3. Travel / departure dates from service modules
+        $travelSources = [
+            'tickets' => ["SELECT `date` AS ed, id, name, TRIM(CONCAT_WS(' ', airline, route)) AS extra FROM tickets WHERE agency_id={$agency_id} AND `date` BETWEEN '{$cal_from}' AND '{$cal_to}' AND `date` IS NOT NULL {$cal_sf_tb}", 'Flight'],
+            'umrah'   => ["SELECT depDate AS ed, id, name, package AS extra FROM umrah WHERE agency_id={$agency_id} AND depDate BETWEEN '{$cal_from}' AND '{$cal_to}' AND depDate IS NOT NULL {$cal_sf_tb}", 'Umrah Dep.'],
+            'tours'   => ["SELECT `date` AS ed, id, name, package AS extra FROM tours WHERE agency_id={$agency_id} AND `date` BETWEEN '{$cal_from}' AND '{$cal_to}' AND `date` IS NOT NULL {$cal_sf_tb}", 'Tour Dep.'],
+        ];
+        foreach ($travelSources as $tbl => [$sql, $label]) {
+            foreach ($conn->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $cal_events[] = [
+                    'date'  => $r['ed'],
+                    'type'  => 'travel',
+                    'title' => $label . ' — ' . ($r['name'] ?? ''),
+                    'note'  => $r['extra'] ?? '',
+                    'url'   => '?route=app&page=query_history&table=' . $tbl . '&id=' . rawurlencode($r['id']),
+                ];
+            }
+        }
+
+        $calendarJson = json_encode($cal_events, JSON_HEX_TAG | JSON_HEX_QUOT);
+
         // ---- Recent Queries & Recent Sales (unified activity feed) ----
         // A record lives in "Queries" while its status is still in-progress, and moves to "Sales"
         // the moment its status reaches Completed/Paid/Confirmed - the same definition already used
@@ -205,22 +269,351 @@
                             <?php endif; ?>
                         </div>
 
-                        <div class="bg-white p-6 rounded-2xl soft-shadow border border-slate-100">
-                            <h3 class="font-extrabold text-slate-800 mb-6 text-lg"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i> Monthly Performance Trend</h3>
-                            <canvas id="mainChart" height="100"></canvas>
-                        </div>
+                        <!-- Chart + Calendar: 50/50 grid -->
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+                            <!-- LEFT: Monthly Performance Trend -->
+                            <div class="bg-white p-6 rounded-2xl soft-shadow border border-slate-100">
+                                <h3 class="font-extrabold text-slate-800 mb-6 text-lg"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i> Monthly Performance Trend</h3>
+                                <canvas id="mainChart" height="140"></canvas>
+                            </div>
+                            <script>
+                                new Chart(document.getElementById('mainChart'), {
+                                    type: 'bar',
+                                    data: {
+                                        labels: <?= json_encode($chartLabels) ?>,
+                                        datasets: [
+                                            { label: 'Turnover (<?= $currencySymbol ?>)', data: <?= json_encode($turnoverData) ?>, backgroundColor: '#4f46e5', borderRadius: 4, order: 2 },
+                                            { label: 'Sales (Count)', data: <?= json_encode($salesData) ?>, type: 'line', borderColor: '#10b981', backgroundColor: '#10b981', borderWidth: 3, tension: 0.3, order: 1 }
+                                        ]
+                                    },
+                                    options: { responsive: true, interaction: { mode: 'index', intersect: false } }
+                                });
+                            </script>
+
+                            <!-- RIGHT: Calendar Widget -->
+                            <div class="bg-white rounded-2xl soft-shadow border border-slate-100 flex flex-col overflow-hidden">
+
+                                <!-- Calendar header -->
+                                <div class="px-5 pt-5 pb-3 border-b border-slate-100">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
+                                            <i class="fa-solid fa-calendar-days text-indigo-500"></i> Reminders
+                                        </h3>
+                                        <div class="flex items-center gap-1.5">
+                                            <button id="calPrev" onclick="calNav(-1)"
+                                                class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-sm font-bold">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                            </button>
+                                            <select id="calMonthSel" onchange="calJump()"
+                                                class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
+                                                <?php foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $mi => $mn): ?>
+                                                <option value="<?= $mi ?>"><?= $mn ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <select id="calYearSel" onchange="calJump()"
+                                                class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
+                                                <?php for($y = date('Y')-2; $y <= date('Y')+3; $y++): ?>
+                                                <option value="<?= $y ?>"><?= $y ?></option>
+                                                <?php endfor; ?>
+                                            </select>
+                                            <button id="calNext" onclick="calNav(1)"
+                                                class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-sm font-bold">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter pills -->
+                                    <div class="flex flex-wrap gap-1.5 mt-3" id="calFilters">
+                                        <button onclick="calSetFilter('all')"       data-f="all"           class="cal-pill active">All</button>
+                                        <button onclick="calSetFilter('followup')"  data-f="followup"      class="cal-pill">Follow-ups</button>
+                                        <button onclick="calSetFilter('delivery')"  data-f="delivery"      class="cal-pill">Deliveries</button>
+                                        <button onclick="calSetFilter('lead')"      data-f="lead"          class="cal-pill">Leads</button>
+                                        <button onclick="calSetFilter('travel')"    data-f="travel"        class="cal-pill">Travel</button>
+                                    </div>
+                                </div>
+
+                                <!-- Day-of-week headers -->
+                                <div class="grid grid-cols-7 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-3 pt-3 pb-1">
+                                    <?php foreach(['Su','Mo','Tu','We','Th','Fr','Sa'] as $d): ?>
+                                    <div class="py-1"><?= $d ?></div>
+                                    <?php endforeach; ?>
+                                </div>
+
+                                <!-- Calendar grid (rendered by JS) -->
+                                <div id="calGrid" class="grid grid-cols-7 gap-px px-3 pb-3 flex-1"></div>
+
+                                <!-- Selected-day event list -->
+                                <div id="calDayPanel" class="hidden border-t border-slate-100 bg-slate-50/60 px-4 py-3 text-sm" style="max-height:160px; overflow-y:auto;">
+                                    <p id="calDayTitle" class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2"></p>
+                                    <div id="calDayList" class="space-y-1.5"></div>
+                                </div>
+                            </div>
+                        </div><!-- end Chart+Calendar grid -->
+
+                        <!-- Tooltip (shared, positioned by JS) -->
+                        <div id="calTooltip"
+                             class="fixed z-50 hidden pointer-events-none bg-slate-900 text-white text-xs rounded-xl shadow-2xl px-3 py-2.5 max-w-xs leading-relaxed"
+                             style="transform: translate(-50%, calc(-100% - 10px));"></div>
+
+                        <style>
+                            .cal-pill {
+                                padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700;
+                                border: 1.5px solid #e2e8f0; color: #64748b; background: #fff;
+                                cursor: pointer; transition: all .15s;
+                            }
+                            .cal-pill:hover  { border-color: #6366f1; color: #6366f1; }
+                            .cal-pill.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+                            .cal-day {
+                                min-height: 44px; border-radius: 10px; padding: 4px 3px 3px;
+                                cursor: pointer; position: relative; transition: background .12s;
+                                display: flex; flex-direction: column; align-items: center;
+                            }
+                            .cal-day:hover   { background: #f1f5f9; }
+                            .cal-day.today   { background: #eef2ff; }
+                            .cal-day.today .cal-day-num { background: #6366f1; color: #fff; }
+                            .cal-day.selected { background: #e0e7ff; }
+                            .cal-day.other-month .cal-day-num { color: #cbd5e1; }
+                            .cal-day-num {
+                                width: 24px; height: 24px; border-radius: 50%;
+                                display: flex; align-items: center; justify-content: center;
+                                font-size: 11px; font-weight: 700; color: #475569; line-height: 1;
+                            }
+                            .cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+                            .cal-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+                            .cal-badge {
+                                position: absolute; top: 2px; right: 3px;
+                                background: #6366f1; color: #fff;
+                                font-size: 9px; font-weight: 800; min-width: 14px; height: 14px;
+                                border-radius: 7px; padding: 0 3px;
+                                display: flex; align-items: center; justify-content: center;
+                                line-height: 1;
+                            }
+                        </style>
+
                         <script>
-                            new Chart(document.getElementById('mainChart'), {
-                                type: 'bar',
-                                data: {
-                                    labels: <?= json_encode($chartLabels) ?>,
-                                    datasets: [
-                                        { label: 'Turnover (<?= $currencySymbol ?>)', data: <?= json_encode($turnoverData) ?>, backgroundColor: '#4f46e5', borderRadius: 4, order: 2 },
-                                        { label: 'Sales (Count)', data: <?= json_encode($salesData) ?>, type: 'line', borderColor: '#10b981', backgroundColor: '#10b981', borderWidth: 3, tension: 0.3, order: 1 }
-                                    ]
-                                },
-                                options: { responsive: true, interaction: { mode: 'index', intersect: false } }
-                            });
+                        (function() {
+                            const EVENTS     = <?= $calendarJson ?>;
+                            const TYPE_COLOR = {
+                                followup_lead: '#6366f1',  // indigo  – Leads
+                                followup_sale: '#f59e0b',  // amber   – Follow-ups
+                                delivery:      '#f43f5e',  // rose    – Deliveries
+                                travel:        '#10b981',  // emerald – Travel
+                            };
+                            const TYPE_LABEL = {
+                                followup_lead: 'Lead Follow-up',
+                                followup_sale: 'Follow-up',
+                                delivery:      'Delivery',
+                                travel:        'Travel',
+                            };
+
+                            let curYear  = <?= date('Y') ?>;
+                            let curMonth = <?= date('n') - 1 ?>;   // 0-based
+                            let activeFilter = 'all';
+                            let selectedDate = null;
+
+                            const tooltip = document.getElementById('calTooltip');
+
+                            // ---- Filter helpers ----
+                            function typeMatchesFilter(type) {
+                                if (activeFilter === 'all')      return true;
+                                if (activeFilter === 'followup') return type === 'followup_lead' || type === 'followup_sale';
+                                if (activeFilter === 'delivery') return type === 'delivery';
+                                if (activeFilter === 'lead')     return type === 'followup_lead';
+                                if (activeFilter === 'travel')   return type === 'travel';
+                                return true;
+                            }
+
+                            // Events keyed by YYYY-MM-DD for current filter
+                            function buildIndex() {
+                                const idx = {};
+                                EVENTS.forEach(e => {
+                                    if (!typeMatchesFilter(e.type)) return;
+                                    if (!idx[e.date]) idx[e.date] = [];
+                                    idx[e.date].push(e);
+                                });
+                                return idx;
+                            }
+
+                            // ---- Render calendar ----
+                            function renderCalendar() {
+                                const idx   = buildIndex();
+                                const grid  = document.getElementById('calGrid');
+                                const mSel  = document.getElementById('calMonthSel');
+                                const ySel  = document.getElementById('calYearSel');
+                                mSel.value  = curMonth;
+                                ySel.value  = curYear;
+
+                                const today = new Date(); today.setHours(0,0,0,0);
+                                const firstDay  = new Date(curYear, curMonth, 1);
+                                const lastDay   = new Date(curYear, curMonth + 1, 0);
+                                const startDow  = firstDay.getDay();   // 0=Sun
+                                const totalDays = lastDay.getDate();
+
+                                let html = '';
+
+                                // Leading blanks (previous month days)
+                                const prevLast = new Date(curYear, curMonth, 0).getDate();
+                                for (let i = startDow - 1; i >= 0; i--) {
+                                    const d = prevLast - i;
+                                    const m = curMonth === 0 ? 11 : curMonth - 1;
+                                    const y = curMonth === 0 ? curYear - 1 : curYear;
+                                    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                                    html += dayCell(d, ds, idx[ds] || [], true, false);
+                                }
+
+                                // Current month days
+                                for (let d = 1; d <= totalDays; d++) {
+                                    const ds = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                                    const dt = new Date(curYear, curMonth, d);
+                                    const isToday = dt.getTime() === today.getTime();
+                                    const isSel   = ds === selectedDate;
+                                    html += dayCell(d, ds, idx[ds] || [], false, isToday, isSel);
+                                }
+
+                                // Trailing blanks (next month)
+                                const trailCount = 42 - startDow - totalDays;
+                                for (let d = 1; d <= trailCount; d++) {
+                                    const m = curMonth === 11 ? 0 : curMonth + 1;
+                                    const y = curMonth === 11 ? curYear + 1 : curYear;
+                                    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                                    html += dayCell(d, ds, idx[ds] || [], true, false);
+                                }
+
+                                grid.innerHTML = html;
+
+                                // Attach events after render
+                                grid.querySelectorAll('.cal-day').forEach(cell => {
+                                    const ds     = cell.dataset.date;
+                                    const events = idx[ds] || [];
+
+                                    cell.addEventListener('click', () => onDayClick(ds, events));
+
+                                    if (events.length > 0) {
+                                        cell.addEventListener('mouseenter', e => showTooltip(e, events));
+                                        cell.addEventListener('mousemove',  e => moveTooltip(e));
+                                        cell.addEventListener('mouseleave',    hideTooltip);
+                                    }
+                                });
+
+                                // Restore selected day panel
+                                if (selectedDate) {
+                                    const events = idx[selectedDate] || [];
+                                    renderDayPanel(selectedDate, events);
+                                }
+                            }
+
+                            function dayCell(dayNum, ds, events, otherMonth, isToday, isSel) {
+                                const classes = [
+                                    'cal-day',
+                                    otherMonth ? 'other-month' : '',
+                                    isToday    ? 'today'       : '',
+                                    isSel      ? 'selected'    : '',
+                                ].filter(Boolean).join(' ');
+
+                                // Collect unique dot colors (max 3 types)
+                                const seenTypes = [];
+                                events.forEach(e => { if (!seenTypes.includes(e.type)) seenTypes.push(e.type); });
+                                const dots = seenTypes.slice(0, 3).map(t =>
+                                    `<span class="cal-dot" style="background:${TYPE_COLOR[t]}"></span>`
+                                ).join('');
+                                const badge = events.length > 3
+                                    ? `<span class="cal-badge">${events.length}</span>`
+                                    : (events.length > 0 ? `<span class="cal-badge" style="background:${TYPE_COLOR[events[0].type]}">${events.length}</span>` : '');
+
+                                return `<div class="${classes}" data-date="${ds}">
+                                    ${badge}
+                                    <span class="cal-day-num">${dayNum}</span>
+                                    ${dots ? `<div class="cal-dots">${dots}</div>` : ''}
+                                </div>`;
+                            }
+
+                            function onDayClick(ds, events) {
+                                selectedDate = (selectedDate === ds) ? null : ds;
+                                // Re-render to update selected state
+                                renderCalendar();
+                            }
+
+                            function renderDayPanel(ds, events) {
+                                const panel = document.getElementById('calDayPanel');
+                                const title = document.getElementById('calDayTitle');
+                                const list  = document.getElementById('calDayList');
+
+                                if (!selectedDate || events.length === 0) {
+                                    panel.classList.add('hidden');
+                                    return;
+                                }
+
+                                const [y, m, d] = ds.split('-');
+                                const dateObj = new Date(+y, +m - 1, +d);
+                                const fmt = dateObj.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+                                title.textContent = fmt;
+                                list.innerHTML = events.map(e => {
+                                    const col = TYPE_COLOR[e.type];
+                                    const lbl = TYPE_LABEL[e.type];
+                                    return `<a href="${e.url}"
+                                        class="flex items-start gap-2 px-3 py-2 rounded-xl hover:bg-white border border-transparent hover:border-slate-200 transition group">
+                                        <span class="w-2 h-2 rounded-full mt-1 flex-shrink-0" style="background:${col}"></span>
+                                        <div class="flex-1 min-w-0">
+                                            <span class="text-xs font-extrabold text-slate-700 group-hover:text-indigo-600 leading-tight block truncate">${escHtml(e.title)}</span>
+                                            ${e.note ? `<span class="text-[10px] text-slate-400 block truncate">${escHtml(e.note)}</span>` : ''}
+                                        </div>
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5"
+                                              style="background:${col}22; color:${col}">${lbl}</span>
+                                    </a>`;
+                                }).join('');
+
+                                panel.classList.remove('hidden');
+                            }
+
+                            // ---- Tooltip ----
+                            function showTooltip(e, events) {
+                                const lines = events.slice(0, 6).map(ev => {
+                                    const col = TYPE_COLOR[ev.type];
+                                    return `<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></span>${escHtml(ev.title)}</span>`;
+                                });
+                                if (events.length > 6) lines.push(`<span style="color:#94a3b8">+ ${events.length - 6} more</span>`);
+                                tooltip.innerHTML = lines.join('');
+                                tooltip.classList.remove('hidden');
+                                moveTooltip(e);
+                            }
+                            function moveTooltip(e) {
+                                tooltip.style.left = e.clientX + 'px';
+                                tooltip.style.top  = e.clientY + window.scrollY + 'px';
+                            }
+                            function hideTooltip() { tooltip.classList.add('hidden'); }
+
+                            // ---- Public functions (called by inline handlers) ----
+                            window.calNav = function(dir) {
+                                curMonth += dir;
+                                if (curMonth > 11) { curMonth = 0;  curYear++; }
+                                if (curMonth < 0)  { curMonth = 11; curYear--; }
+                                selectedDate = null;
+                                renderCalendar();
+                            };
+                            window.calJump = function() {
+                                curMonth = +document.getElementById('calMonthSel').value;
+                                curYear  = +document.getElementById('calYearSel').value;
+                                selectedDate = null;
+                                renderCalendar();
+                            };
+                            window.calSetFilter = function(f) {
+                                activeFilter = f;
+                                document.querySelectorAll('.cal-pill').forEach(b => {
+                                    b.classList.toggle('active', b.dataset.f === f);
+                                });
+                                renderCalendar();
+                            };
+
+                            function escHtml(s) {
+                                return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                            }
+
+                            // Boot
+                            renderCalendar();
+                        })();
                         </script>
                     </div>
 

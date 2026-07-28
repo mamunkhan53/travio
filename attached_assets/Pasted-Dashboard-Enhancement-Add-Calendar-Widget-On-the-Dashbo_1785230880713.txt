@@ -1,0 +1,62 @@
+Dashboard Enhancement – Add Calendar Widget
+
+On the Dashboard page, redesign the layout of the Monthly Performance Trend Chart.
+
+Layout
+The current Monthly Performance Trend Chart takes the full width.
+Change the layout to a 2-column (50% / 50%) grid.
+Left Column (50%)
+Keep the existing Monthly Performance Trend Chart.
+Right Column (50%)
+Add a Monthly Calendar widget.
+Calendar Features
+Show one month at a time.
+Include Previous Month / Next Month navigation.
+Also provide a Month & Year selector so users can jump to any month.
+Highlight the current day.
+Reminder Integration
+
+The calendar must automatically display reminders from the database.
+
+Show reminders for:
+
+Upcoming Lead Follow-ups
+Upcoming Sale Deliveries
+Passport Delivery
+Visa Delivery
+Ticket Travel Date
+Any other delivery/reminder dates already stored in the system
+Calendar Indicators
+Days with reminders should display a colored dot or badge.
+If multiple reminders exist on the same day, show the total count (e.g. 3).
+Hovering over the day should show a tooltip with reminder titles.
+Clicking a reminder should open the related record.
+
+Examples:
+
+Lead Follow-up → Open that Lead Details page.
+Sale Delivery → Open that Sale Details page.
+Passport Delivery → Open the related Sale/Customer page.
+Visa Delivery → Open the related Sale page.
+Filtering
+
+Allow users to filter calendar reminders:
+
+All
+Follow-ups
+Deliveries
+Leads
+Sales
+UI Requirements
+Modern dashboard design matching the existing theme.
+Responsive layout.
+Today's date highlighted.
+Different colors for different reminder types.
+Clicking an empty date should optionally show all events for that day.
+Performance
+Load reminder data dynamically from the database.
+Do not duplicate reminder data.
+Reuse the existing Lead and Sale reminder system.
+Clicking a reminder should navigate directly to the correct Lead or Sale record using its ID.
+
+This calendar should become the central reminder system for the ERP dashboard while keeping the existing notification functionality unchanged.
