@@ -100,6 +100,28 @@
             }
         }
 
+        // 4. Student Consultancy: SC lead follow-ups (module_name 'sc_leads' / 'sc_students' already covered by query 1 above)
+        //    SC visa important dates
+        $scVisaStmt = $conn->prepare(
+            "SELECT v.id, v.destination_country, v.biometrics_date, v.medical_date, v.interview_date, v.decision_date, s.student_name
+             FROM sc_visa v JOIN sc_students s ON v.student_id = s.id
+             WHERE v.agency_id = ? AND (
+                 (v.biometrics_date BETWEEN ? AND ?) OR (v.medical_date BETWEEN ? AND ?) OR
+                 (v.interview_date BETWEEN ? AND ?) OR (v.decision_date BETWEEN ? AND ?)
+             )"
+        );
+        $scVisaStmt->execute([$agency_id, $cal_from,$cal_to, $cal_from,$cal_to, $cal_from,$cal_to, $cal_from,$cal_to]);
+        foreach ($scVisaStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $scDates = ['biometrics_date'=>'Biometrics','medical_date'=>'Medical','interview_date'=>'Visa Interview','decision_date'=>'Visa Decision'];
+            foreach ($scDates as $col => $lbl) {
+                if (!empty($r[$col]) && $r[$col] >= $cal_from && $r[$col] <= $cal_to) {
+                    $cal_events[] = ['date'=>$r[$col],'type'=>'travel','title'=>$lbl.' — '.$r['student_name'],'note'=>$r['destination_country']??'','url'=>'?route=app&page=sc_visa'];
+                }
+            }
+        }
+        // SC lead follow-up label fix in existing record_followups query output
+        // (handled in rendering below via the moduleLabel fallback)
+
         $calendarJson = json_encode($cal_events, JSON_HEX_TAG | JSON_HEX_QUOT);
 
         // ---- Recent Queries & Recent Sales (unified activity feed) ----

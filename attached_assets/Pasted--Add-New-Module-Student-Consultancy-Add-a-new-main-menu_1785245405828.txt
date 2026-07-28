@@ -1,0 +1,257 @@
+### Add New Module: Student Consultancy
+
+Add a new main menu called **Student Consultancy** before the **WhatsApp** menu.
+
+Menu structure:
+
+```
+Student Consultancy
+│
+├── Student Leads
+├── Students
+├── University Applications
+├── Documents
+├── Visa Processing
+├── Payments
+├── Follow-ups
+├── Reports
+└── Settings
+```
+
+This module should integrate with the existing ERP (Customers, Calendar, WhatsApp, Accounting, Staff Permissions, Notifications, and Invoices). Do not create a separate system—reuse existing components wherever possible.
+
+### 1. Student Leads
+
+This works like the current Leads module but is specifically for study abroad enquiries.
+
+Store:
+
+* Student Name
+* Mobile
+* Email
+* Passport No.
+* Education Background
+* IELTS/PTE Score
+* Preferred Country
+* Preferred University
+* Preferred Intake
+* Budget
+* Lead Source
+* Assigned Staff
+* Notes
+
+Lead Status:
+
+* New
+* Contacted
+* Interested
+* Documents Pending
+* Application Started
+* Converted
+* Cancelled
+
+Support follow-up reminders and display them on the Dashboard Calendar.
+
+---
+
+### 2. Students
+
+Once a lead is converted, create a Student profile automatically.
+
+Store:
+
+* Personal Information
+* Passport Details
+* Guardian Information
+* Education History
+* Current Status
+* Timeline
+* Related Applications
+* Related Payments
+* Uploaded Documents
+
+This should work similarly to the Customer Profile page with complete history.
+
+---
+
+### 3. University Applications
+
+Allow one student to have multiple university applications.
+
+Store:
+
+* University Name
+* Course
+* Intake
+* Tuition Fee
+* Scholarship
+* Application Date
+* Offer Letter Upload
+* Offer Status
+
+Application Status:
+
+* Draft
+* Applied
+* Waiting Decision
+* Conditional Offer
+* Unconditional Offer
+* Accepted
+* Rejected
+
+---
+
+### 4. Documents
+
+Allow uploading and managing student documents.
+
+Examples:
+
+* Passport
+* Certificates
+* Transcripts
+* IELTS/PTE
+* SOP
+* CV
+* Recommendation Letter
+* Bank Statement
+* Financial Documents
+* Police Clearance
+* Birth Certificate
+
+Each document should display:
+
+* Uploaded
+* Pending
+* Verified
+* Expired
+
+Support file preview and download.
+
+---
+
+### 5. Visa Processing
+
+Manage the complete student visa process.
+
+Store:
+
+* Destination Country
+* Visa Type
+* Embassy
+* Application Date
+* Biometrics Date
+* Medical Date
+* Interview Date
+* Decision Date
+* Visa Number
+
+Status:
+
+* Not Started
+* Documents Ready
+* Submitted
+* Under Review
+* Approved
+* Rejected
+
+All important dates should generate Dashboard Calendar reminders.
+
+---
+
+### 6. Payments
+
+Track all student-related payments.
+
+Examples:
+
+* Consultancy Fee
+* University Application Fee
+* Tuition Deposit
+* Visa Fee
+* Medical Fee
+* Service Charge
+* Other Charges
+
+Show:
+
+* Total Amount
+* Paid Amount
+* Due Amount
+* Payment History
+
+Generate invoices using the existing Invoice system.
+
+---
+
+### 7. Follow-ups
+
+Provide a dedicated follow-up page for students.
+
+Support:
+
+* Calls
+* Meetings
+* WhatsApp
+* Email
+* Notes
+* Next Follow-up Date
+
+Upcoming follow-ups should appear on the Dashboard Calendar and Notification panel.
+
+---
+
+### 8. Reports
+
+Include reports such as:
+
+* Student Lead Report
+* Student Admission Report
+* Visa Report
+* Pending Documents Report
+* Payment Report
+* Staff Performance Report
+* Country-wise Report
+* University-wise Report
+
+Support filtering by:
+
+* Date
+* Staff
+* Country
+* Intake
+* Status
+
+Export to PDF and Excel.
+
+---
+
+### 9. Settings
+
+Agency Admin only.
+
+Manage:
+
+* Countries
+* Universities
+* Courses
+* Intakes
+* Visa Types
+* Document Types
+* Lead Sources
+* Status Lists
+* Payment Categories
+* Email & WhatsApp Templates
+
+Only Agency Admin can add, edit or delete these settings.
+
+---
+
+### Integration Requirements
+
+* Reuse the existing Customer, Staff, Invoice, Accounting, Notification, Calendar and WhatsApp systems wherever possible.
+* All student reminders must appear on the Dashboard Calendar.
+* Staff permissions must follow the existing permission system.
+* Every record should maintain Created By, Assigned Staff, Created Date and Last Updated.
+* Keep the UI and design consistent with the rest of the ERP.
+* Ensure this module is fully integrated without affecting any existing features or data.

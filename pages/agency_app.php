@@ -66,7 +66,8 @@ function renderAgencyApp($conn, $modules) {
 
     // Fetch Standard Records
     $records = [];
-    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation'])) {
+    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation'])
+        && empty($modules[$page]['sc_module'])) {
         if ($page === 'customers') {
             $stmt = $conn->prepare("SELECT * FROM customers WHERE agency_id = ? ORDER BY id DESC");
             $stmt->execute([$agency_id]);
@@ -105,7 +106,50 @@ function renderAgencyApp($conn, $modules) {
                 if ($key === 'accounting' && $_SESSION['is_staff'] && !has_permission('can_view_reports')) continue;
                 $locked = $subscription['expired'] && !in_array($key, ['dashboard', 'profile']);
             ?>
-                <?php if ($key === 'whatsapp' && !$_SESSION['is_staff']): ?>
+                <?php if ($key === 'sc'): ?>
+                    <?php
+                    $sc_pages  = ['sc_leads','sc_students','sc_applications','sc_documents','sc_visa','sc_payments','sc_followups','sc_reports','sc_settings'];
+                    $sc_open   = in_array($active_page, $sc_pages);
+                    $sc_locked = $locked;
+                    $sc_sub    = [
+                        'sc_leads'        => ['Student Leads',           'fa-solid fa-user-graduate'],
+                        'sc_students'     => ['Students',                'fa-solid fa-id-card'],
+                        'sc_applications' => ['University Applications', 'fa-solid fa-building-columns'],
+                        'sc_documents'    => ['Documents',               'fa-solid fa-folder-open'],
+                        'sc_visa'         => ['Visa Processing',         'fa-solid fa-stamp'],
+                        'sc_payments'     => ['Payments',                'fa-solid fa-coins'],
+                        'sc_followups'    => ['Follow-ups',              'fa-solid fa-calendar-check'],
+                        'sc_reports'      => ['Reports',                 'fa-solid fa-chart-bar'],
+                    ];
+                    if (!$_SESSION['is_staff']) $sc_sub['sc_settings'] = ['Settings', 'fa-solid fa-gear'];
+                    ?>
+                    <?php if ($sc_locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed">
+                            <i class="fa-solid fa-graduation-cap w-5 text-center"></i>
+                            <span class="flex-1">Student Consultancy</span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" onclick="toggleScMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $sc_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="fa-solid fa-graduation-cap w-5 text-center"></i>
+                            <span class="flex-1 text-left">Student Consultancy</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="scMenuChevron"
+                               style="<?= $sc_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="scSubMenu" class="<?= $sc_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <?php foreach ($sc_sub as $sk => [$slabel, $sicon]): ?>
+                            <a href="?route=app&page=<?= $sk ?>"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === $sk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="<?= $sicon ?> w-4 text-center text-xs"></i>
+                                <?= $slabel ?>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php elseif ($key === 'whatsapp' && !$_SESSION['is_staff']): ?>
                     <?php
                     $wa_open   = in_array($active_page, ['whatsapp', 'whatsapp_automation']);
                     $wa_locked = $locked;
@@ -217,6 +261,9 @@ function renderAgencyApp($conn, $modules) {
                 include __DIR__ . '/agency/whatsapp.php';
             elseif ($page === 'whatsapp_automation' && !$_SESSION['is_staff']):
                 include __DIR__ . '/agency/whatsapp_automation.php';
+            elseif (isset($modules[$page]) && !empty($modules[$page]['sc_module'])):
+                if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=dashboard"); }
+                include __DIR__ . '/agency/' . $page . '.php';
             elseif ($page === 'accounting'):
                 include __DIR__ . '/agency/accounting.php';
             elseif (array_key_exists($page, $modules) && $page !== 'dashboard'):

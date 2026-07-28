@@ -92,7 +92,7 @@
 
         // ------------- ADD QUERY / SALE FOLLOW UP -------------
         if ($action === 'add_record_followup' && isset($_SESSION['agency_id'])) {
-            $allowedHistoryTables = ['enquiries', 'passports', 'visas', 'tickets', 'umrah', 'tours', 'invoices'];
+            $allowedHistoryTables = ['enquiries', 'passports', 'visas', 'tickets', 'umrah', 'tours', 'invoices', 'sc_leads', 'sc_students'];
             $table = $_POST['table'] ?? '';
             $record_id = $_POST['record_id'] ?? '';
 
@@ -100,10 +100,13 @@
                 http_response_code(400); die("Invalid follow-up record.");
             }
 
+            if (in_array($table, ['sc_leads','sc_students']) && !has_permission('can_manage_sc_leads')) {
+                http_response_code(403); die("403 Access Denied");
+            }
             if ($table === 'enquiries' && !has_permission('can_edit_enquiry')) {
                 http_response_code(403); die("403 Access Denied");
             }
-            if ($table !== 'enquiries' && !has_permission('can_edit_sale')) {
+            if (!in_array($table, ['enquiries','sc_leads','sc_students']) && !has_permission('can_edit_sale')) {
                 http_response_code(403); die("403 Access Denied");
             }
             if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
@@ -147,6 +150,9 @@
             }
 
             flash("Follow-up update added.");
+            if (in_array($table, ['sc_leads','sc_students'])) {
+                redirect("?route=app&page=sc_followups");
+            }
             redirect("?route=app&page=query_history&table=$table&id=$record_id");
         }
 
@@ -551,4 +557,7 @@
 
             redirect("?route=app&page=whatsapp&tab=history");
         }
+
+        // ------------- STUDENT CONSULTANCY MODULE ACTIONS -------------
+        require_once __DIR__ . '/sc_actions.php';
 

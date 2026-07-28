@@ -86,6 +86,13 @@ switch ($route) {
         menu.classList.toggle('hidden', open);
         chevron.style.transform = open ? '' : 'rotate(180deg)';
     }
+    function toggleScMenu() {
+        const menu    = document.getElementById('scSubMenu');
+        const chevron = document.getElementById('scMenuChevron');
+        const open    = !menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', open);
+        chevron.style.transform = open ? '' : 'rotate(180deg)';
+    }
 </script>
 </body>
 </html>

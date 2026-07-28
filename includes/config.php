@@ -102,6 +102,17 @@ $modules = [
             'date' => ['label' => 'Travel Date', 'type' => 'date'],
         ], $financialFields)
     ],
+    // Student Consultancy — 'sc' renders the sidebar group; sc_* are hidden module markers
+    'sc'              => ['title' => 'Student Consultancy', 'icon' => 'fa-solid fa-graduation-cap'],
+    'sc_leads'        => ['title' => 'Student Leads',            'icon' => 'fa-solid fa-user-graduate',     'hidden' => true, 'sc_module' => true],
+    'sc_students'     => ['title' => 'Students',                 'icon' => 'fa-solid fa-id-card',           'hidden' => true, 'sc_module' => true],
+    'sc_applications' => ['title' => 'University Applications',  'icon' => 'fa-solid fa-building-columns',  'hidden' => true, 'sc_module' => true],
+    'sc_documents'    => ['title' => 'Documents',                'icon' => 'fa-solid fa-folder-open',       'hidden' => true, 'sc_module' => true],
+    'sc_visa'         => ['title' => 'Visa Processing',          'icon' => 'fa-solid fa-stamp',             'hidden' => true, 'sc_module' => true],
+    'sc_payments'     => ['title' => 'Payments',                 'icon' => 'fa-solid fa-coins',             'hidden' => true, 'sc_module' => true],
+    'sc_followups'    => ['title' => 'Follow-ups',               'icon' => 'fa-solid fa-calendar-check',    'hidden' => true, 'sc_module' => true],
+    'sc_reports'      => ['title' => 'Reports',                  'icon' => 'fa-solid fa-chart-bar',         'hidden' => true, 'sc_module' => true],
+    'sc_settings'     => ['title' => 'Settings',                 'icon' => 'fa-solid fa-gear',              'hidden' => true, 'sc_module' => true, 'admin_only' => true],
     'whatsapp' => ['title' => 'WhatsApp', 'icon' => 'fa-brands fa-whatsapp'],
     'invoices' => ['title' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
     'accounting' => ['title' => 'Accounting', 'icon' => 'fa-solid fa-calculator'],

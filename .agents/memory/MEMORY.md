@@ -1,1 +1,2 @@
 - [WhatsApp module architecture](whatsapp-module.md) — additive WA messaging module; AJAX handlers must live in actions_get.php (before HTML output), never at the bottom of page files.
+- [Student Consultancy module](sc-module.md) — 9-page SC module; actions in includes/sc_actions.php (required at end of actions_agency.php); SC pages dispatched via sc_module flag in agency_app.php.

@@ -391,12 +391,162 @@ try {
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             INDEX idx_wa_queue_due (agency_id, status, scheduled_at)
         );
+
+        -- =====================================================================
+        -- STUDENT CONSULTANCY MODULE
+        -- =====================================================================
+
+        CREATE TABLE IF NOT EXISTS sc_setting_items (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            value VARCHAR(300) NOT NULL,
+            sort_order INT DEFAULT 0,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_sc_settings (agency_id, category)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_leads (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            created_date DATE,
+            student_name VARCHAR(100) NOT NULL,
+            mobile VARCHAR(20) NOT NULL,
+            email VARCHAR(100),
+            passport_no VARCHAR(50),
+            education_background VARCHAR(300),
+            ielts_score VARCHAR(30),
+            preferred_country VARCHAR(100),
+            preferred_university VARCHAR(200),
+            preferred_intake VARCHAR(50),
+            budget VARCHAR(50),
+            lead_source VARCHAR(100),
+            status VARCHAR(50) DEFAULT 'New',
+            notes TEXT,
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            updated_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            FOREIGN KEY (reference_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+            INDEX idx_sc_leads_agency (agency_id, created_at)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_students (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            lead_id VARCHAR(50) NULL,
+            student_name VARCHAR(100) NOT NULL,
+            mobile VARCHAR(20) NOT NULL,
+            email VARCHAR(100),
+            date_of_birth DATE NULL,
+            passport_no VARCHAR(50),
+            passport_expiry DATE NULL,
+            nationality VARCHAR(100),
+            guardian_name VARCHAR(100),
+            guardian_mobile VARCHAR(20),
+            guardian_relation VARCHAR(50),
+            education_background TEXT,
+            ielts_score VARCHAR(30),
+            current_status VARCHAR(100) DEFAULT 'Active',
+            notes TEXT,
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            FOREIGN KEY (reference_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+            INDEX idx_sc_students_agency (agency_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_applications (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            student_id VARCHAR(50) NOT NULL,
+            university_name VARCHAR(200),
+            course VARCHAR(200),
+            intake VARCHAR(50),
+            tuition_fee DECIMAL(12,2) DEFAULT 0,
+            scholarship DECIMAL(12,2) DEFAULT 0,
+            application_date DATE NULL,
+            offer_status VARCHAR(50) DEFAULT 'Draft',
+            offer_letter_path VARCHAR(500) NULL,
+            notes TEXT,
+            reference_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_sc_apps_student (student_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_documents (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            student_id VARCHAR(50) NOT NULL,
+            doc_type VARCHAR(100),
+            file_name VARCHAR(300),
+            file_path VARCHAR(500),
+            doc_status VARCHAR(30) DEFAULT 'Pending',
+            expiry_date DATE NULL,
+            notes VARCHAR(300),
+            uploaded_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_sc_docs_student (student_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_visa (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            student_id VARCHAR(50) NOT NULL,
+            destination_country VARCHAR(100),
+            visa_type VARCHAR(100),
+            embassy VARCHAR(200),
+            application_date DATE NULL,
+            biometrics_date DATE NULL,
+            medical_date DATE NULL,
+            interview_date DATE NULL,
+            decision_date DATE NULL,
+            visa_number VARCHAR(100),
+            status VARCHAR(50) DEFAULT 'Not Started',
+            notes TEXT,
+            reference_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_sc_visa_student (student_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS sc_payments (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            student_id VARCHAR(50) NOT NULL,
+            payment_type VARCHAR(100),
+            total_amount DECIMAL(12,2) DEFAULT 0,
+            paid_amount DECIMAL(12,2) DEFAULT 0,
+            due_amount DECIMAL(12,2) DEFAULT 0,
+            payment_date DATE NULL,
+            invoice_id VARCHAR(50) NULL,
+            notes TEXT,
+            reference_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_sc_payments_student (student_id)
+        );
     ");
 
     // Add can_send_whatsapp permission to staff_permissions (additive only)
     $spermCols = $conn->query("SHOW COLUMNS FROM staff_permissions")->fetchAll(PDO::FETCH_COLUMN);
     if (!in_array('can_send_whatsapp', $spermCols)) {
         $conn->exec("ALTER TABLE staff_permissions ADD COLUMN can_send_whatsapp TINYINT(1) DEFAULT 0");
+    }
+    // Student Consultancy permissions (additive only)
+    foreach (['can_manage_sc_leads','can_manage_sc_students','can_manage_sc_applications','can_manage_sc_payments','can_view_sc_reports'] as $scPerm) {
+        if (!in_array($scPerm, $spermCols)) {
+            $conn->exec("ALTER TABLE staff_permissions ADD COLUMN $scPerm TINYINT(1) DEFAULT 0");
+        }
     }
 
 } catch (PDOException $e) {
