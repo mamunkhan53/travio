@@ -79,6 +79,13 @@ switch ($route) {
         sidebar.classList.toggle('-translate-x-full');
         overlay.classList.toggle('hidden');
     }
+    function toggleWaMenu() {
+        const menu    = document.getElementById('waSubMenu');
+        const chevron = document.getElementById('waMenuChevron');
+        const open    = !menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', open);
+        chevron.style.transform = open ? '' : 'rotate(180deg)';
+    }
 </script>
 </body>
 </html>

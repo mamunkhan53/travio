@@ -105,7 +105,43 @@ function renderAgencyApp($conn, $modules) {
                 if ($key === 'accounting' && $_SESSION['is_staff'] && !has_permission('can_view_reports')) continue;
                 $locked = $subscription['expired'] && !in_array($key, ['dashboard', 'profile']);
             ?>
-                <?php if ($locked): ?>
+                <?php if ($key === 'whatsapp' && !$_SESSION['is_staff']): ?>
+                    <?php
+                    $wa_open   = in_array($active_page, ['whatsapp', 'whatsapp_automation']);
+                    $wa_locked = $locked;
+                    ?>
+                    <?php if ($wa_locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed" title="Locked - renew your subscription to unlock">
+                            <i class="<?= $module['icon'] ?> w-5 text-center"></i>
+                            <span class="flex-1"><?= $module['title'] ?></span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <!-- WhatsApp collapsible group -->
+                        <button type="button" onclick="toggleWaMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $wa_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="<?= $module['icon'] ?> w-5 text-center"></i>
+                            <span class="flex-1 text-left">WhatsApp</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="waMenuChevron"
+                               style="<?= $wa_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="waSubMenu" class="<?= $wa_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <a href="?route=app&page=whatsapp"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === 'whatsapp' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="fa-solid fa-paper-plane w-4 text-center text-xs"></i>
+                                Manual
+                            </a>
+                            <a href="?route=app&page=whatsapp_automation"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === 'whatsapp_automation' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="fa-solid fa-robot w-4 text-center text-xs"></i>
+                                Automation
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                <?php elseif ($locked): ?>
                     <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed" title="Locked - renew your subscription to unlock">
                         <i class="<?= $module['icon'] ?> w-5 text-center"></i>
                         <span class="flex-1"><?= $module['title'] ?></span>
@@ -116,15 +152,6 @@ function renderAgencyApp($conn, $modules) {
                         <i class="<?= $module['icon'] ?> w-5 text-center"></i>
                         <?= $module['title'] ?>
                     </a>
-                    <?php if ($key === 'whatsapp' && !$_SESSION['is_staff'] && !$locked): ?>
-                    <a href="?route=app&page=whatsapp_automation"
-                       class="flex items-center gap-2 pl-8 pr-3 py-2 rounded-xl text-xs font-bold transition-all
-                              <?= $active_page === 'whatsapp_automation' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-400 hover:bg-slate-50 hover:text-indigo-500' ?>">
-                        <i class="fa-solid fa-robot w-4 text-center text-xs"></i>
-                        Automation
-                        <span class="ml-auto text-[9px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full">AUTO</span>
-                    </a>
-                    <?php endif; ?>
                 <?php endif; ?>
             <?php endforeach; ?>
         </nav>
