@@ -66,7 +66,7 @@ function renderAgencyApp($conn, $modules) {
 
     // Fetch Standard Records
     $records = [];
-    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp'])) {
+    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation'])) {
         if ($page === 'customers') {
             $stmt = $conn->prepare("SELECT * FROM customers WHERE agency_id = ? ORDER BY id DESC");
             $stmt->execute([$agency_id]);
