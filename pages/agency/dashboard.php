@@ -229,8 +229,7 @@
                 <?php endif; ?>
 
                 <!-- DASHBOARD LAYOUT -->
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="flex-1 space-y-8">
+                <div class="space-y-8">
                         <!-- Stats Cards -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div class="bg-white p-5 rounded-2xl soft-shadow border border-slate-100 relative overflow-hidden">
@@ -615,48 +614,6 @@
                             renderCalendar();
                         })();
                         </script>
-                    </div>
-
-                    <!-- Right Summary Panel -->
-                    <div class="w-full lg:w-80 space-y-6">
-                        <?php if(!$_SESSION['is_staff']): ?>
-                        <!-- Profile Card (Admin) -->
-                        <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 text-center">
-                            <div class="w-20 h-20 mx-auto rounded-full bg-indigo-100 border-4 border-white shadow flex items-center justify-center text-3xl text-indigo-500 mb-4 overflow-hidden">
-                                <img src="<?= $logoSrc ?>" class="w-full h-full object-cover">
-                            </div>
-                            <h3 class="font-bold text-lg text-slate-800"><?= xss_clean($agency['company_name']) ?></h3>
-                            <p class="text-sm text-slate-500 mb-4"><?= xss_clean($agency['company_email']) ?></p>
-                            <a href="?route=app&page=profile" class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full hover:bg-indigo-100 transition">Manage Profile</a>
-                        </div>
-                        <?php else: ?>
-                        <!-- Staff Details Card -->
-                        <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 text-center">
-                            <div class="w-20 h-20 mx-auto rounded-full bg-indigo-100 border-4 border-white shadow flex items-center justify-center text-3xl text-indigo-500 mb-4">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            <h3 class="font-bold text-lg text-slate-800"><?php $cu = $conn->query("SELECT full_name FROM staff WHERE id=".$_SESSION['staff_id'])->fetch(); echo xss_clean($cu['full_name']); ?></h3>
-                            <p class="text-sm font-bold text-indigo-500 mb-4"><?= $_SESSION['staff_role'] ?></p>
-                            <a href="?route=app&page=profile" class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full hover:bg-indigo-100 transition">My Profile</a>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Weekly Stats -->
-                        <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 bg-gradient-to-br from-indigo-900 to-indigo-700 text-white relative overflow-hidden">
-                            <i class="fa-solid fa-chart-line absolute -right-6 -bottom-6 text-indigo-500/30 text-8xl"></i>
-                            <h4 class="font-bold mb-4 text-sm uppercase tracking-wider relative z-10">This Month</h4>
-                            <div class="space-y-4 relative z-10">
-                                <div>
-                                    <p class="text-indigo-200 text-xs">New Leads</p>
-                                    <p class="text-2xl font-bold"><?= $leadsData[5] ?? 0 ?></p>
-                                </div>
-                                <div>
-                                    <p class="text-indigo-200 text-xs">Turnover</p>
-                                    <p class="text-2xl font-bold"><?= $currencySymbol ?> <?= number_format($turnoverData[5] ?? 0) ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- RECENT QUERIES & RECENT SALES -->
