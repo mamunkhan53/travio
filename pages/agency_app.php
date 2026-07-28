@@ -57,7 +57,7 @@ function renderAgencyApp($conn, $modules) {
         $navNotifItems[] = ['icon'=>'fa-clock','color'=>'text-rose-500','title'=>$nr['notification_type'].' — '.$nr['customer_name'],'sub'=>date('d M Y', strtotime($nr['deadline_date'])).' deadline','url'=>'?route=app&page=dashboard#dashNotifications'];
     }
     // 2. Follow-up reminders (today and overdue, unhandled)
-    $fuRows = $conn->query("SELECT rf.follow_up_date, rf.module_name, rf.record_id, rf.note FROM record_followups rf WHERE $rf_sf AND rf.follow_up_date <= CURRENT_DATE() ORDER BY rf.follow_up_date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    $fuRows = $conn->query("SELECT rf.follow_up_date, rf.module_name, rf.record_id, rf.note FROM record_followups rf WHERE 1=1 $rf_sf AND rf.follow_up_date <= CURRENT_DATE() ORDER BY rf.follow_up_date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($fuRows as $fr) {
         $navNotifCount++;
         $mlabel = ['enquiries'=>'Lead','passports'=>'Passport','visas'=>'Visa','tickets'=>'Ticket','umrah'=>'Umrah','tours'=>'Tour','sc_leads'=>'SC Lead','sc_students'=>'Student'][$fr['module_name']] ?? ucfirst($fr['module_name']);
