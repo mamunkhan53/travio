@@ -1,0 +1,405 @@
+## Expand Existing Accounting Module into a Complete Finance & Accounting System
+
+Do **not** create a separate **Finance** menu. Instead, enhance the existing **Accounting** module into a complete Finance & Accounting system while keeping all current features intact.
+
+**Important:**
+
+* Do not remove or change any existing Accounting functionality.
+* Keep the current UI style consistent.
+* Integrate all new features with the existing Sales, Invoice, Customer, Staff, and Expense modules.
+* Do **not** add Multi-Currency support. The ERP already supports a base currency selected during Agency registration, and all accounting should use that currency.
+
+### Updated Accounting Menu Structure
+
+```text
+Accounting
+│
+├── Dashboard
+├── Chart of Accounts
+├── General Ledger
+├── Cash Book
+├── Bank Book
+├── Income
+├── Expenses
+├── Accounts Receivable
+├── Accounts Payable
+├── Journal Entries
+├── Payment Vouchers
+├── Receipt Vouchers
+├── Profit & Loss
+├── Balance Sheet
+├── VAT / Tax Reports
+├── Financial Reports
+└── Settings
+```
+
+---
+
+## 1. Dashboard
+
+Create a financial dashboard showing:
+
+* Total Income
+* Total Expenses
+* Net Profit
+* Accounts Receivable
+* Accounts Payable
+* Cash Balance
+* Bank Balance
+* Monthly Income vs Expense Chart
+* Recent Financial Activities
+
+Allow filtering by:
+
+* Today
+* This Month
+* This Year
+* Custom Date Range
+
+---
+
+## 2. Chart of Accounts
+
+Allow Agency Admin to manage accounting accounts.
+
+Suggested account groups:
+
+**Assets**
+
+* Cash
+* Bank
+* Office Equipment
+
+**Liabilities**
+
+* Supplier Due
+* Customer Advance
+
+**Income**
+
+* Air Ticket
+* Visa Processing
+* Student Consultancy
+* Hotel Booking
+* Service Charge
+* Other Income
+
+**Expenses**
+
+* Salary
+* Office Rent
+* Internet
+* Electricity
+* Marketing
+* Office Supplies
+* Other Expenses
+
+Only Agency Admin can add, edit or deactivate accounts.
+
+---
+
+## 3. General Ledger
+
+Automatically create ledger entries for every financial transaction.
+
+Transactions should be generated automatically from:
+
+* Sales
+* Customer Payments
+* Expenses
+* Manual Journal Entries
+* Receipts
+* Payments
+
+Allow filtering by:
+
+* Account
+* Date
+* Staff
+* Customer
+
+Export to PDF and Excel.
+
+---
+
+## 4. Cash Book
+
+Track all cash transactions.
+
+Show:
+
+* Opening Balance
+* Cash In
+* Cash Out
+* Closing Balance
+
+Include transaction history and date filters.
+
+---
+
+## 5. Bank Book
+
+Track all bank transactions separately.
+
+Support:
+
+* Deposits
+* Withdrawals
+* Transfers
+* Transaction History
+
+---
+
+## 6. Income
+
+Enhance the existing Income section.
+
+Include:
+
+* Category
+* Payment Method
+* Customer
+* Staff Reference
+* Attachment Upload
+* Notes
+
+---
+
+## 7. Expenses
+
+Enhance the existing Expense section.
+
+Include:
+
+* Expense Category
+* Vendor
+* Payment Method
+* Attachment (Bill/Invoice)
+* Notes
+* Approval Status (Optional)
+
+---
+
+## 8. Accounts Receivable
+
+Track customer dues.
+
+Display:
+
+* Customer
+* Invoice Number
+* Total Amount
+* Paid
+* Due
+* Due Date
+
+Integrate with the existing Invoice system.
+
+Optionally send WhatsApp payment reminders using the existing WhatsApp module.
+
+---
+
+## 9. Accounts Payable
+
+Track supplier and vendor payments.
+
+Examples:
+
+* Airlines
+* Visa Partners
+* Office Vendors
+* Suppliers
+
+Show:
+
+* Total Due
+* Paid
+* Remaining Balance
+
+---
+
+## 10. Journal Entries
+
+Allow manual accounting entries.
+
+Fields:
+
+* Date
+* Debit Account
+* Credit Account
+* Amount
+* Description
+* Attachment
+
+Maintain a complete journal history.
+
+---
+
+## 11. Payment Vouchers
+
+Generate printable payment vouchers.
+
+Include:
+
+* Voucher Number
+* Date
+* Payee
+* Amount
+* Payment Method
+* Notes
+
+Support PDF printing.
+
+---
+
+## 12. Receipt Vouchers
+
+Generate printable receipt vouchers.
+
+Include:
+
+* Receipt Number
+* Customer
+* Amount
+* Payment Method
+* Invoice Reference
+* Notes
+
+Support PDF printing.
+
+---
+
+## 13. Profit & Loss (P&L)
+
+Automatically calculate:
+
+**Revenue**
+
+* Ticket Sales
+* Visa Processing
+* Student Consultancy
+* Hotel Booking
+* Service Charges
+* Other Income
+
+Minus
+
+**Expenses**
+
+Equals
+
+**Net Profit**
+
+Allow reports by:
+
+* Daily
+* Monthly
+* Quarterly
+* Yearly
+* Custom Date Range
+
+Export to PDF and Excel.
+
+---
+
+## 14. Balance Sheet
+
+Automatically generate a Balance Sheet using system data.
+
+Display:
+
+**Assets**
+
+* Cash
+* Bank
+* Accounts Receivable
+
+**Liabilities**
+
+* Supplier Due
+* Customer Advances
+
+**Equity**
+
+* Owner Investment
+* Retained Earnings
+
+Allow PDF and Excel export.
+
+---
+
+## 15. VAT / Tax Reports
+
+Generate VAT and Tax reports.
+
+Include:
+
+* Tax Collected
+* Tax Paid
+* Tax Summary
+
+Allow filtering by date.
+
+---
+
+## 16. Financial Reports
+
+Provide ready-to-use reports:
+
+* General Ledger Report
+* Trial Balance
+* Profit & Loss Report
+* Balance Sheet
+* Cash Book Report
+* Bank Book Report
+* Income Report
+* Expense Report
+* Customer Due Report
+* Supplier Due Report
+* Staff Commission Report
+
+Support:
+
+* Date Filters
+* Staff Filters
+* Customer Filters
+
+Export:
+
+* PDF
+* Excel
+
+---
+
+## 17. Settings
+
+Agency Admin only.
+
+Manage:
+
+* Income Categories
+* Expense Categories
+* Ledger Accounts
+* Voucher Number Format
+* Tax/VAT Settings
+* Default Payment Methods
+
+---
+
+## Integration Requirements
+
+* Keep all existing Accounting features working.
+* Integrate with the current Invoice module.
+* Integrate with Customer profiles.
+* Integrate with Staff permissions.
+* Integrate with Sales and Expense modules.
+* Integrate with Dashboard statistics.
+* Maintain complete transaction history.
+* Every financial record should store:
+
+  * Created By
+  * Created Date
+  * Last Updated
+  * Reference Number
+* Follow the existing ERP design and coding standards.
+* Ensure all new features work without affecting existing modules or data.

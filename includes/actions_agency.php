@@ -561,3 +561,6 @@
         // ------------- STUDENT CONSULTANCY MODULE ACTIONS -------------
         require_once __DIR__ . '/sc_actions.php';
 
+        // ------------- FINANCE & ACCOUNTING MODULE ACTIONS -------------
+        require_once __DIR__ . '/acc_actions.php';
+

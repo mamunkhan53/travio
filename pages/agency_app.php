@@ -67,7 +67,8 @@ function renderAgencyApp($conn, $modules) {
     // Fetch Standard Records
     $records = [];
     if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation'])
-        && empty($modules[$page]['sc_module'])) {
+        && empty($modules[$page]['sc_module'])
+        && empty($modules[$page]['acc_module'])) {
         if ($page === 'customers') {
             $stmt = $conn->prepare("SELECT * FROM customers WHERE agency_id = ? ORDER BY id DESC");
             $stmt->execute([$agency_id]);
@@ -103,10 +104,61 @@ function renderAgencyApp($conn, $modules) {
             <?php foreach ($modules as $key => $module): 
                 if (isset($module['admin_only']) && $_SESSION['is_staff']) continue;
                 if (isset($module['hidden'])) continue;
-                if ($key === 'accounting' && $_SESSION['is_staff'] && !has_permission('can_view_reports')) continue;
+                if ($key === 'acc' && $_SESSION['is_staff'] && !has_permission('can_view_reports') && !has_permission('can_view_acc_reports')) continue;
                 $locked = $subscription['expired'] && !in_array($key, ['dashboard', 'profile']);
             ?>
-                <?php if ($key === 'sc'): ?>
+                <?php if ($key === 'acc'): ?>
+                    <?php
+                    $acc_pages = ['acc_dashboard','acc_chart_of_accounts','acc_general_ledger','acc_cash_book','acc_bank_book','acc_income','acc_expenses','acc_receivable','acc_payable','acc_journals','acc_payment_vouchers','acc_receipt_vouchers','acc_pl','acc_balance_sheet','acc_vat','acc_financial_reports','acc_settings','accounting'];
+                    $acc_open  = in_array($active_page, $acc_pages);
+                    $acc_locked= $locked;
+                    $acc_sub   = [
+                        'acc_dashboard'         => ['Dashboard',            'fa-solid fa-border-all'],
+                        'acc_chart_of_accounts' => ['Chart of Accounts',    'fa-solid fa-list'],
+                        'acc_general_ledger'    => ['General Ledger',       'fa-solid fa-book'],
+                        'acc_cash_book'         => ['Cash Book',            'fa-solid fa-money-bill-wave'],
+                        'acc_bank_book'         => ['Bank Book',            'fa-solid fa-building-columns'],
+                        'acc_income'            => ['Income',               'fa-solid fa-circle-dollar-to-slot'],
+                        'acc_expenses'          => ['Expenses',             'fa-solid fa-receipt'],
+                        'acc_receivable'        => ['Accounts Receivable',  'fa-solid fa-hand-holding-dollar'],
+                        'acc_payable'           => ['Accounts Payable',     'fa-solid fa-file-invoice'],
+                        'acc_journals'          => ['Journal Entries',      'fa-solid fa-journal-whills'],
+                        'acc_payment_vouchers'  => ['Payment Vouchers',     'fa-solid fa-money-check-dollar'],
+                        'acc_receipt_vouchers'  => ['Receipt Vouchers',     'fa-solid fa-file-lines'],
+                        'acc_pl'                => ['Profit & Loss',        'fa-solid fa-chart-line'],
+                        'acc_balance_sheet'     => ['Balance Sheet',        'fa-solid fa-scale-balanced'],
+                        'acc_vat'               => ['VAT / Tax Reports',    'fa-solid fa-percent'],
+                        'acc_financial_reports' => ['Financial Reports',    'fa-solid fa-chart-pie'],
+                    ];
+                    if (!$_SESSION['is_staff']) $acc_sub['acc_settings'] = ['Settings', 'fa-solid fa-gear'];
+                    ?>
+                    <?php if ($acc_locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed">
+                            <i class="fa-solid fa-calculator w-5 text-center"></i>
+                            <span class="flex-1">Accounting</span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" onclick="toggleAccMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $acc_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="fa-solid fa-calculator w-5 text-center"></i>
+                            <span class="flex-1 text-left">Accounting</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="accMenuChevron"
+                               style="<?= $acc_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="accSubMenu" class="<?= $acc_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <?php foreach ($acc_sub as $ak => [$alabel, $aicon]): ?>
+                            <a href="?route=app&page=<?= $ak ?>"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === $ak ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="<?= $aicon ?> w-4 text-center text-xs"></i>
+                                <?= $alabel ?>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php elseif ($key === 'sc'): ?>
                     <?php
                     $sc_pages  = ['sc_leads','sc_students','sc_applications','sc_documents','sc_visa','sc_payments','sc_followups','sc_reports','sc_settings'];
                     $sc_open   = in_array($active_page, $sc_pages);
@@ -265,7 +317,10 @@ function renderAgencyApp($conn, $modules) {
                 if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=dashboard"); }
                 include __DIR__ . '/agency/' . $page . '.php';
             elseif ($page === 'accounting'):
-                include __DIR__ . '/agency/accounting.php';
+                redirect("?route=app&page=acc_dashboard");
+            elseif (isset($modules[$page]) && !empty($modules[$page]['acc_module'])):
+                if ($page === 'acc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=acc_dashboard"); }
+                include __DIR__ . '/agency/acc/' . $page . '.php';
             elseif (array_key_exists($page, $modules) && $page !== 'dashboard'):
                 include __DIR__ . '/agency/generic_crud.php';
             endif; ?>

@@ -136,7 +136,11 @@
                                             'can_send_whatsapp'=>'Send WhatsApp Messages',
                                             'can_manage_sc_leads'=>'SC: Manage Student Leads', 'can_manage_sc_students'=>'SC: Manage Students',
                                             'can_manage_sc_applications'=>'SC: Manage Applications', 'can_manage_sc_payments'=>'SC: Manage Payments',
-                                            'can_view_sc_reports'=>'SC: View Reports'
+                                            'can_view_sc_reports'=>'SC: View Reports',
+                                            'can_view_acc_reports'=>'Accounting: View Dashboard & Reports', 'can_manage_acc_income'=>'Accounting: Manage Income',
+                                            'can_manage_acc_cash'=>'Accounting: Manage Cash Book', 'can_manage_acc_bank'=>'Accounting: Manage Bank Book',
+                                            'can_manage_acc_payable'=>'Accounting: Manage Payables', 'can_manage_acc_journals'=>'Accounting: Journal Entries',
+                                            'can_manage_acc_vouchers'=>'Accounting: Payment/Receipt Vouchers', 'can_manage_acc_receivable'=>'Accounting: View Receivables'
                                         ];
                                         foreach($permsList as $k => $v): ?>
                                             <label class="flex items-center gap-3 cursor-pointer hover:bg-slate-100 p-2 rounded">
@@ -177,7 +181,7 @@
                             document.getElementById('st_status').value = data.status;
                             document.getElementById('st_comm').value = data.commission_rate;
                             
-                            ['can_add_enquiry','can_edit_enquiry','can_delete_enquiry','can_add_sale','can_edit_sale','can_delete_sale','can_add_expense','can_edit_expense','can_delete_expense','can_view_reports','can_manage_customers','can_send_whatsapp','can_manage_sc_leads','can_manage_sc_students','can_manage_sc_applications','can_manage_sc_payments','can_view_sc_reports'].forEach(p => {
+                            ['can_add_enquiry','can_edit_enquiry','can_delete_enquiry','can_add_sale','can_edit_sale','can_delete_sale','can_add_expense','can_edit_expense','can_delete_expense','can_view_reports','can_manage_customers','can_send_whatsapp','can_manage_sc_leads','can_manage_sc_students','can_manage_sc_applications','can_manage_sc_payments','can_view_sc_reports','can_view_acc_reports','can_manage_acc_income','can_manage_acc_cash','can_manage_acc_bank','can_manage_acc_payable','can_manage_acc_journals','can_manage_acc_vouchers','can_manage_acc_receivable'].forEach(p => {
                                 if (document.getElementById('perm_'+p)) document.getElementById('perm_'+p).checked = (data[p] == 1);
                             });
                         }

@@ -537,6 +537,169 @@ try {
         );
     ");
 
+    // =========================================================================
+    // AUTO-MIGRATE: FINANCE & ACCOUNTING MODULE EXPANSION
+    // =========================================================================
+
+    // Enhance existing accounting_expenses with vendor + attachment fields
+    $accExpCols = $conn->query("SHOW COLUMNS FROM accounting_expenses")->fetchAll(PDO::FETCH_COLUMN);
+    $accExpAlters = [];
+    if (!in_array('vendor', $accExpCols))          $accExpAlters[] = "ADD COLUMN vendor VARCHAR(150) NULL AFTER category";
+    if (!in_array('attachment_path', $accExpCols)) $accExpAlters[] = "ADD COLUMN attachment_path VARCHAR(500) NULL AFTER remarks";
+    if (!in_array('approval_status', $accExpCols)) $accExpAlters[] = "ADD COLUMN approval_status VARCHAR(30) DEFAULT 'Approved' AFTER attachment_path";
+    if (!empty($accExpAlters)) $conn->exec("ALTER TABLE accounting_expenses " . implode(', ', $accExpAlters));
+
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS acc_chart_of_accounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            account_code VARCHAR(20) NOT NULL,
+            account_name VARCHAR(150) NOT NULL,
+            account_type ENUM('Asset','Liability','Income','Expense','Equity') NOT NULL,
+            account_group VARCHAR(100),
+            opening_balance DECIMAL(14,2) DEFAULT 0,
+            is_active TINYINT(1) DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            UNIQUE KEY uq_acc_code (agency_id, account_code),
+            INDEX idx_acc_coa_agency (agency_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_income (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            income_date DATE NOT NULL,
+            category VARCHAR(100),
+            description VARCHAR(300),
+            amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+            payment_method VARCHAR(50),
+            customer_name VARCHAR(150),
+            reference_staff_id INT NULL,
+            attachment_path VARCHAR(500) NULL,
+            notes TEXT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_income_agency (agency_id, income_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_payables (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            vendor_name VARCHAR(150) NOT NULL,
+            vendor_type VARCHAR(100),
+            description VARCHAR(300),
+            invoice_ref VARCHAR(100),
+            total_amount DECIMAL(14,2) DEFAULT 0,
+            paid_amount DECIMAL(14,2) DEFAULT 0,
+            due_amount DECIMAL(14,2) DEFAULT 0,
+            due_date DATE NULL,
+            status VARCHAR(30) DEFAULT 'Unpaid',
+            notes TEXT NULL,
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_payables_agency (agency_id, status)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_journals (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            journal_date DATE NOT NULL,
+            reference VARCHAR(100),
+            description VARCHAR(500),
+            attachment_path VARCHAR(500) NULL,
+            status VARCHAR(20) DEFAULT 'Posted',
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_journals_agency (agency_id, journal_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_journal_lines (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            journal_id VARCHAR(50) NOT NULL,
+            agency_id INT NOT NULL,
+            account_code VARCHAR(20),
+            account_name VARCHAR(150),
+            debit DECIMAL(14,2) DEFAULT 0,
+            credit DECIMAL(14,2) DEFAULT 0,
+            description VARCHAR(300),
+            FOREIGN KEY (journal_id) REFERENCES acc_journals(id) ON DELETE CASCADE,
+            INDEX idx_acc_jl_journal (journal_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_vouchers (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            voucher_type ENUM('payment','receipt') NOT NULL,
+            voucher_number VARCHAR(50),
+            voucher_date DATE NOT NULL,
+            party_name VARCHAR(150),
+            amount DECIMAL(14,2) DEFAULT 0,
+            payment_method VARCHAR(50),
+            invoice_ref VARCHAR(100),
+            description VARCHAR(300),
+            notes TEXT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_vouchers_agency (agency_id, voucher_type, voucher_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_cash_transactions (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            transaction_date DATE NOT NULL,
+            transaction_type ENUM('in','out') NOT NULL,
+            description VARCHAR(300),
+            amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+            reference VARCHAR(100),
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_cash_agency (agency_id, transaction_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_bank_transactions (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            bank_account_name VARCHAR(150) DEFAULT 'Main Account',
+            transaction_date DATE NOT NULL,
+            transaction_type ENUM('deposit','withdrawal','transfer') NOT NULL,
+            description VARCHAR(300),
+            amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+            reference VARCHAR(100),
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_acc_bank_agency (agency_id, transaction_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS acc_settings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            setting_key VARCHAR(80) NOT NULL,
+            setting_value TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_acc_setting (agency_id, setting_key),
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+        );
+    ");
+
+    // Add accounting permissions to staff_permissions (additive only)
+    $spermColsAcc = $conn->query("SHOW COLUMNS FROM staff_permissions")->fetchAll(PDO::FETCH_COLUMN);
+    $accPermAlters = [];
+    foreach (['can_manage_acc_income','can_manage_acc_expenses','can_manage_acc_payable','can_manage_acc_journals','can_manage_acc_vouchers','can_manage_acc_cash','can_manage_acc_bank','can_view_acc_reports'] as $ap) {
+        if (!in_array($ap, $spermColsAcc)) $accPermAlters[] = "ADD COLUMN $ap TINYINT(1) DEFAULT 0";
+    }
+    if (!empty($accPermAlters)) $conn->exec("ALTER TABLE staff_permissions " . implode(', ', $accPermAlters));
+
     // Add can_send_whatsapp permission to staff_permissions (additive only)
     $spermCols = $conn->query("SHOW COLUMNS FROM staff_permissions")->fetchAll(PDO::FETCH_COLUMN);
     if (!in_array('can_send_whatsapp', $spermCols)) {
