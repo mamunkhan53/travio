@@ -371,7 +371,7 @@ function renderLandingPage($conn) {
                 <div class="w-10 h-10 bg-gradient-to-br from-[#2BC4B0] to-[#61DAFB] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#2BC4B0]/20">
                     <i class="fa-solid fa-plane-departure text-xl"></i>
                 </div>
-                <h1 class="sz-display text-2xl font-bold text-white tracking-tight">South Zone</h1>
+                <h1 class="sz-display text-2xl font-bold text-white tracking-tight">Travio</h1>
             </div>
             <div class="hidden md:flex items-center space-x-8">
                 <a href="#features" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition">Features</a>
@@ -624,15 +624,15 @@ function renderLandingPage($conn) {
                     <i class="fa-solid fa-circle-question"></i> FAQ
                 </div>
                 <h2 class="sz-display text-3xl lg:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-                <p class="text-lg text-[#9AA4B2] max-w-2xl mx-auto">Everything you need to know about South Zone ERP. Can't find what you're looking for? <a href="#" style="color: var(--sz-teal); text-decoration: none; font-weight: 600;">Contact us</a></p>
+                <p class="text-lg text-[#9AA4B2] max-w-2xl mx-auto">Everything you need to know about Travio ERP. Can't find what you're looking for? <a href="#" style="color: var(--sz-teal); text-decoration: none; font-weight: 600;">Contact us</a></p>
             </div>
 
             <div class="space-y-4">
                 <?php
                 $faqs = [
                     [
-                        'q' => 'What is South Zone ERP?',
-                        'a' => 'South Zone ERP is a comprehensive SaaS solution designed specifically for travel agencies. It helps you manage air ticketing, visa processing, tour packages, hotel bookings, customer relationships, and financial analytics all from one platform.'
+                        'q' => 'What is Travio ERP?',
+                        'a' => 'Travio is a comprehensive SaaS solution designed specifically for travel agencies. It helps you manage air ticketing, visa processing, tour packages, hotel bookings, customer relationships, and financial analytics all from one platform.'
                     ],
                     [
                         'q' => 'Is there a free trial available?',
@@ -648,7 +648,7 @@ function renderLandingPage($conn) {
                     ],
                     [
                         'q' => 'Do you offer customer support?',
-                        'a' => 'Yes, all plans include email support. We also provide documentation, video tutorials, and a knowledge base to help you get the most out of South Zone ERP.'
+                        'a' => 'Yes, all plans include email support. We also provide documentation, video tutorials, and a knowledge base to help you get the most out of Travio.'
                     ],
                     [
                         'q' => 'Can I add multiple staff members?',
@@ -687,12 +687,12 @@ function renderLandingPage($conn) {
             <!-- Heading -->
             <h2 class="sz-display text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
                 Build Your Travel Business<br>
-                <span style="background: linear-gradient(135deg, #2BC4B0, #61DAFB); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">With South Zone ERP</span>
+                <span style="background: linear-gradient(135deg, #2BC4B0, #61DAFB); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">With Travio</span>
             </h2>
 
             <!-- Description -->
             <p class="text-lg text-[#9AA4B2] max-w-2xl mx-auto mb-10 leading-relaxed">
-                Join hundreds of travel agencies already using South Zone ERP to streamline operations, 
+                Join hundreds of travel agencies already using Travio to streamline operations, 
                 boost sales, and grow their business. Start your free trial today.
             </p>
 
@@ -740,9 +740,9 @@ function renderLandingPage($conn) {
                     <div class="w-8 h-8 bg-gradient-to-br from-[#2BC4B0] to-[#61DAFB] rounded-lg flex items-center justify-center text-white">
                         <i class="fa-solid fa-plane-departure text-sm"></i>
                     </div>
-                    <h1 class="sz-display text-2xl font-bold text-white tracking-tight">South Zone</h1>
+                    <h1 class="sz-display text-2xl font-bold text-white tracking-tight">Travio</h1>
                 </div>
-                <p class="text-[#68727F] mb-6 max-w-sm leading-relaxed">The premier SaaS ERP designed exclusively to help travel agencies automate and scale their operations.</p>
+                <p class="text-[#68727F] mb-6 max-w-sm leading-relaxed">The premium Travio ERP designed exclusively to help travel agencies automate and scale their operations.</p>
             </div>
             <div>
                 <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Quick Links</h4>
@@ -763,7 +763,7 @@ function renderLandingPage($conn) {
             </div>
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-[#68727F]">
-            &copy; <?= date('Y') ?> South Zone ERP. All rights reserved. Designed for Travel Agencies.
+            &copy; <?= date('Y') ?> Travio ERP. All rights reserved. Developed for Travel Agencies.
         </div>
     </footer>
     </div>
