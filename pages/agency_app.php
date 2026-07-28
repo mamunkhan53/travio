@@ -45,12 +45,32 @@ function renderAgencyApp($conn, $modules) {
     $subscriptionPlans = getSubscriptionPlans($conn);
     $paymentMethods = getPaymentMethods($conn);
 
-    // Dashboard top-nav: notification badge count (needed before header renders)
-    $dashNotifCount = 0;
-    if ($page === 'dashboard') {
-        $dn_sf = $_SESSION['is_staff'] ? " AND staff_id = {$_SESSION['staff_id']}" : "";
-        $dashNotifCount = (int)$conn->query("SELECT COUNT(*) FROM service_notifications WHERE agency_id=$agency_id AND is_read=0 AND notify_date <= CURRENT_DATE() AND deadline_date >= CURRENT_DATE() $dn_sf")->fetchColumn();
+    // Global nav: notification badge count + items (service deadlines + follow-up reminders)
+    $dn_sf  = $_SESSION['is_staff'] ? " AND staff_id = {$_SESSION['staff_id']}" : "";
+    $rf_sf  = $_SESSION['is_staff'] ? " AND rf.agency_id=$agency_id AND rf.staff_id = {$_SESSION['staff_id']}" : " AND rf.agency_id=$agency_id";
+    $navNotifCount = 0;
+    $navNotifItems = [];
+    // 1. Service deadline notifications (unread, due within range)
+    $notifRows = $conn->query("SELECT customer_name, module_name, notification_type, deadline_date FROM service_notifications WHERE agency_id=$agency_id AND is_read=0 AND notify_date <= CURRENT_DATE() AND deadline_date >= CURRENT_DATE() $dn_sf ORDER BY deadline_date ASC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($notifRows as $nr) {
+        $navNotifCount++;
+        $navNotifItems[] = ['icon'=>'fa-clock','color'=>'text-rose-500','title'=>$nr['notification_type'].' — '.$nr['customer_name'],'sub'=>date('d M Y', strtotime($nr['deadline_date'])).' deadline','url'=>'?route=app&page=dashboard#dashNotifications'];
     }
+    // 2. Follow-up reminders (today and overdue, unhandled)
+    $fuRows = $conn->query("SELECT rf.follow_up_date, rf.module_name, rf.record_id, rf.note FROM record_followups rf WHERE $rf_sf AND rf.follow_up_date <= CURRENT_DATE() ORDER BY rf.follow_up_date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($fuRows as $fr) {
+        $navNotifCount++;
+        $mlabel = ['enquiries'=>'Lead','passports'=>'Passport','visas'=>'Visa','tickets'=>'Ticket','umrah'=>'Umrah','tours'=>'Tour','sc_leads'=>'SC Lead','sc_students'=>'Student'][$fr['module_name']] ?? ucfirst($fr['module_name']);
+        $navNotifItems[] = ['icon'=>'fa-comment-dots','color'=>'text-indigo-500','title'=>'Follow-up: '.$mlabel.' #'.$fr['record_id'],'sub'=>date('d M Y', strtotime($fr['follow_up_date'])).($fr['note'] ? ' — '.substr($fr['note'],0,35) : ''),'url'=>'?route=app&page=query_history&table='.$fr['module_name'].'&id='.urlencode($fr['record_id'])];
+    }
+    // Language switch (handled before HTML output)
+    if (!empty($_GET['set_lang']) && in_array($_GET['set_lang'], ['en','bn','ar','hi','ur'])) {
+        $_SESSION['lang'] = $_GET['set_lang'];
+        redirect('?route=app&page='.urlencode($page));
+    }
+    $currentLang = $_SESSION['lang'] ?? 'en';
+    $langLabels  = ['en'=>'EN','bn'=>'বাং','ar'=>'عر','hi'=>'हि','ur'=>'اُر'];
+    $langNames   = ['en'=>'English','bn'=>'বাংলা','ar'=>'العربية','hi'=>'हिन्दी','ur'=>'اردو'];
 
     // Accounting Module Access Gate: staff need the "View Analytics & Reports" permission
     // (mirrors how the rest of the app already gates financial/reporting screens for staff).
@@ -88,7 +108,64 @@ function renderAgencyApp($conn, $modules) {
         }
     }
 ?>
-<div class="flex h-screen overflow-hidden bg-slate-50">
+<style>
+/* ═══ Global Dark Mode ═══ */
+[data-dark="1"] { color-scheme: dark; }
+[data-dark="1"] #appRoot   { background: #0b1120 !important; }
+[data-dark="1"] #pageContent { background: #0b1120 !important; }
+/* ─ Header ─ */
+[data-dark="1"] #appHeader { background: #0f172a !important; border-color: #1e293b !important; }
+[data-dark="1"] #appHeader .header-title { color: #f1f5f9 !important; }
+[data-dark="1"] #appHeader .header-sub   { color: #64748b !important; }
+[data-dark="1"] #appHeader .nav-btn { color: #94a3b8 !important; }
+[data-dark="1"] #appHeader .nav-btn:hover { background: #1e2537 !important; color: #f1f5f9 !important; }
+/* ─ Profile dropdown ─ */
+[data-dark="1"] #profileDropdown { background: #1e293b !important; border-color: #334155 !important; }
+[data-dark="1"] #profileDropdown a, [data-dark="1"] #profileDropdown p { color: #cbd5e1 !important; }
+[data-dark="1"] #profileDropdown a:hover { background: #0f172a !important; }
+[data-dark="1"] #profileDropdown .border-b, [data-dark="1"] #profileDropdown hr { border-color: #334155 !important; }
+/* ─ Language dropdown ─ */
+[data-dark="1"] #langDropdown { background: #1e293b !important; border-color: #334155 !important; }
+[data-dark="1"] #langDropdown a { color: #cbd5e1 !important; }
+[data-dark="1"] #langDropdown a:hover { background: #0f172a !important; color: #f1f5f9 !important; }
+[data-dark="1"] #langDropdown .border-b { border-color: #334155 !important; }
+/* ─ Notification dropdown ─ */
+[data-dark="1"] #notifDropdown { background: #1e293b !important; border-color: #334155 !important; }
+[data-dark="1"] #notifDropdown .notif-hdr { border-color: #334155 !important; }
+[data-dark="1"] #notifDropdown .notif-hdr p  { color: #f1f5f9 !important; }
+[data-dark="1"] #notifDropdown a   { color: #cbd5e1 !important; }
+[data-dark="1"] #notifDropdown a:hover { background: #0f172a !important; }
+[data-dark="1"] #notifDropdown .divide-y > a { border-color: #334155 !important; }
+[data-dark="1"] #notifDropdown .notif-footer { border-color: #334155 !important; }
+[data-dark="1"] #notifDropdown p.text-slate-400 { color: #64748b !important; }
+[data-dark="1"] #notifDropdown p.text-xs.font-bold { color: #f1f5f9 !important; }
+/* ─ Sidebar ─ */
+[data-dark="1"] #sidebar { background: #0f172a !important; border-color: #1e293b !important; }
+[data-dark="1"] #sidebar .border-b, [data-dark="1"] #sidebar .border-r { border-color: #1e293b !important; }
+[data-dark="1"] #sidebar h1 { color: #f1f5f9 !important; }
+[data-dark="1"] #sidebar p.text-xs { color: #64748b !important; }
+[data-dark="1"] #sidebar .text-emerald-500 { color: #34d399 !important; }
+[data-dark="1"] #sidebar .text-amber-500   { color: #fbbf24 !important; }
+[data-dark="1"] #sidebar .text-rose-500    { color: #fb7185 !important; }
+[data-dark="1"] #sidebar nav a, [data-dark="1"] #sidebar nav button { color: #94a3b8 !important; }
+[data-dark="1"] #sidebar nav a:hover, [data-dark="1"] #sidebar nav button:hover { background: #1e2537 !important; color: #f1f5f9 !important; }
+[data-dark="1"] #sidebar nav a.bg-indigo-600, [data-dark="1"] #sidebar nav button.bg-indigo-600 { background: #4338ca !important; color: #fff !important; box-shadow: none !important; }
+[data-dark="1"] #sidebar nav a.bg-indigo-50 { background: #312e81 !important; color: #a5b4fc !important; }
+[data-dark="1"] #sidebar .p-4, [data-dark="1"] #sidebar .p-6 { background: #0f172a !important; }
+[data-dark="1"] #sidebar .border-t { border-color: #1e293b !important; }
+/* ─ Search modal ─ */
+[data-dark="1"] #searchModal .search-box { background: #1e2537 !important; border-color: #334155 !important; }
+[data-dark="1"] #searchModal .search-box .border-b { border-color: #334155 !important; }
+[data-dark="1"] #searchModal input { background: transparent !important; color: #f1f5f9 !important; }
+[data-dark="1"] #searchModal input::placeholder { color: #64748b !important; }
+[data-dark="1"] #searchModal .search-result-item p.text-sm { color: #f1f5f9 !important; }
+[data-dark="1"] #searchModal .search-result-item p.text-xs { color: #94a3b8 !important; }
+[data-dark="1"] #searchModal .search-result-item:hover { background: #273249 !important; }
+[data-dark="1"] #searchModal .search-empty { color: #64748b !important; }
+[data-dark="1"] #searchModal i.fa-magnifying-glass { color: #64748b !important; }
+[data-dark="1"] #searchModal kbd { color: #64748b !important; border-color: #334155 !important; }
+</style>
+<div id="appRoot" class="flex h-screen overflow-hidden bg-slate-50">
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
 
     <!-- SIDEBAR -->
@@ -275,56 +352,97 @@ function renderAgencyApp($conn, $modules) {
         $pageIcon  = $modules[$active_page]['icon']  ?? 'fa-solid fa-circle-nodes';
         if ($active_page === 'whatsapp_automation') { $pageTitle = 'WhatsApp Automation'; $pageIcon = 'fa-solid fa-robot'; }
         ?>
-        <?php if ($page === 'dashboard'): ?>
-        <!-- ── Dashboard top nav ──────────────────────────────────────── -->
-        <header id="dashHeader" class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex justify-between items-center z-10 sticky top-0 transition-colors duration-200">
+        <!-- ── Global top nav (all pages) ────────────────────────────── -->
+        <header id="appHeader" class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex justify-between items-center z-30 sticky top-0 transition-colors duration-200">
             <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-indigo-600 focus:outline-none">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-indigo-600 focus:outline-none nav-btn">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <div>
-                    <h2 class="text-base font-extrabold text-slate-800 dash-nav-text leading-tight">CRM Dashboard</h2>
-                    <p class="text-xs text-slate-400 hidden sm:block"><?= xss_clean($agency['company_name']) ?></p>
+                    <?php if ($page === 'dashboard'): ?>
+                    <h2 class="text-base font-extrabold header-title text-slate-800 leading-tight">CRM Dashboard</h2>
+                    <p class="text-xs header-sub text-slate-400 hidden sm:block"><?= xss_clean($agency['company_name']) ?></p>
+                    <?php else: ?>
+                    <h2 class="text-base font-extrabold header-title text-slate-800 leading-tight flex items-center gap-2">
+                        <i class="<?= $pageIcon ?> text-indigo-500 text-sm"></i> <?= xss_clean($pageTitle) ?>
+                    </h2>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="flex items-center gap-1 sm:gap-1.5">
                 <!-- Search -->
-                <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Search">
+                <button onclick="openSearch()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition nav-btn" title="Search (Ctrl+K)">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
-                <!-- Dark / Light mode toggle -->
-                <button id="dashDarkToggle" onclick="toggleDashDark()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Toggle dark mode">
-                    <i class="fa-solid fa-moon text-sm" id="dashDarkIcon"></i>
+                <!-- Dark mode toggle -->
+                <button id="darkToggle" onclick="toggleDark()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition nav-btn" title="Toggle dark mode">
+                    <i class="fa-solid fa-moon text-sm" id="darkIcon"></i>
                 </button>
                 <!-- Language -->
-                <button class="w-9 h-9 rounded-xl hidden sm:flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Language">
-                    <i class="fa-solid fa-language text-base"></i>
-                </button>
+                <div class="relative hidden sm:block" id="langMenuWrap">
+                    <button onclick="document.getElementById('langDropdown').classList.toggle('hidden')" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition nav-btn" title="Language: <?= $langNames[$currentLang] ?>">
+                        <span class="text-[11px] font-black leading-none"><?= $langLabels[$currentLang] ?></span>
+                    </button>
+                    <div id="langDropdown" class="hidden absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                        <p class="px-4 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">Language</p>
+                        <?php foreach ($langNames as $lk => $lname): ?>
+                        <a href="?route=app&page=<?= $page ?>&set_lang=<?= $lk ?>"
+                           class="flex items-center justify-between px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 transition <?= $currentLang===$lk ? 'text-indigo-600' : 'text-slate-600' ?>">
+                            <?= $lname ?>
+                            <?php if ($currentLang===$lk): ?><i class="fa-solid fa-check text-indigo-500 text-xs"></i><?php endif; ?>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 <!-- Notifications -->
-                <a href="#dashNotifications" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition relative dash-nav-icon" title="Notifications">
-                    <i class="fa-solid fa-bell text-sm"></i>
-                    <?php if ($dashNotifCount > 0): ?>
-                    <span class="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none"><?= $dashNotifCount ?></span>
-                    <?php endif; ?>
-                </a>
-                <!-- Email / Inbox -->
-                <a href="?route=app&page=dashboard" class="w-9 h-9 rounded-xl hidden sm:flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Inbox">
-                    <i class="fa-solid fa-envelope text-sm"></i>
-                </a>
+                <div class="relative" id="notifMenuWrap">
+                    <button onclick="document.getElementById('notifDropdown').classList.toggle('hidden')" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition relative nav-btn" title="Notifications">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <?php if ($navNotifCount > 0): ?>
+                        <span class="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none"><?= min($navNotifCount,99) ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50">
+                        <div class="notif-hdr px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                            <p class="text-sm font-bold text-slate-800">Notifications</p>
+                            <?php if ($navNotifCount > 0): ?><span class="text-xs font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full"><?= $navNotifCount ?></span><?php endif; ?>
+                        </div>
+                        <?php if (empty($navNotifItems)): ?>
+                        <p class="px-4 py-6 text-center text-slate-400 text-sm">All clear — no pending reminders.</p>
+                        <?php else: ?>
+                        <div class="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                            <?php foreach ($navNotifItems as $ni): ?>
+                            <a href="<?= $ni['url'] ?>" class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
+                                <span class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5 <?= $ni['color'] ?>">
+                                    <i class="fa-solid <?= $ni['icon'] ?> text-xs"></i>
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-bold text-slate-800 leading-tight"><?= xss_clean($ni['title']) ?></p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5 truncate"><?= xss_clean($ni['sub']) ?></p>
+                                </div>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="notif-footer border-t border-slate-100 px-4 py-2.5">
+                            <a href="?route=app&page=dashboard#dashNotifications" class="text-xs font-bold text-indigo-600 hover:underline">View all on Dashboard →</a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <!-- Profile dropdown -->
-                <div class="relative ml-1" id="dashProfileMenuWrap">
-                    <button onclick="document.getElementById('dashProfileDropdown').classList.toggle('hidden')"
-                            class="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition">
+                <div class="relative ml-1" id="profileMenuWrap">
+                    <button onclick="document.getElementById('profileDropdown').classList.toggle('hidden')"
+                            class="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition nav-btn">
                         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
                             <?= strtoupper(substr($_SESSION['role'] ?? 'U', 0, 2)) ?>
                         </div>
                         <div class="hidden sm:block text-left">
-                            <p class="text-xs font-bold text-slate-800 dash-nav-text leading-tight"><?= xss_clean($_SESSION['role']) ?></p>
+                            <p class="text-xs font-bold header-title text-slate-800 leading-tight"><?= xss_clean($_SESSION['role']) ?></p>
                             <p class="text-[10px] text-slate-400"><?= $_SESSION['is_staff'] ? 'Staff' : 'Admin' ?></p>
                         </div>
                         <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden sm:block ml-1"></i>
                     </button>
-                    <div id="dashProfileDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                    <div id="profileDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
                         <div class="px-4 py-2 border-b border-slate-100 mb-1">
                             <p class="text-xs font-bold text-slate-800"><?= xss_clean($_SESSION['role']) ?></p>
                             <p class="text-[11px] text-slate-400"><?= $_SESSION['is_staff'] ? 'Staff Account' : 'Agency Admin' ?></p>
@@ -343,54 +461,90 @@ function renderAgencyApp($conn, $modules) {
                 </div>
             </div>
         </header>
+        <!-- Search Modal -->
+        <div id="searchModal" class="fixed inset-0 z-[200] hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSearch()"></div>
+            <div class="absolute top-16 left-1/2 -translate-x-1/2 w-full max-w-xl px-4">
+                <div class="search-box bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm flex-shrink-0"></i>
+                        <input id="searchInput" type="text" placeholder="Search customers, leads, passports, visas…"
+                               class="flex-1 outline-none text-sm text-slate-800 placeholder-slate-400 bg-transparent"
+                               autocomplete="off" oninput="doSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()">
+                        <kbd class="text-[10px] text-slate-400 border border-slate-200 rounded px-1.5 py-0.5 flex-shrink-0">Esc</kbd>
+                    </div>
+                    <div id="searchResults" class="max-h-80 overflow-y-auto p-2">
+                        <p class="search-empty px-3 py-6 text-center text-slate-400 text-sm">Type at least 2 characters to search…</p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script>
-        // Close profile dropdown on outside click
-        document.addEventListener('click', function(e) {
-            const wrap = document.getElementById('dashProfileMenuWrap');
-            const dd   = document.getElementById('dashProfileDropdown');
-            if (wrap && dd && !wrap.contains(e.target)) dd.classList.add('hidden');
-        });
-        // Dark mode toggle (scoped: only affects #dashWrapper & #dashHeader via CSS attr selector)
-        window.toggleDashDark = function() {
-            const isDark = document.documentElement.getAttribute('data-dash-dark') === '1';
+        // ── Global dark mode ──
+        window.toggleDark = function() {
+            const isDark = document.documentElement.getAttribute('data-dark') === '1';
             const next   = isDark ? '0' : '1';
-            document.documentElement.setAttribute('data-dash-dark', next);
-            document.getElementById('dashDarkIcon').className = next === '1' ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
-            localStorage.setItem('dashDark', next);
+            document.documentElement.setAttribute('data-dark', next);
+            document.getElementById('darkIcon').className = next==='1' ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
+            localStorage.setItem('appDark', next);
         };
-        // Apply saved preference immediately
         (function() {
-            if (localStorage.getItem('dashDark') === '1') {
-                document.documentElement.setAttribute('data-dash-dark', '1');
-                const icon = document.getElementById('dashDarkIcon');
+            if (localStorage.getItem('appDark') === '1') {
+                document.documentElement.setAttribute('data-dark', '1');
+                const icon = document.getElementById('darkIcon');
                 if (icon) icon.className = 'fa-solid fa-sun text-sm';
             }
         })();
+        // ── Close dropdowns on outside click ──
+        document.addEventListener('click', function(e) {
+            [['profileMenuWrap','profileDropdown'],['langMenuWrap','langDropdown'],['notifMenuWrap','notifDropdown']].forEach(function([wid,did]) {
+                const w=document.getElementById(wid), d=document.getElementById(did);
+                if (w && d && !w.contains(e.target)) d.classList.add('hidden');
+            });
+        });
+        // ── Search ──
+        let _st;
+        window.openSearch = function() {
+            document.getElementById('searchModal').classList.remove('hidden');
+            setTimeout(function(){document.getElementById('searchInput').focus();},50);
+        };
+        window.closeSearch = function() {
+            document.getElementById('searchModal').classList.add('hidden');
+            document.getElementById('searchInput').value='';
+            document.getElementById('searchResults').innerHTML='<p class="search-empty px-3 py-6 text-center text-slate-400 text-sm">Type at least 2 characters to search…</p>';
+        };
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); openSearch(); }
+            if (e.key==='Escape') closeSearch();
+        });
+        window.doSearch = function(q) {
+            clearTimeout(_st);
+            const el=document.getElementById('searchResults');
+            if (!q||q.trim().length<2) { el.innerHTML='<p class="search-empty px-3 py-6 text-center text-slate-400 text-sm">Type at least 2 characters to search…</p>'; return; }
+            el.innerHTML='<p class="search-empty px-3 py-6 text-center text-slate-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching…</p>';
+            _st=setTimeout(function(){
+                fetch('?search_ajax=1&q='+encodeURIComponent(q))
+                    .then(r=>r.json())
+                    .then(function(data){
+                        if(!data.length){el.innerHTML='<p class="search-empty px-3 py-6 text-center text-slate-400 text-sm">No results for "'+q+'"</p>';return;}
+                        el.innerHTML=data.map(function(item){
+                            const sb=item.status?`<span class="ml-auto text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded flex-shrink-0">${item.status}</span>`:'';
+                            return `<a href="${item.url}" class="search-result-item flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition" onclick="closeSearch()">
+                                <span class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black" style="background:${item.color}">
+                                    <i class="fa-solid ${item.icon} text-xs"></i>
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 truncate">${item.name}</p>
+                                    <p class="text-xs text-slate-400 truncate">${item.type}${item.sub?' · '+item.sub:''}</p>
+                                </div>${sb}</a>`;
+                        }).join('');
+                    })
+                    .catch(function(){el.innerHTML='<p class="search-empty px-3 py-6 text-center text-slate-400 text-sm">Search unavailable.</p>';});
+            },300);
+        };
         </script>
-        <?php else: ?>
-        <!-- ── Standard top nav (all other pages) ────────────────────── -->
-        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex justify-between items-center z-10 sticky top-0">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-indigo-600 focus:outline-none">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-                <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                    <i class="<?= $pageIcon ?> text-indigo-500 hidden sm:inline-block"></i> <?= xss_clean($pageTitle) ?>
-                </h2>
-            </div>
-            <div class="flex items-center gap-4 text-sm">
-                <div class="hidden sm:block text-right">
-                    <p class="text-slate-500 text-xs font-medium">Logged in as</p>
-                    <p class="font-bold text-slate-800"><?= xss_clean($_SESSION['role']) ?></p>
-                </div>
-                <a href="<?= $_SESSION['is_staff'] ? '?' : '?route=app&page=profile' ?>" class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold border border-indigo-100 hover:bg-indigo-100 transition">
-                    <i class="fa-solid fa-user"></i>
-                </a>
-            </div>
-        </header>
-        <?php endif; ?>
 
-        <div class="flex-1 overflow-y-auto p-4 sm:p-8 relative custom-scrollbar">
+        <div id="pageContent" class="flex-1 overflow-y-auto p-4 sm:p-8 relative custom-scrollbar">
             
 
             <?php if ($page === 'dashboard'): 

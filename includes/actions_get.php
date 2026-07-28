@@ -98,3 +98,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 }
 
 
+
+// ------------- GLOBAL SEARCH AJAX -------------
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_GET['search_ajax']) && !empty($_SESSION['agency_id'])) {
+    $q   = '%' . trim($_GET['q'] ?? '') . '%';
+    $aid = (int)$_SESSION['agency_id'];
+    $rf  = $_SESSION['is_staff'] ? " AND reference_staff_id = {$_SESSION['staff_id']}" : "";
+    $results = [];
+    if (strlen(trim($_GET['q'] ?? '')) >= 2) {
+        $s = $conn->prepare("SELECT id,'enquiries' as tbl, customer as name, mobile, status FROM enquiries WHERE agency_id=? AND (customer LIKE ? OR mobile LIKE ?) $rf LIMIT 5");
+        $s->execute([$aid,$q,$q]);
+        foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
+            $results[] = ['type'=>'Lead','icon'=>'fa-user-clock','color'=>'#6366f1','name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"?route=app&page=query_history&table=enquiries&id={$r['id']}"];
+        $s = $conn->prepare("SELECT id, full_name as name, email, phone FROM customers WHERE agency_id=? AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?) LIMIT 4");
+        $s->execute([$aid,$q,$q,$q]);
+        foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
+            $results[] = ['type'=>'Customer','icon'=>'fa-user','color'=>'#10b981','name'=>$r['name'],'sub'=>$r['phone']??$r['email']??'','status'=>'','url'=>"?route=app&page=customers"];
+        foreach (['passports'=>['Passport','#3b82f6'],'visas'=>['Visa','#8b5cf6'],'tickets'=>['Ticket','#06b6d4'],'umrah'=>['Umrah','#f59e0b'],'tours'=>['Tour','#f97316']] as $tbl=>[$label,$col]) {
+            $s = $conn->prepare("SELECT id,name,mobile,status FROM $tbl WHERE agency_id=? AND (name LIKE ? OR mobile LIKE ?) $rf LIMIT 3");
+            $s->execute([$aid,$q,$q]);
+            foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
+                $results[] = ['type'=>$label,'icon'=>'fa-suitcase-rolling','color'=>$col,'name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"?route=app&page=query_history&table=$tbl&id={$r['id']}"];
+        }
+    }
+    header('Content-Type: application/json');
+    echo json_encode(array_slice($results,0,12));
+    exit;
+}

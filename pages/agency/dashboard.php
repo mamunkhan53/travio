@@ -167,46 +167,33 @@
 ?>
 
 <style>
-/* ── Dashboard dark mode: scoped entirely to #dashWrapper & #dashHeader ── */
-[data-dash-dark="1"] #dashHeader {
-    background:#0f172a !important; border-color:#1e293b !important;
-}
-[data-dash-dark="1"] #dashHeader h2,
-[data-dash-dark="1"] #dashHeader .dash-nav-text { color:#f1f5f9 !important; }
-[data-dash-dark="1"] #dashHeader button,
-[data-dash-dark="1"] #dashHeader a.dash-nav-icon { color:#94a3b8 !important; }
-[data-dash-dark="1"] #dashHeader button:hover { background:#1e293b !important; color:#f1f5f9 !important; }
-[data-dash-dark="1"] #dashProfileDropdown { background:#1e293b !important; border-color:#334155 !important; }
-[data-dash-dark="1"] #dashProfileDropdown a { color:#cbd5e1 !important; }
-[data-dash-dark="1"] #dashProfileDropdown a:hover { background:#0f172a !important; }
-[data-dash-dark="1"] #dashProfileDropdown hr { border-color:#334155 !important; }
-
-[data-dash-dark="1"] #dashWrapper { background:#0b1120; }
-[data-dash-dark="1"] #dashWrapper .dash-card {
+/* ── Dashboard wrapper dark mode ── */
+[data-dark="1"] #dashWrapper { background:#0b1120; }
+[data-dark="1"] #dashWrapper .dash-card {
     background:#1e2537 !important; border-color:#2d3748 !important; color:#f1f5f9 !important;
 }
-[data-dash-dark="1"] #dashWrapper .dash-card p,
-[data-dash-dark="1"] #dashWrapper .dash-card span,
-[data-dash-dark="1"] #dashWrapper .dash-card td,
-[data-dash-dark="1"] #dashWrapper .dash-card th,
-[data-dash-dark="1"] #dashWrapper .dash-card div { color:inherit; }
-[data-dash-dark="1"] #dashWrapper .dash-label  { color:#94a3b8 !important; }
-[data-dash-dark="1"] #dashWrapper .dash-value  { color:#f8fafc !important; }
-[data-dash-dark="1"] #dashWrapper .dash-sub    { color:#64748b !important; }
-[data-dash-dark="1"] #dashWrapper .dash-divider { border-color:#2d3748 !important; }
-[data-dash-dark="1"] #dashWrapper .dash-row-hover:hover { background:#273249 !important; }
-[data-dash-dark="1"] #dashWrapper .dash-thead { background:#151f35 !important; color:#94a3b8 !important; }
-[data-dash-dark="1"] #dashWrapper .dash-scrollable { background:#1e2537 !important; }
-[data-dash-dark="1"] #dashWrapper .cal-pill { background:#1e2537 !important; border-color:#334155 !important; color:#94a3b8 !important; }
-[data-dash-dark="1"] #dashWrapper .cal-pill.active { background:#6366f1 !important; border-color:#6366f1 !important; color:#fff !important; }
-[data-dash-dark="1"] #dashWrapper .cal-day:hover { background:#273249 !important; }
-[data-dash-dark="1"] #dashWrapper .cal-day.today  { background:#1e2f50 !important; }
-[data-dash-dark="1"] #dashWrapper .cal-day-num    { color:#cbd5e1 !important; }
-[data-dash-dark="1"] #dashWrapper .cal-day.other-month .cal-day-num { color:#3d4f6b !important; }
-[data-dash-dark="1"] #dashWrapper select,
-[data-dash-dark="1"] #dashWrapper input[type=date] { background:#1e2537 !important; border-color:#334155 !important; color:#f1f5f9 !important; }
-[data-dash-dark="1"] #dashWrapper #calDayPanel { background:#151f35 !important; border-color:#2d3748 !important; }
-[data-dash-dark="1"] #dashWrapper #calDayTitle { color:#94a3b8 !important; }
+[data-dark="1"] #dashWrapper .dash-card p,
+[data-dark="1"] #dashWrapper .dash-card span,
+[data-dark="1"] #dashWrapper .dash-card td,
+[data-dark="1"] #dashWrapper .dash-card th,
+[data-dark="1"] #dashWrapper .dash-card div { color:inherit; }
+[data-dark="1"] #dashWrapper .dash-label  { color:#94a3b8 !important; }
+[data-dark="1"] #dashWrapper .dash-value  { color:#f8fafc !important; }
+[data-dark="1"] #dashWrapper .dash-sub    { color:#64748b !important; }
+[data-dark="1"] #dashWrapper .dash-divider { border-color:#2d3748 !important; }
+[data-dark="1"] #dashWrapper .dash-row-hover:hover { background:#273249 !important; }
+[data-dark="1"] #dashWrapper .dash-thead { background:#151f35 !important; color:#94a3b8 !important; }
+[data-dark="1"] #dashWrapper .dash-scrollable { background:#1e2537 !important; }
+[data-dark="1"] #dashWrapper .cal-pill { background:#1e2537 !important; border-color:#334155 !important; color:#94a3b8 !important; }
+[data-dark="1"] #dashWrapper .cal-pill.active { background:#6366f1 !important; border-color:#6366f1 !important; color:#fff !important; }
+[data-dark="1"] #dashWrapper .cal-day:hover { background:#273249 !important; }
+[data-dark="1"] #dashWrapper .cal-day.today  { background:#1e2f50 !important; }
+[data-dark="1"] #dashWrapper .cal-day-num    { color:#cbd5e1 !important; }
+[data-dark="1"] #dashWrapper .cal-day.other-month .cal-day-num { color:#3d4f6b !important; }
+[data-dark="1"] #dashWrapper select,
+[data-dark="1"] #dashWrapper input[type=date] { background:#1e2537 !important; border-color:#334155 !important; color:#f1f5f9 !important; }
+[data-dark="1"] #dashWrapper #calDayPanel { background:#151f35 !important; border-color:#2d3748 !important; }
+[data-dark="1"] #dashWrapper #calDayTitle { color:#94a3b8 !important; }
 
 /* Calendar styles (unchanged) */
 .cal-pill { padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:700; border:1.5px solid #e2e8f0; color:#64748b; background:#fff; cursor:pointer; transition:all .15s; }
@@ -233,8 +220,8 @@
 /* Leads period button */
 .leads-period-btn { padding:4px 14px; border-radius:8px; font-size:12px; font-weight:700; border:1.5px solid #e2e8f0; color:#64748b; background:#fff; cursor:pointer; transition:all .15s; }
 .leads-period-btn.active { background:#6366f1; border-color:#6366f1; color:#fff; }
-[data-dash-dark="1"] #dashWrapper .leads-period-btn { background:#1e2537; border-color:#334155; color:#94a3b8; }
-[data-dash-dark="1"] #dashWrapper .leads-period-btn.active { background:#6366f1; border-color:#6366f1; color:#fff; }
+[data-dark="1"] #dashWrapper .leads-period-btn { background:#1e2537; border-color:#334155; color:#94a3b8; }
+[data-dark="1"] #dashWrapper .leads-period-btn.active { background:#6366f1; border-color:#6366f1; color:#fff; }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -424,11 +411,55 @@
 
 </div><!-- /stat cards -->
 
-<!-- ── Row 2: Recent Queries (left) + Leads Generated Chart (right) ─ -->
+<!-- ── Row 2: Reminder Calendar (left) + Recent Queries (right) ──── -->
 <div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
 
+    <!-- Reminder Calendar -->
+    <div class="xl:col-span-2 dash-card bg-white rounded-2xl border border-slate-100 flex flex-col overflow-hidden" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
+        <!-- Calendar header -->
+        <div class="px-4 pt-4 pb-3 border-b dash-divider">
+            <div class="flex items-center justify-between gap-2">
+                <h3 class="font-extrabold dash-value text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-indigo-500"></i> Reminders
+                </h3>
+                <div class="flex items-center gap-1">
+                    <button id="calPrev" onclick="calNav(-1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-xs font-bold"><i class="fa-solid fa-chevron-left"></i></button>
+                    <select id="calMonthSel" onchange="calJump()" class="border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
+                        <?php foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $mi=>$mn): ?>
+                        <option value="<?= $mi ?>"><?= $mn ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select id="calYearSel" onchange="calJump()" class="border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
+                        <?php for($y=date('Y')-2;$y<=date('Y')+3;$y++): ?>
+                        <option value="<?= $y ?>"><?= $y ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    <button id="calNext" onclick="calNav(1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-xs font-bold"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-1 mt-2.5" id="calFilters">
+                <button onclick="calSetFilter('all')"      data-f="all"      class="cal-pill active">All</button>
+                <button onclick="calSetFilter('followup')" data-f="followup" class="cal-pill">Follow-ups</button>
+                <button onclick="calSetFilter('delivery')" data-f="delivery" class="cal-pill">Deliveries</button>
+                <button onclick="calSetFilter('lead')"     data-f="lead"     class="cal-pill">Leads</button>
+                <button onclick="calSetFilter('travel')"   data-f="travel"   class="cal-pill">Travel</button>
+            </div>
+        </div>
+        <!-- Day headers -->
+        <div class="grid grid-cols-7 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 pt-2.5 pb-1">
+            <?php foreach(['Su','Mo','Tu','We','Th','Fr','Sa'] as $d): ?><div class="py-0.5"><?= $d ?></div><?php endforeach; ?>
+        </div>
+        <!-- Grid -->
+        <div id="calGrid" class="grid grid-cols-7 gap-px px-2 pb-2 flex-1"></div>
+        <!-- Day panel -->
+        <div id="calDayPanel" class="hidden border-t dash-divider bg-slate-50/60 px-3 py-2.5 text-sm" style="max-height:150px;overflow-y:auto">
+            <p id="calDayTitle" class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2"></p>
+            <div id="calDayList" class="space-y-1"></div>
+        </div>
+    </div>
+
     <!-- Recent Queries -->
-    <div class="xl:col-span-2 dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
+    <div class="xl:col-span-3 dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
         <div class="px-5 py-4 border-b dash-divider flex items-center justify-between">
             <h3 class="font-extrabold dash-value text-slate-800 flex items-center gap-2 text-sm">
                 <i class="fa-solid fa-users-viewfinder text-violet-500"></i> Recent Queries
@@ -468,6 +499,12 @@
         </div>
     </div>
 
+
+</div><!-- /row 2 -->
+
+<!-- ── Row 3: Leads Generated Chart (left) + Recent Sales (right) ── -->
+<div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+
     <!-- Leads Generated Chart -->
     <div class="xl:col-span-3 dash-card bg-white rounded-2xl border border-slate-100 p-5 flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -485,13 +522,8 @@
         </div>
     </div>
 
-</div><!-- /row 2 -->
-
-<!-- ── Row 3: Recent Sales (left) + Reminder Calendar (right) ─────── -->
-<div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
-
     <!-- Recent Sales -->
-    <div class="xl:col-span-3 dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
+    <div class="xl:col-span-2 dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
         <div class="px-5 py-4 border-b dash-divider flex items-center justify-between">
             <h3 class="font-extrabold dash-value text-slate-800 flex items-center gap-2 text-sm">
                 <i class="fa-solid fa-money-check-dollar text-emerald-500"></i> Recent Sales
@@ -553,49 +585,6 @@
         </div>
     </div>
 
-    <!-- Reminder Calendar -->
-    <div class="xl:col-span-2 dash-card bg-white rounded-2xl border border-slate-100 flex flex-col overflow-hidden" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
-        <!-- Calendar header -->
-        <div class="px-4 pt-4 pb-3 border-b dash-divider">
-            <div class="flex items-center justify-between gap-2">
-                <h3 class="font-extrabold dash-value text-slate-800 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-calendar-days text-indigo-500"></i> Reminders
-                </h3>
-                <div class="flex items-center gap-1">
-                    <button id="calPrev" onclick="calNav(-1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-xs font-bold"><i class="fa-solid fa-chevron-left"></i></button>
-                    <select id="calMonthSel" onchange="calJump()" class="border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
-                        <?php foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $mi=>$mn): ?>
-                        <option value="<?= $mi ?>"><?= $mn ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <select id="calYearSel" onchange="calJump()" class="border border-slate-200 rounded-lg px-1.5 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
-                        <?php for($y=date('Y')-2;$y<=date('Y')+3;$y++): ?>
-                        <option value="<?= $y ?>"><?= $y ?></option>
-                        <?php endfor; ?>
-                    </select>
-                    <button id="calNext" onclick="calNav(1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 flex items-center justify-center transition text-xs font-bold"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="flex flex-wrap gap-1 mt-2.5" id="calFilters">
-                <button onclick="calSetFilter('all')"      data-f="all"      class="cal-pill active">All</button>
-                <button onclick="calSetFilter('followup')" data-f="followup" class="cal-pill">Follow-ups</button>
-                <button onclick="calSetFilter('delivery')" data-f="delivery" class="cal-pill">Deliveries</button>
-                <button onclick="calSetFilter('lead')"     data-f="lead"     class="cal-pill">Leads</button>
-                <button onclick="calSetFilter('travel')"   data-f="travel"   class="cal-pill">Travel</button>
-            </div>
-        </div>
-        <!-- Day headers -->
-        <div class="grid grid-cols-7 text-center text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2 pt-2.5 pb-1">
-            <?php foreach(['Su','Mo','Tu','We','Th','Fr','Sa'] as $d): ?><div class="py-0.5"><?= $d ?></div><?php endforeach; ?>
-        </div>
-        <!-- Grid -->
-        <div id="calGrid" class="grid grid-cols-7 gap-px px-2 pb-2 flex-1"></div>
-        <!-- Day panel -->
-        <div id="calDayPanel" class="hidden border-t dash-divider bg-slate-50/60 px-3 py-2.5 text-sm" style="max-height:150px;overflow-y:auto">
-            <p id="calDayTitle" class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2"></p>
-            <div id="calDayList" class="space-y-1"></div>
-        </div>
-    </div>
 
 </div><!-- /row 3 -->
 
@@ -616,7 +605,7 @@
         yearly:  { labels: <?= json_encode($leadsYearLabels) ?>,  data: <?= json_encode($leadsYearData) ?> },
     };
 
-    const isDark = () => document.documentElement.getAttribute('data-dash-dark') === '1';
+    const isDark = () => document.documentElement.getAttribute('data-dark') === '1';
 
     const gradient = (ctx) => {
         const g = ctx.createLinearGradient(0, 0, 0, 260);
