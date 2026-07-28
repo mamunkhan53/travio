@@ -116,6 +116,15 @@ function renderAgencyApp($conn, $modules) {
                         <i class="<?= $module['icon'] ?> w-5 text-center"></i>
                         <?= $module['title'] ?>
                     </a>
+                    <?php if ($key === 'whatsapp' && !$_SESSION['is_staff'] && !$locked): ?>
+                    <a href="?route=app&page=whatsapp_automation"
+                       class="flex items-center gap-2 pl-8 pr-3 py-2 rounded-xl text-xs font-bold transition-all
+                              <?= $active_page === 'whatsapp_automation' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-400 hover:bg-slate-50 hover:text-indigo-500' ?>">
+                        <i class="fa-solid fa-robot w-4 text-center text-xs"></i>
+                        Automation
+                        <span class="ml-auto text-[9px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full">AUTO</span>
+                    </a>
+                    <?php endif; ?>
                 <?php endif; ?>
             <?php endforeach; ?>
         </nav>
@@ -174,6 +183,8 @@ function renderAgencyApp($conn, $modules) {
                 include __DIR__ . '/agency/invoices.php';
             elseif ($page === 'whatsapp'):
                 include __DIR__ . '/agency/whatsapp.php';
+            elseif ($page === 'whatsapp_automation' && !$_SESSION['is_staff']):
+                include __DIR__ . '/agency/whatsapp_automation.php';
             elseif ($page === 'accounting'):
                 include __DIR__ . '/agency/accounting.php';
             elseif (array_key_exists($page, $modules) && $page !== 'dashboard'):

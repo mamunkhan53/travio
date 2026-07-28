@@ -103,6 +103,178 @@ function normalizeReportDate($date, $fallback) {
 }
 
 // =========================================================================
+// WHATSAPP AUTOMATION ENGINE
+// Additive layer on top of the manual WhatsApp sending system.
+// Call triggerWhatsAppAutomation() from any action handler — it is a
+// complete no-op when the automation is disabled or not yet configured.
+// =========================================================================
+
+/**
+ * Central trigger. Safe to call from anywhere; silently returns if the
+ * automation is disabled or there is no phone number to send to.
+ *
+ * $data keys accepted:
+ *   phone, customer_name, company_name, office_phone, service_name,
+ *   invoice_no, invoice_amount, due_amount, due_date,
+ *   flight_date, flight_time, visa_country, visa_status, passport_number,
+ *   record_table, record_id, event_date (Y-m-d, used for scheduling)
+ */
+function triggerWhatsAppAutomation($conn, $agency_id, $automation_type, $data) {
+    try {
+        $stmt = $conn->prepare(
+            "SELECT * FROM whatsapp_automations WHERE agency_id = ? AND automation_type = ? AND is_enabled = 1"
+        );
+        $stmt->execute([$agency_id, $automation_type]);
+        $auto = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$auto) return;
+
+        $phone = preg_replace('/[^\d+]/', '', $data['phone'] ?? '');
+        if (empty($phone)) return;
+
+        // Enrich $data with agency details for variable replacement
+        if (empty($data['company_name']) || empty($data['office_phone'])) {
+            $ag = $conn->prepare("SELECT company_name, company_phone FROM agencies WHERE id = ?");
+            $ag->execute([$agency_id]);
+            $ag = $ag->fetch(PDO::FETCH_ASSOC) ?: [];
+            $data['company_name'] = $data['company_name'] ?? ($ag['company_name'] ?? '');
+            $data['office_phone'] = $data['office_phone'] ?? ($ag['company_phone'] ?? '');
+        }
+
+        $message = replaceWAVariables($auto['message_template'], $data);
+
+        if ($auto['send_timing'] === 'immediately') {
+            _dispatchWAAutomation($conn, $agency_id, $automation_type, $data, $phone, $message);
+        } else {
+            // Calculate scheduled send time relative to event_date
+            $eventDate  = $data['event_date'] ?? date('Y-m-d');
+            $unit       = $auto['timing_unit']  === 'hours' ? 'hours' : 'days';
+            $val        = max(0, (int)$auto['timing_value']);
+            $scheduledAt = date('Y-m-d H:i:s', strtotime("{$eventDate} - {$val} {$unit}"));
+
+            if (strtotime($scheduledAt) <= time()) {
+                // Already past — send now
+                _dispatchWAAutomation($conn, $agency_id, $automation_type, $data, $phone, $message);
+            } else {
+                $conn->prepare(
+                    "INSERT INTO whatsapp_automation_queue
+                     (agency_id, automation_type, record_table, record_id, customer_name, phone, message_body, scheduled_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                )->execute([
+                    $agency_id, $automation_type,
+                    $data['record_table'] ?? '', $data['record_id'] ?? '',
+                    $data['customer_name'] ?? '', $phone,
+                    $message, $scheduledAt,
+                ]);
+            }
+        }
+    } catch (Exception $e) {
+        // Automation failures must never break the primary action flow
+        error_log("WA Automation error ({$automation_type}): " . $e->getMessage());
+    }
+}
+
+/** Internal: send one message and log it in whatsapp_message_logs. */
+function _dispatchWAAutomation($conn, $agency_id, $automation_type, $data, $phone, $message) {
+    $prov = $conn->prepare(
+        "SELECT * FROM whatsapp_providers WHERE agency_id = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1"
+    );
+    $prov->execute([$agency_id]);
+    $provider = $prov->fetch(PDO::FETCH_ASSOC);
+
+    $logId   = generateSerialId($conn, 'whatsapp_message_logs', 'WA', $agency_id);
+    $initStatus = $provider ? 'Processing' : 'No Provider';
+
+    $conn->prepare(
+        "INSERT INTO whatsapp_message_logs
+         (id, agency_id, provider_id, message_body, recipient_count, status, sent_by_type)
+         VALUES (?, ?, ?, ?, 1, ?, 'automation')"
+    )->execute([$logId, $agency_id, $provider['id'] ?? null, $message, $initStatus]);
+
+    $sentCount = 0; $failedCount = 0;
+    $recStatus = 'No Provider'; $recError = null; $recSentAt = null;
+
+    if ($provider) {
+        $result = sendWhatsAppViaProvider($provider, $phone, $message);
+        if ($result['success']) {
+            $sentCount  = 1;
+            $recStatus  = 'Sent';
+            $recSentAt  = date('Y-m-d H:i:s');
+        } else {
+            $failedCount = 1;
+            $recStatus   = 'Failed';
+            $recError    = $result['error'];
+        }
+    }
+
+    $conn->prepare(
+        "INSERT INTO whatsapp_message_recipients
+         (log_id, agency_id, customer_name, phone, status, error_message, sent_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
+    )->execute([$logId, $agency_id, $data['customer_name'] ?? '', $phone, $recStatus, $recError, $recSentAt]);
+
+    $finalStatus = $provider ? ($sentCount ? 'Sent' : 'Failed') : 'No Provider';
+    $conn->prepare("UPDATE whatsapp_message_logs SET sent_count=?, failed_count=?, status=? WHERE id=?")
+         ->execute([$sentCount, $failedCount, $finalStatus, $logId]);
+}
+
+/** Replace {Variable} placeholders in a template string. */
+function replaceWAVariables($template, $data) {
+    return str_replace(
+        [
+            '{CustomerName}','{CompanyName}','{ServiceName}',
+            '{InvoiceNo}','{InvoiceAmount}','{DueAmount}','{DueDate}',
+            '{FlightDate}','{FlightTime}','{VisaCountry}','{VisaStatus}',
+            '{PassportNumber}','{OfficePhone}',
+        ],
+        [
+            $data['customer_name']   ?? '',
+            $data['company_name']    ?? '',
+            $data['service_name']    ?? '',
+            $data['invoice_no']      ?? '',
+            $data['invoice_amount']  ?? '',
+            $data['due_amount']      ?? '',
+            $data['due_date']        ?? '',
+            $data['flight_date']     ?? '',
+            $data['flight_time']     ?? '',
+            $data['visa_country']    ?? '',
+            $data['visa_status']     ?? '',
+            $data['passport_number'] ?? '',
+            $data['office_phone']    ?? '',
+        ],
+        $template
+    );
+}
+
+/**
+ * Process scheduled queue items whose scheduled_at has passed.
+ * Call this from the dashboard (or any high-traffic page) to act as a
+ * lightweight cron substitute. Processes up to 20 items per call.
+ */
+function processWAAutomationQueue($conn, $agency_id) {
+    try {
+        $rows = $conn->prepare(
+            "SELECT * FROM whatsapp_automation_queue
+             WHERE agency_id = ? AND status = 'Pending' AND scheduled_at <= NOW()
+             ORDER BY scheduled_at ASC LIMIT 20"
+        );
+        $rows->execute([$agency_id]);
+        foreach ($rows->fetchAll(PDO::FETCH_ASSOC) as $item) {
+            _dispatchWAAutomation(
+                $conn, $agency_id, $item['automation_type'],
+                ['customer_name' => $item['customer_name']],
+                $item['phone'],
+                $item['message_body']
+            );
+            // Mark queue item regardless — log entry in message_logs is the source of truth
+            $conn->prepare("UPDATE whatsapp_automation_queue SET status='Sent' WHERE id=?")
+                 ->execute([$item['id']]);
+        }
+    } catch (Exception $e) {
+        error_log("WA Queue processing error: " . $e->getMessage());
+    }
+}
+
+// =========================================================================
 // WHATSAPP API DISPATCHER
 // Dispatches a single message to one recipient via the configured provider.
 // Returns ['success' => bool, 'error' => string|null].

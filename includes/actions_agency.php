@@ -127,6 +127,25 @@
             $f_date = !empty($_POST['follow_up_date']) ? $_POST['follow_up_date'] : null;
             $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note, follow_up_date) VALUES (?, ?, ?, ?, ?, ?)")
                  ->execute([$agency_id, $table, $record_id, $st_id, $_POST['note'], $f_date]);
+
+            // Hook: WhatsApp follow-up reminder automation (only when a future date is set)
+            if (!empty($f_date) && $f_date >= date('Y-m-d') && function_exists('triggerWhatsAppAutomation')) {
+                $nameCol  = $table === 'enquiries' ? 'customer' : 'name';
+                $recRow   = $conn->prepare("SELECT mobile, $nameCol AS cust_name FROM $table WHERE id=? AND agency_id=?");
+                $recRow->execute([$record_id, $agency_id]);
+                $recRow = $recRow->fetch(PDO::FETCH_ASSOC);
+                if ($recRow && !empty($recRow['mobile'])) {
+                    triggerWhatsAppAutomation($conn, $agency_id, 'followup_reminder', [
+                        'phone'        => $recRow['mobile'],
+                        'customer_name'=> $recRow['cust_name'] ?? '',
+                        'service_name' => $modules[$table]['title'] ?? $table,
+                        'record_table' => $table,
+                        'record_id'    => $record_id,
+                        'event_date'   => $f_date,
+                    ]);
+                }
+            }
+
             flash("Follow-up update added.");
             redirect("?route=app&page=query_history&table=$table&id=$record_id");
         }
@@ -244,6 +263,21 @@
             ]);
             $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note) VALUES (?, 'invoices', ?, ?, ?)")
                  ->execute([$agency_id, $invoice_id, $creator_id, "Invoice $inv_no created."]);
+            // Hook: WhatsApp invoice notification automation
+            if (function_exists('triggerWhatsAppAutomation')) {
+                triggerWhatsAppAutomation($conn, $agency_id, 'invoice_notification', [
+                    'phone'          => trim($_POST['mobile'] ?? ''),
+                    'customer_name'  => trim($_POST['customer_name'] ?? ''),
+                    'service_name'   => trim($_POST['service_desc'] ?? ''),
+                    'invoice_no'     => $inv_no,
+                    'invoice_amount' => number_format((float)($_POST['grand_total'] ?? 0), 2),
+                    'due_amount'     => number_format((float)($_POST['due_amount'] ?? 0), 2),
+                    'due_date'       => !empty($_POST['issue_date']) ? date('d M Y', strtotime($_POST['issue_date'])) : '',
+                    'record_table'   => 'invoices',
+                    'record_id'      => $invoice_id,
+                ]);
+            }
+
             flash("Invoice $inv_no generated successfully.");
             redirect("?route=app&page=invoices");
         }
@@ -284,6 +318,97 @@
 
             $redirectQs = !empty($_POST['redirect_qs']) ? '&' . ltrim($_POST['redirect_qs'], '&') : '';
             redirect("?route=app&page=accounting" . $redirectQs);
+        }
+
+        // ------------- WHATSAPP AUTOMATION: SAVE SETTINGS (Agency Admin only) -------------
+        if ($action === 'save_automation' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
+            $agency_id = $_SESSION['agency_id'];
+            if (isAgencySubscriptionExpired($conn, $agency_id)) {
+                flash("Your subscription has expired.", "error");
+                redirect("?route=app&page=whatsapp_automation");
+            }
+
+            $allowedTypes = ['booking_confirmation','payment_reminder','followup_reminder',
+                             'flight_reminder','visa_status_update','passport_ready',
+                             'invoice_notification','customer_feedback'];
+            $autoType = $_POST['automation_type'] ?? '';
+            if (!in_array($autoType, $allowedTypes)) {
+                flash("Invalid automation type.", "error");
+                redirect("?route=app&page=whatsapp_automation");
+            }
+
+            $isEnabled   = isset($_POST['is_enabled']) ? 1 : 0;
+            $template    = trim($_POST['message_template'] ?? '');
+            $sendTiming  = in_array($_POST['send_timing'] ?? '', ['immediately','before']) ? $_POST['send_timing'] : 'immediately';
+            $timingValue = max(0, (int)($_POST['timing_value'] ?? 1));
+            $timingUnit  = in_array($_POST['timing_unit'] ?? '', ['hours','days']) ? $_POST['timing_unit'] : 'days';
+
+            if (empty($template)) {
+                flash("Message template cannot be empty.", "error");
+                redirect("?route=app&page=whatsapp_automation");
+            }
+
+            $conn->prepare(
+                "INSERT INTO whatsapp_automations (agency_id, automation_type, is_enabled, message_template, send_timing, timing_value, timing_unit)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                   is_enabled=VALUES(is_enabled), message_template=VALUES(message_template),
+                   send_timing=VALUES(send_timing), timing_value=VALUES(timing_value), timing_unit=VALUES(timing_unit)"
+            )->execute([$agency_id, $autoType, $isEnabled, $template, $sendTiming, $timingValue, $timingUnit]);
+
+            flash("Automation settings saved for " . ucwords(str_replace('_', ' ', $autoType)) . ".");
+            redirect("?route=app&page=whatsapp_automation");
+        }
+
+        // ------------- WHATSAPP AUTOMATION: TEST SEND (Agency Admin only) -------------
+        if ($action === 'test_automation' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
+            $agency_id = $_SESSION['agency_id'];
+            $autoType  = $_POST['automation_type'] ?? '';
+            $testPhone = preg_replace('/[^\d+]/', '', trim($_POST['test_phone'] ?? ''));
+            $template  = trim($_POST['message_template'] ?? '');
+
+            if (empty($testPhone) || empty($template)) {
+                flash("A test phone number and a template are required.", "error");
+                redirect("?route=app&page=whatsapp_automation");
+            }
+
+            // Build sample variable data
+            $ag = $conn->prepare("SELECT company_name, company_phone FROM agencies WHERE id=?");
+            $ag->execute([$agency_id]);
+            $ag = $ag->fetch(PDO::FETCH_ASSOC) ?: [];
+            $sampleData = [
+                'customer_name'  => 'John Doe',
+                'company_name'   => $ag['company_name'] ?? 'Your Company',
+                'service_name'   => 'Air Ticket',
+                'invoice_no'     => 'INV-0001',
+                'invoice_amount' => '25,000',
+                'due_amount'     => '5,000',
+                'due_date'       => date('d M Y', strtotime('+7 days')),
+                'flight_date'    => date('d M Y', strtotime('+3 days')),
+                'flight_time'    => '10:30 AM',
+                'visa_country'   => 'Saudi Arabia',
+                'visa_status'    => 'Approved',
+                'passport_number'=> 'P-123456',
+                'office_phone'   => $ag['company_phone'] ?? '',
+            ];
+            $message = replaceWAVariables($template, $sampleData);
+
+            $prov = $conn->prepare("SELECT * FROM whatsapp_providers WHERE agency_id=? AND is_active=1 ORDER BY updated_at DESC LIMIT 1");
+            $prov->execute([$agency_id]);
+            $provider = $prov->fetch(PDO::FETCH_ASSOC);
+
+            if (!$provider) {
+                flash("No active provider configured. Configure a provider in WhatsApp → Provider Settings first.", "error");
+                redirect("?route=app&page=whatsapp_automation");
+            }
+
+            $result = sendWhatsAppViaProvider($provider, $testPhone, $message);
+            if ($result['success']) {
+                flash("Test message sent successfully to {$testPhone}.");
+            } else {
+                flash("Test failed: " . ($result['error'] ?? 'Unknown error'), "error");
+            }
+            redirect("?route=app&page=whatsapp_automation");
         }
 
         // ------------- WHATSAPP: SAVE PROVIDER SETTINGS (Agency Admin only) -------------

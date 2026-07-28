@@ -1,0 +1,119 @@
+Add a new submenu under the existing **WhatsApp** menu called **Automation**. This is an extension of the current WhatsApp module, so **do not modify or remove the existing manual sending feature**. Both manual and automated messaging must work together.
+
+### WhatsApp Automation Module
+
+The **Agency Admin** has full control over all automation. Every automation can be:
+
+* Enable / Disable
+* Edit the message template
+* Configure the trigger conditions
+* Set the sending time (Immediately, X hours before, X days before, etc.)
+
+### Automation Features
+
+1. **Booking Confirmation**
+
+   * Trigger when a Sale/Booking status becomes **Confirmed**.
+   * Automatically send a WhatsApp confirmation message to the customer.
+
+2. **Payment Reminder**
+
+   * Trigger based on payment due date or outstanding balance.
+   * Allow multiple reminders (e.g. 7 days before, 3 days before, on the due date).
+   * Admin can enable or disable each reminder.
+
+3. **Follow-up Reminder**
+
+   * Use the existing Follow-up Date in the Lead/Customer/Sale.
+   * Two options:
+
+     * Notify Staff/Admin only.
+     * Automatically send a WhatsApp follow-up message to the customer.
+   * Admin chooses which option to use.
+
+4. **Flight Reminder**
+
+   * Use the Flight Date from the Sale.
+   * Send reminders before departure (e.g. 3 days before, 1 day before).
+   * Timing is configurable.
+
+5. **Visa Status Update**
+
+   * Automatically send a WhatsApp message whenever Visa Status changes (Pending, Processing, Approved, Rejected, Completed).
+
+6. **Passport Ready Notification**
+
+   * When Passport Status becomes Ready/Collected, automatically notify the customer.
+
+7. **Invoice Notification**
+
+   * When an invoice is generated, optionally send a WhatsApp message with invoice details or payment reminder.
+
+8. **Customer Feedback**
+
+   * After a completed service, automatically send a feedback request after a configurable number of days.
+
+### Message Templates
+
+Create a Template Manager where the Agency Admin can customize every automation message.
+
+Support dynamic variables such as:
+
+* {CustomerName}
+* {CompanyName}
+* {ServiceName}
+* {InvoiceNo}
+* {InvoiceAmount}
+* {DueAmount}
+* {DueDate}
+* {FlightDate}
+* {FlightTime}
+* {VisaCountry}
+* {PassportNumber}
+* {OfficePhone}
+
+The system should automatically replace these variables with actual data.
+
+### Automation Settings
+
+For every automation provide:
+
+* Enable / Disable switch
+* Send Immediately or Scheduled
+* Days/Hours before trigger
+* Preview Message
+* Test Send
+* Last Sent History
+
+### WhatsApp History
+
+Save every automated message in the existing WhatsApp history.
+Display:
+
+* Customer
+* Automation Type
+* Message
+* Date & Time
+* Delivery Status (Sent, Failed, Pending)
+
+### Permissions
+
+Only **Agency Admin** can:
+
+* Enable/Disable automations
+* Edit templates
+* Change automation settings
+
+Staff should only be able to:
+
+* Continue using the existing manual WhatsApp sending feature (according to existing permissions).
+* View automation status if permitted.
+* They must **not** be able to change automation settings.
+
+### Important Requirements
+
+* Keep the current WhatsApp module fully functional.
+* Do not break the existing manual bulk/single WhatsApp sending feature.
+* Automation should work as an additional layer on top of the existing WhatsApp system.
+* The system should check automation rules automatically whenever related records (Lead, Sale, Invoice, Payment, Follow-up, Visa Status, etc.) are created or updated.
+* Design the module so new automation rules can easily be added in the future without changing the existing architecture.

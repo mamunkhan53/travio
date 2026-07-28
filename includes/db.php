@@ -360,6 +360,37 @@ try {
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             INDEX idx_wa_recipients_log (log_id)
         );
+
+        CREATE TABLE IF NOT EXISTS whatsapp_automations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            automation_type VARCHAR(50) NOT NULL,
+            is_enabled TINYINT(1) DEFAULT 0,
+            message_template TEXT NOT NULL,
+            send_timing VARCHAR(20) DEFAULT 'immediately',
+            timing_value INT DEFAULT 1,
+            timing_unit VARCHAR(10) DEFAULT 'days',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_agency_type (agency_id, automation_type),
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS whatsapp_automation_queue (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            automation_type VARCHAR(50) NOT NULL,
+            record_table VARCHAR(50) NOT NULL,
+            record_id VARCHAR(50) NOT NULL,
+            customer_name VARCHAR(100),
+            phone VARCHAR(50) NOT NULL,
+            message_body TEXT NOT NULL,
+            scheduled_at DATETIME NOT NULL,
+            status ENUM('Pending','Sent','Failed','No Provider') DEFAULT 'Pending',
+            error_message TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_wa_queue_due (agency_id, status, scheduled_at)
+        );
     ");
 
     // Add can_send_whatsapp permission to staff_permissions (additive only)

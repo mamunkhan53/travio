@@ -195,6 +195,60 @@
                         }
                     }
                 }
+
+                // -------------------------------------------------------
+                // HOOK: WhatsApp Automation Triggers
+                // Completely additive — no existing code paths are changed.
+                // Each trigger checks independently; a failure in one does
+                // not affect the others or the main save flow.
+                // -------------------------------------------------------
+                if (function_exists('triggerWhatsAppAutomation') && in_array($table, ['passports','visas','tickets','umrah','tours'])) {
+                    $waBase = [
+                        'phone'        => $postData['mobile'] ?? '',
+                        'customer_name'=> $postData['name']   ?? $postData['customer'] ?? '',
+                        'service_name' => $modules[$table]['title'] ?? $table,
+                        'record_table' => $table,
+                        'record_id'    => $id_to_use,
+                    ];
+                    $oldStatus = $oldRecord['status'] ?? null;
+                    $statusChanged = ($action === 'add') || ($oldStatus !== $status);
+
+                    // 1. Booking Confirmation
+                    if ($status === 'Confirmed' && $statusChanged) {
+                        triggerWhatsAppAutomation($conn, $agency_id, 'booking_confirmation', $waBase);
+                    }
+
+                    // 2. Customer Feedback (on completion, with configurable delay)
+                    if (in_array($status, ['Completed','Paid']) && $statusChanged) {
+                        triggerWhatsAppAutomation($conn, $agency_id, 'customer_feedback', $waBase);
+                    }
+
+                    // 3. Visa Status Update (any visa status change on edit)
+                    if ($table === 'visas' && $action === 'edit' && $statusChanged) {
+                        triggerWhatsAppAutomation($conn, $agency_id, 'visa_status_update', array_merge($waBase, [
+                            'visa_country' => $postData['country'] ?? '',
+                            'visa_status'  => $status,
+                        ]));
+                    }
+
+                    // 4. Passport Ready
+                    if ($table === 'passports' && in_array($status, ['Ready','Collected']) && $statusChanged) {
+                        triggerWhatsAppAutomation($conn, $agency_id, 'passport_ready', array_merge($waBase, [
+                            'passport_number' => $id_to_use,
+                        ]));
+                    }
+
+                    // 5. Flight Reminder (queued: sends X days/hours before departure)
+                    if ($table === 'tickets' && !empty($postData['date'])) {
+                        $oldDate = $oldRecord['date'] ?? null;
+                        if ($action === 'add' || $oldDate !== $postData['date']) {
+                            triggerWhatsAppAutomation($conn, $agency_id, 'flight_reminder', array_merge($waBase, [
+                                'flight_date' => date('d M Y', strtotime($postData['date'])),
+                                'event_date'  => $postData['date'],
+                            ]));
+                        }
+                    }
+                }
             }
             redirect("?route=app&page=" . $table);
         }
