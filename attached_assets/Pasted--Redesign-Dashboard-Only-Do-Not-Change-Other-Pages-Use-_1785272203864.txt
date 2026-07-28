@@ -1,0 +1,198 @@
+# Redesign Dashboard Only (Do Not Change Other Pages)
+
+Use this dashboard as the design inspiration:
+
+**[https://dreamserp.dreamstechnologies.com/tailwind/crm-dashboard.html](https://dreamserp.dreamstechnologies.com/tailwind/crm-dashboard.html)**
+
+## Important
+
+This task is **Dashboard UI redesign only**.
+
+**Do NOT redesign any other page of the ERP.**
+
+Everything outside the Dashboard must remain exactly as it is today, including:
+
+* All module pages
+* Forms
+* Tables
+* Sidebar menu structure
+* Existing page layouts
+* Existing functionality
+
+Only update the **Dashboard** to look like the reference.
+
+---
+
+# Dashboard Layout
+
+Create a modern dashboard inspired by the reference while using my existing ERP data.
+
+## Top Navigation
+
+Redesign only the Dashboard top navigation to match the reference.
+
+Include:
+
+* Search icon
+* Dark/Light Mode toggle
+* Language selector
+* Notification icon
+* Email icon
+* Profile dropdown
+
+Use my existing notification system if available.
+
+---
+
+# Dashboard Statistics
+
+Replace the template statistics with my ERP data.
+
+Show these four cards:
+
+1. Total Leads
+2. Total Sales
+3. Total Turnover
+4. Net Profit
+
+These values should come from my existing functions.
+
+Do not create new calculations.
+
+---
+
+# Recent Queries
+
+Replace **Recent Leads** with:
+
+**Recent Queries**
+
+Load data from my existing Leads/Queries table.
+
+Display:
+
+* Customer
+* Service
+* Assigned Staff
+* Status
+* Date
+
+---
+
+# Reminder Calendar
+
+Keep my existing Reminder Calendar functionality exactly as it is.
+
+Do not change any logic.
+
+It should still:
+
+* Show monthly calendar
+* Display reminder indicators
+* Show follow-up reminders
+* Show delivery reminders
+* Open the related Lead/Sale page when a reminder is clicked
+
+Only redesign its appearance to match the dashboard style.
+
+---
+
+# Leads Generated Chart
+
+The current chart is only a placeholder.
+
+Implement it properly.
+
+Generate the chart using actual Leads data.
+
+Support:
+
+* Weekly
+* Monthly
+* Yearly
+
+Display the number of Leads created over time.
+
+---
+
+# Recent Sales
+
+Replace **Recent Deals** with:
+
+**Recent Sales**
+
+Use existing Sales data.
+
+Display:
+
+* Customer
+* Service
+* Sale Amount
+* Status
+* Date
+
+Include a **View All** button linking to the Sales module.
+
+---
+
+# Design Style
+
+Match the reference dashboard as closely as possible.
+
+Use similar:
+
+* Colors
+* Card design
+* Shadows
+* Rounded corners
+* Typography
+* Icons
+* Spacing
+* Hover effects
+
+---
+
+# Dark Mode
+
+The Dashboard dark mode should closely match the reference.
+
+Apply dark styling to:
+
+* Dashboard background
+* Statistic cards
+* Charts
+* Calendar
+* Recent Queries
+* Recent Sales
+* Top navigation
+* Dropdowns
+
+Do not affect the styling of other ERP pages.
+
+---
+
+# Keep Everything Else Unchanged
+
+Do **NOT** modify:
+
+* Sidebar menu names
+* Module pages
+* Leads page
+* Customers page
+* Sales page
+* Accounting page
+* WhatsApp page
+* Reports page
+* Settings page
+* Any other module
+
+Do not change:
+
+* Backend logic
+* Database
+* Routes
+* APIs
+* Permissions
+* Existing business functionality
+
+The only objective is to give the **Dashboard** a premium, modern CRM appearance while keeping the rest of the ERP exactly as it is.

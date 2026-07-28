@@ -45,6 +45,13 @@ function renderAgencyApp($conn, $modules) {
     $subscriptionPlans = getSubscriptionPlans($conn);
     $paymentMethods = getPaymentMethods($conn);
 
+    // Dashboard top-nav: notification badge count (needed before header renders)
+    $dashNotifCount = 0;
+    if ($page === 'dashboard') {
+        $dn_sf = $_SESSION['is_staff'] ? " AND staff_id = {$_SESSION['staff_id']}" : "";
+        $dashNotifCount = (int)$conn->query("SELECT COUNT(*) FROM service_notifications WHERE agency_id=$agency_id AND is_read=0 AND notify_date <= CURRENT_DATE() AND deadline_date >= CURRENT_DATE() $dn_sf")->fetchColumn();
+    }
+
     // Accounting Module Access Gate: staff need the "View Analytics & Reports" permission
     // (mirrors how the rest of the app already gates financial/reporting screens for staff).
     if ($page === 'accounting' && $_SESSION['is_staff'] && !has_permission('can_view_reports')) {
@@ -263,17 +270,111 @@ function renderAgencyApp($conn, $modules) {
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <?php
+        $pageTitle = $modules[$active_page]['title'] ?? ucwords(str_replace('_', ' ', $active_page));
+        $pageIcon  = $modules[$active_page]['icon']  ?? 'fa-solid fa-circle-nodes';
+        if ($active_page === 'whatsapp_automation') { $pageTitle = 'WhatsApp Automation'; $pageIcon = 'fa-solid fa-robot'; }
+        ?>
+        <?php if ($page === 'dashboard'): ?>
+        <!-- ── Dashboard top nav ──────────────────────────────────────── -->
+        <header id="dashHeader" class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex justify-between items-center z-10 sticky top-0 transition-colors duration-200">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-indigo-600 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-800 dash-nav-text leading-tight">CRM Dashboard</h2>
+                    <p class="text-xs text-slate-400 hidden sm:block"><?= xss_clean($agency['company_name']) ?></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 sm:gap-1.5">
+                <!-- Search -->
+                <button class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Search">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </button>
+                <!-- Dark / Light mode toggle -->
+                <button id="dashDarkToggle" onclick="toggleDashDark()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Toggle dark mode">
+                    <i class="fa-solid fa-moon text-sm" id="dashDarkIcon"></i>
+                </button>
+                <!-- Language -->
+                <button class="w-9 h-9 rounded-xl hidden sm:flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Language">
+                    <i class="fa-solid fa-language text-base"></i>
+                </button>
+                <!-- Notifications -->
+                <a href="#dashNotifications" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition relative dash-nav-icon" title="Notifications">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                    <?php if ($dashNotifCount > 0): ?>
+                    <span class="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none"><?= $dashNotifCount ?></span>
+                    <?php endif; ?>
+                </a>
+                <!-- Email / Inbox -->
+                <a href="?route=app&page=dashboard" class="w-9 h-9 rounded-xl hidden sm:flex items-center justify-center text-slate-500 hover:bg-slate-100 transition dash-nav-icon" title="Inbox">
+                    <i class="fa-solid fa-envelope text-sm"></i>
+                </a>
+                <!-- Profile dropdown -->
+                <div class="relative ml-1" id="dashProfileMenuWrap">
+                    <button onclick="document.getElementById('dashProfileDropdown').classList.toggle('hidden')"
+                            class="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+                            <?= strtoupper(substr($_SESSION['role'] ?? 'U', 0, 2)) ?>
+                        </div>
+                        <div class="hidden sm:block text-left">
+                            <p class="text-xs font-bold text-slate-800 dash-nav-text leading-tight"><?= xss_clean($_SESSION['role']) ?></p>
+                            <p class="text-[10px] text-slate-400"><?= $_SESSION['is_staff'] ? 'Staff' : 'Admin' ?></p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden sm:block ml-1"></i>
+                    </button>
+                    <div id="dashProfileDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                        <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                            <p class="text-xs font-bold text-slate-800"><?= xss_clean($_SESSION['role']) ?></p>
+                            <p class="text-[11px] text-slate-400"><?= $_SESSION['is_staff'] ? 'Staff Account' : 'Agency Admin' ?></p>
+                        </div>
+                        <a href="?route=app&page=profile" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                            <i class="fa-solid fa-user w-4 text-center text-slate-400"></i> My Profile
+                        </a>
+                        <a href="?route=app&page=dashboard" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                            <i class="fa-solid fa-gauge w-4 text-center text-slate-400"></i> Dashboard
+                        </a>
+                        <hr class="my-1 border-slate-100">
+                        <a href="?route=logout" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 transition">
+                            <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <script>
+        // Close profile dropdown on outside click
+        document.addEventListener('click', function(e) {
+            const wrap = document.getElementById('dashProfileMenuWrap');
+            const dd   = document.getElementById('dashProfileDropdown');
+            if (wrap && dd && !wrap.contains(e.target)) dd.classList.add('hidden');
+        });
+        // Dark mode toggle (scoped: only affects #dashWrapper & #dashHeader via CSS attr selector)
+        window.toggleDashDark = function() {
+            const isDark = document.documentElement.getAttribute('data-dash-dark') === '1';
+            const next   = isDark ? '0' : '1';
+            document.documentElement.setAttribute('data-dash-dark', next);
+            document.getElementById('dashDarkIcon').className = next === '1' ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
+            localStorage.setItem('dashDark', next);
+        };
+        // Apply saved preference immediately
+        (function() {
+            if (localStorage.getItem('dashDark') === '1') {
+                document.documentElement.setAttribute('data-dash-dark', '1');
+                const icon = document.getElementById('dashDarkIcon');
+                if (icon) icon.className = 'fa-solid fa-sun text-sm';
+            }
+        })();
+        </script>
+        <?php else: ?>
+        <!-- ── Standard top nav (all other pages) ────────────────────── -->
         <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex justify-between items-center z-10 sticky top-0">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-indigo-600 focus:outline-none">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                    <?php
-                    $pageTitle = $modules[$active_page]['title'] ?? ucwords(str_replace('_', ' ', $active_page));
-                    $pageIcon  = $modules[$active_page]['icon']  ?? 'fa-solid fa-circle-nodes';
-                    if ($active_page === 'whatsapp_automation') { $pageTitle = 'WhatsApp Automation'; $pageIcon = 'fa-solid fa-robot'; }
-                    ?>
                     <i class="<?= $pageIcon ?> text-indigo-500 hidden sm:inline-block"></i> <?= xss_clean($pageTitle) ?>
                 </h2>
             </div>
@@ -287,6 +388,7 @@ function renderAgencyApp($conn, $modules) {
                 </a>
             </div>
         </header>
+        <?php endif; ?>
 
         <div class="flex-1 overflow-y-auto p-4 sm:p-8 relative custom-scrollbar">
             
