@@ -146,7 +146,12 @@ function renderAgencyApp($conn, $modules) {
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                    <i class="<?= $modules[$active_page]['icon'] ?> text-indigo-500 hidden sm:inline-block"></i> <?= $modules[$active_page]['title'] ?>
+                    <?php
+                    $pageTitle = $modules[$active_page]['title'] ?? ucwords(str_replace('_', ' ', $active_page));
+                    $pageIcon  = $modules[$active_page]['icon']  ?? 'fa-solid fa-circle-nodes';
+                    if ($active_page === 'whatsapp_automation') { $pageTitle = 'WhatsApp Automation'; $pageIcon = 'fa-solid fa-robot'; }
+                    ?>
+                    <i class="<?= $pageIcon ?> text-indigo-500 hidden sm:inline-block"></i> <?= xss_clean($pageTitle) ?>
                 </h2>
             </div>
             <div class="flex items-center gap-4 text-sm">
