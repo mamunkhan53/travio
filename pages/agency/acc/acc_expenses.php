@@ -11,9 +11,9 @@ $defaultExpCats = ['Office Rent','Staff Salary','Utility Bill','Internet','Elect
 $expCats = !empty($expCatSetting) ? $expCatSetting : $defaultExpCats;
 $pmMethods = ['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
 
-$whereClause = "agency_id=? AND expense_date BETWEEN ? AND ?";
+$whereClause = "e.agency_id=? AND e.expense_date BETWEEN ? AND ?";
 $params = [$agency_id,$accFrom,$accTo];
-if($filterCat){ $whereClause.=" AND category=?"; $params[]=$filterCat; }
+if($filterCat){ $whereClause.=" AND e.category=?"; $params[]=$filterCat; }
 
 $exps=$conn->prepare("SELECT e.*,s.full_name as staff_name FROM accounting_expenses e LEFT JOIN staff s ON e.created_by_staff_id=s.id WHERE $whereClause ORDER BY e.expense_date DESC, e.id DESC");
 $exps->execute($params); $exps=$exps->fetchAll(PDO::FETCH_ASSOC);

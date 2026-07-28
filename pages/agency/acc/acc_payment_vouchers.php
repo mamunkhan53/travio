@@ -15,7 +15,7 @@ if($printId) {
     $pv->execute([$printId,$agency_id]); $pv=$pv->fetch(PDO::FETCH_ASSOC);
 }
 
-$payees=$conn->query("SELECT DISTINCT payee_name FROM acc_vouchers WHERE agency_id=$agency_id AND voucher_type='payment' ORDER BY payee_name")->fetchAll(PDO::FETCH_COLUMN);
+$payees=$conn->query("SELECT DISTINCT party_name FROM acc_vouchers WHERE agency_id=$agency_id AND voucher_type='payment' ORDER BY party_name")->fetchAll(PDO::FETCH_COLUMN);
 $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
 $vendorTypes=['Airline','Visa Partner','Hotel','Tour Operator','Office Vendor','Supplier','Staff','Other'];
 
@@ -37,12 +37,12 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
     </div>
     <div class="p-8 space-y-5">
         <div class="grid grid-cols-2 gap-6">
-            <div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Pay To</p><p class="text-lg font-extrabold text-slate-800"><?= xss_clean($pv['payee_name']) ?></p><p class="text-sm text-slate-500"><?= xss_clean($pv['payee_type']??'') ?></p></div>
+            <div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Pay To</p><p class="text-lg font-extrabold text-slate-800"><?= xss_clean($pv['party_name']) ?></p><p class="text-sm text-slate-500"><?= xss_clean($pv['invoice_ref']??'') ?></p></div>
             <div class="text-right"><p class="text-xs font-bold text-slate-400 uppercase mb-1">Date</p><p class="text-lg font-bold text-slate-800"><?= date('d F Y',strtotime($pv['voucher_date'])) ?></p><p class="text-sm text-slate-500">Method: <?= xss_clean($pv['payment_method']??'Cash') ?></p></div>
         </div>
         <div class="border border-slate-100 rounded-xl p-4 bg-slate-50"><p class="text-xs font-bold text-slate-400 uppercase mb-1">Purpose / Description</p><p class="text-slate-700 font-semibold"><?= xss_clean($pv['description']??'') ?></p></div>
         <div class="border-2 border-indigo-100 rounded-xl p-5 bg-indigo-50 text-center"><p class="text-xs font-bold text-indigo-400 uppercase mb-1">Amount Paid</p><p class="text-4xl font-black text-indigo-700"><?= $currencySymbol ?> <?= number_format($pv['amount'],2) ?></p></div>
-        <?php if($pv['remarks']): ?><div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Remarks</p><p class="text-slate-600 text-sm"><?= xss_clean($pv['remarks']) ?></p></div><?php endif; ?>
+        <?php if($pv['notes']): ?><div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Remarks</p><p class="text-slate-600 text-sm"><?= xss_clean($pv['notes']) ?></p></div><?php endif; ?>
         <div class="grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
             <div class="text-center"><div class="border-t-2 border-slate-300 pt-2 mt-8"><p class="text-xs font-bold text-slate-400">Prepared By</p><p class="font-bold text-slate-700"><?= xss_clean($pv['staff_name']??'—') ?></p></div></div>
             <div class="text-center"><div class="border-t-2 border-slate-300 pt-2 mt-8"><p class="text-xs font-bold text-slate-400">Authorized By</p><p class="font-bold text-slate-700"><?= xss_clean($agencyInfo['agency_name']??'') ?></p></div></div>
@@ -91,7 +91,7 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
 <tr class="hover:bg-slate-50 transition">
     <td class="px-4 py-3 font-mono font-bold text-indigo-700"><?= xss_clean($v['voucher_number']) ?></td>
     <td class="px-4 py-3 font-bold text-slate-700 whitespace-nowrap"><?= date('d M Y',strtotime($v['voucher_date'])) ?></td>
-    <td class="px-4 py-3 font-bold text-slate-800"><?= xss_clean($v['payee_name']) ?></td>
+    <td class="px-4 py-3 font-bold text-slate-800"><?= xss_clean($v['party_name']) ?></td>
     <td class="px-4 py-3 text-slate-600 max-w-xs truncate"><?= xss_clean($v['description']??'') ?></td>
     <td class="px-4 py-3 text-sm text-slate-500"><?= xss_clean($v['payment_method']??'') ?></td>
     <td class="px-4 py-3 font-extrabold text-rose-600"><?= $currencySymbol ?> <?= number_format($v['amount'],2) ?></td>
@@ -119,12 +119,12 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Payment Method</label><select name="payment_method" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><?php foreach($pmMethods as $pm): ?><option><?= $pm ?></option><?php endforeach; ?></select></div>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-bold text-slate-700 mb-1">Pay To (Payee) *</label><input list="payeeList" type="text" name="payee_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><datalist id="payeeList"><?php foreach($payees as $py): ?><option><?= xss_clean($py) ?></option><?php endforeach; ?></datalist></div>
-            <div><label class="block text-xs font-bold text-slate-700 mb-1">Payee Type</label><select name="payee_type" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select —</option><?php foreach($vendorTypes as $vt): ?><option><?= $vt ?></option><?php endforeach; ?></select></div>
+            <div><label class="block text-xs font-bold text-slate-700 mb-1">Pay To (Payee) *</label><input list="payeeList" type="text" name="party_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><datalist id="payeeList"><?php foreach($payees as $py): ?><option><?= xss_clean($py) ?></option><?php endforeach; ?></datalist></div>
+            <div><label class="block text-xs font-bold text-slate-700 mb-1">Payee Type</label><select name="invoice_ref" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select —</option><?php foreach($vendorTypes as $vt): ?><option><?= $vt ?></option><?php endforeach; ?></select></div>
         </div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Description / Purpose *</label><textarea name="description" rows="2" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none"></textarea></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Amount *</label><input type="number" step="0.01" name="amount" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
-        <div><label class="block text-xs font-bold text-slate-700 mb-1">Remarks</label><input type="text" name="remarks" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Remarks</label><input type="text" name="notes" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
         <div class="flex gap-3"><button type="button" onclick="document.getElementById('pvModal').classList.add('hidden');document.getElementById('pvModal').classList.remove('flex')" class="flex-1 bg-slate-100 py-3 rounded-xl text-sm font-bold text-slate-700">Cancel</button><button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold shadow">Create Voucher</button></div>
     </form>
   </div>

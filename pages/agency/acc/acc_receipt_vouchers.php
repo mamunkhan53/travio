@@ -31,12 +31,12 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
     </div>
     <div class="p-8 space-y-5">
         <div class="grid grid-cols-2 gap-6">
-            <div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Received From</p><p class="text-lg font-extrabold text-slate-800"><?= xss_clean($pv['payee_name']) ?></p><p class="text-sm text-slate-500"><?= xss_clean($pv['payee_type']??'') ?></p></div>
+            <div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Received From</p><p class="text-lg font-extrabold text-slate-800"><?= xss_clean($pv['party_name']) ?></p><p class="text-sm text-slate-500"><?= xss_clean($pv['invoice_ref']??'') ?></p></div>
             <div class="text-right"><p class="text-xs font-bold text-slate-400 uppercase mb-1">Date</p><p class="text-lg font-bold text-slate-800"><?= date('d F Y',strtotime($pv['voucher_date'])) ?></p><p class="text-sm text-slate-500">Method: <?= xss_clean($pv['payment_method']??'Cash') ?></p></div>
         </div>
         <div class="border border-slate-100 rounded-xl p-4 bg-slate-50"><p class="text-xs font-bold text-slate-400 uppercase mb-1">Purpose / Description</p><p class="text-slate-700 font-semibold"><?= xss_clean($pv['description']??'') ?></p></div>
         <div class="border-2 border-teal-100 rounded-xl p-5 bg-teal-50 text-center"><p class="text-xs font-bold text-teal-400 uppercase mb-1">Amount Received</p><p class="text-4xl font-black text-teal-700"><?= $currencySymbol ?> <?= number_format($pv['amount'],2) ?></p></div>
-        <?php if($pv['remarks']): ?><div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Remarks</p><p class="text-slate-600 text-sm"><?= xss_clean($pv['remarks']) ?></p></div><?php endif; ?>
+        <?php if($pv['notes']): ?><div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Remarks</p><p class="text-slate-600 text-sm"><?= xss_clean($pv['notes']) ?></p></div><?php endif; ?>
         <div class="grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
             <div class="text-center"><div class="border-t-2 border-slate-300 pt-2 mt-8"><p class="text-xs font-bold text-slate-400">Received By</p><p class="font-bold text-slate-700"><?= xss_clean($pv['staff_name']??'—') ?></p></div></div>
             <div class="text-center"><div class="border-t-2 border-slate-300 pt-2 mt-8"><p class="text-xs font-bold text-slate-400">Payer Signature</p><p class="font-bold text-slate-400 text-sm">______________________</p></div></div>
@@ -84,7 +84,7 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
 <tr class="hover:bg-slate-50 transition">
     <td class="px-4 py-3 font-mono font-bold text-teal-700"><?= xss_clean($v['voucher_number']) ?></td>
     <td class="px-4 py-3 font-bold text-slate-700 whitespace-nowrap"><?= date('d M Y',strtotime($v['voucher_date'])) ?></td>
-    <td class="px-4 py-3 font-bold text-slate-800"><?= xss_clean($v['payee_name']) ?></td>
+    <td class="px-4 py-3 font-bold text-slate-800"><?= xss_clean($v['party_name']) ?></td>
     <td class="px-4 py-3 text-slate-600 max-w-xs truncate"><?= xss_clean($v['description']??'') ?></td>
     <td class="px-4 py-3 text-sm text-slate-500"><?= xss_clean($v['payment_method']??'') ?></td>
     <td class="px-4 py-3 font-extrabold text-teal-600"><?= $currencySymbol ?> <?= number_format($v['amount'],2) ?></td>
@@ -110,10 +110,10 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Date *</label><input type="date" name="voucher_date" value="<?= date('Y-m-d') ?>" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Payment Method</label><select name="payment_method" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"><?php foreach($pmMethods as $pm): ?><option><?= $pm ?></option><?php endforeach; ?></select></div>
         </div>
-        <div><label class="block text-xs font-bold text-slate-700 mb-1">Received From *</label><input type="text" name="payee_name" required placeholder="Customer or company name" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Received From *</label><input type="text" name="party_name" required placeholder="Customer or company name" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Description / Purpose *</label><textarea name="description" rows="2" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none"></textarea></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Amount *</label><input type="number" step="0.01" name="amount" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
-        <div><label class="block text-xs font-bold text-slate-700 mb-1">Remarks</label><input type="text" name="remarks" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Remarks</label><input type="text" name="notes" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
         <div class="flex gap-3"><button type="button" onclick="document.getElementById('rvModal').classList.add('hidden');document.getElementById('rvModal').classList.remove('flex')" class="flex-1 bg-slate-100 py-3 rounded-xl text-sm font-bold text-slate-700">Cancel</button><button type="submit" class="flex-1 bg-teal-600 text-white py-3 rounded-xl text-sm font-bold shadow">Create Receipt</button></div>
     </form>
   </div>
