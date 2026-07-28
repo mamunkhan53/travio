@@ -466,36 +466,51 @@
             </h3>
             <a href="?route=app&page=enquiries" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
         </div>
-        <div class="divide-y dash-divider flex-1 overflow-y-auto dash-scrollable" style="max-height:380px">
+        <div class="overflow-x-auto dash-scrollable flex-1" style="max-height:380px">
             <?php if (empty($recentQueries)): ?>
             <p class="p-8 text-center dash-label text-slate-400 text-sm">No active queries right now.</p>
+            <?php else: ?>
+            <table class="w-full text-sm">
+                <thead class="dash-thead bg-slate-50 border-b dash-divider sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold dash-label text-slate-500 uppercase tracking-wider">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold dash-label text-slate-500 uppercase tracking-wider">Category</th>
+                        <th class="px-4 py-3 text-center text-xs font-bold dash-label text-slate-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y dash-divider">
+                <?php foreach ($recentQueries as $rq):
+                    $rqActivity  = max(strtotime($rq['created_at']), strtotime($rq['last_followup'] ?: $rq['created_at']));
+                    $staffName   = $rq['reference_staff_id'] ? ($staffMap[$rq['reference_staff_id']] ?? '—') : '—';
+                    $initials    = strtoupper(substr($rq['display_name'] ?: 'U', 0, 2));
+                    $statusColors= ['New'=>'bg-blue-100 text-blue-700','Contacted'=>'bg-purple-100 text-purple-700','Pending'=>'bg-amber-100 text-amber-700','Follow Up'=>'bg-orange-100 text-orange-700','Closed'=>'bg-slate-100 text-slate-600','Not Interested'=>'bg-rose-100 text-rose-700'];
+                    $sBadge      = $statusColors[$rq['status'] ?? ''] ?? 'bg-slate-100 text-slate-600';
+                ?>
+                <tr class="dash-row-hover hover:bg-slate-50 transition cursor-pointer" onclick="location.href='?route=app&page=query_history&table=<?= $rq['module_name'] ?>&id=<?= urlencode($rq['id']) ?>'">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0"><?= $initials ?></div>
+                            <div class="min-w-0">
+                                <p class="font-bold dash-value text-slate-800 text-sm truncate max-w-[130px]"><?= xss_clean($rq['display_name'] ?: 'Unnamed') ?></p>
+                                <p class="text-[11px] dash-sub text-slate-400 truncate"><i class="fa-solid fa-user-tie mr-1"></i><?= xss_clean($staffName) ?></p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="<?= $moduleBadgeColors[$rq['module_name']] ?? 'bg-slate-100 text-slate-600' ?> px-2 py-1 rounded-lg text-xs font-bold whitespace-nowrap"><?= $moduleLabels[$rq['module_name']] ?></span>
+                        <?php if ($rq['detail']): ?>
+                        <p class="text-xs dash-label text-slate-400 mt-0.5 truncate max-w-[110px]"><?= xss_clean($rq['detail']) ?></p>
+                        <?php endif; ?>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap <?= $sBadge ?>"><?= xss_clean($rq['status'] ?: 'Pending') ?></span>
+                        <p class="text-[10px] dash-sub text-slate-400 mt-1"><?= timeAgo($rqActivity) ?></p>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
             <?php endif; ?>
-            <?php foreach ($recentQueries as $rq):
-                $rqActivity  = max(strtotime($rq['created_at']), strtotime($rq['last_followup'] ?: $rq['created_at']));
-                $staffName   = $rq['reference_staff_id'] ? ($staffMap[$rq['reference_staff_id']] ?? '—') : '—';
-                $initials    = strtoupper(substr($rq['display_name'] ?: 'U', 0, 2));
-                $statusColors= ['New'=>'bg-blue-100 text-blue-700','Contacted'=>'bg-purple-100 text-purple-700','Pending'=>'bg-amber-100 text-amber-700','Follow Up'=>'bg-orange-100 text-orange-700','Closed'=>'bg-slate-100 text-slate-600','Not Interested'=>'bg-rose-100 text-rose-700'];
-                $sBadge      = $statusColors[$rq['status'] ?? ''] ?? 'bg-slate-100 text-slate-600';
-            ?>
-            <a href="?route=app&page=query_history&table=<?= $rq['module_name'] ?>&id=<?= urlencode($rq['id']) ?>"
-               class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dash-row-hover transition">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
-                    <?= $initials ?>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-bold dash-value text-slate-800 text-sm truncate"><?= xss_clean($rq['display_name'] ?: 'Unnamed') ?></p>
-                    <p class="text-xs dash-label text-slate-500 truncate">
-                        <span class="<?= $moduleBadgeColors[$rq['module_name']] ?? 'bg-slate-100 text-slate-600' ?> px-1.5 py-0.5 rounded text-[10px] font-bold mr-1"><?= $moduleLabels[$rq['module_name']] ?></span>
-                        <?= $rq['detail'] ? xss_clean($rq['detail']) : '' ?>
-                    </p>
-                    <p class="text-[11px] dash-sub text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-user-tie mr-1"></i><?= xss_clean($staffName) ?></p>
-                </div>
-                <div class="text-right flex-shrink-0">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-bold <?= $sBadge ?>"><?= xss_clean($rq['status'] ?: 'Pending') ?></span>
-                    <p class="text-[10px] dash-sub text-slate-400 mt-1"><?= timeAgo($rqActivity) ?></p>
-                </div>
-            </a>
-            <?php endforeach; ?>
         </div>
     </div>
 
@@ -503,10 +518,10 @@
 </div><!-- /row 2 -->
 
 <!-- ── Row 3: Leads Generated Chart (left) + Recent Sales (right) ── -->
-<div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
     <!-- Leads Generated Chart -->
-    <div class="xl:col-span-3 dash-card bg-white rounded-2xl border border-slate-100 p-5 flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
+    <div class="dash-card bg-white rounded-2xl border border-slate-100 p-5 flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h3 class="font-extrabold dash-value text-slate-800 text-sm flex items-center gap-2">
                 <i class="fa-solid fa-chart-column text-indigo-500"></i> Leads Generated
@@ -523,7 +538,7 @@
     </div>
 
     <!-- Recent Sales -->
-    <div class="xl:col-span-2 dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
+    <div class="dash-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col" style="box-shadow:0 2px 12px rgba(0,0,0,.06)">
         <div class="px-5 py-4 border-b dash-divider flex items-center justify-between">
             <h3 class="font-extrabold dash-value text-slate-800 flex items-center gap-2 text-sm">
                 <i class="fa-solid fa-money-check-dollar text-emerald-500"></i> Recent Sales
