@@ -3,6 +3,8 @@
 // OCR DOCUMENT SCANNER — Main Page
 // =========================================================================
 
+require_once __DIR__ . '/../../includes/ocr_actions.php';
+
 $ocr_agency_id = $_SESSION['agency_id'];
 $ocr_tab  = $_GET['tab'] ?? 'documents';
 $ocr_edit = trim($_GET['edit'] ?? '');
