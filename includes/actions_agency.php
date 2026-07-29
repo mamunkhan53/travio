@@ -564,3 +564,6 @@
         // ------------- FINANCE & ACCOUNTING MODULE ACTIONS -------------
         require_once __DIR__ . '/acc_actions.php';
 
+        // ------------- OCR DOCUMENT SCANNER MODULE ACTIONS -------------
+        require_once __DIR__ . '/ocr_actions.php';
+

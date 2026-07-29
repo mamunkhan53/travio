@@ -1,0 +1,96 @@
+### Implement AI OCR Document Scanner Module
+
+Create a new module called **Document Scanner (AI OCR)**. This should be a centralized document repository that all ERP modules can use.
+
+#### Core Features
+
+* Upload or scan Passport, NID, Visa, Birth Certificate, and other documents (PDF/JPG/PNG/HEIC).
+* AI OCR automatically extracts document data.
+* Store both the original document and extracted data.
+* Show all scanned documents in a searchable table with filters.
+
+Table columns:
+
+* Customer
+* Document Type
+* Document Number
+* Upload Date
+* Uploaded By
+* Status
+* Actions (View/Edit/Delete)
+
+#### AI Features
+
+* ✅ Auto-detect document type (Passport, NID, Visa, etc.).
+* ✅ Auto-create a customer if no matching customer exists.
+* ✅ If the Passport/NID already belongs to an existing customer, display:
+  **"Existing customer found. Use existing profile?"**
+* ✅ Warn when a passport is expired or will expire soon.
+* ✅ Automatically calculate Age from Date of Birth.
+* ✅ Prevent duplicate customer records using Passport Number or NID Number.
+
+#### Integration with ERP Forms
+
+Every major form should support three options:
+
+1. Manual Entry
+2. Import from OCR
+3. Upload/Scan New Document
+
+Supported modules include:
+
+* Leads
+* Customer Registration
+* Air Ticket Sales
+* Visa Sales
+* Umrah
+* Hotel Reservation
+* Passport Services
+* Any future modules
+
+#### Import from OCR
+
+Add an **Import from OCR** button to every form.
+
+When clicked:
+
+* Open a searchable popup/modal.
+* Search by Customer Name, Passport Number, NID Number, or Document Number.
+* Select an existing OCR record.
+* Automatically populate all matching fields in the current form.
+
+#### Upload During Form Entry
+
+If the user uploads a new document from inside any form:
+
+* Run AI OCR.
+* Extract the document data.
+* Automatically fill the current form.
+* Save the document into the Document Scanner module for future reuse.
+* Link it to the customer profile.
+
+#### Customer Profile
+
+Add a new **Documents** tab that displays:
+
+* All uploaded documents
+* OCR extracted information
+* Preview of the original document
+* Upload history
+* Expiry warnings
+* Download option
+
+#### Smart Reuse
+
+A document should only need to be scanned once.
+
+After that, the same Passport/NID can be reused across every ERP module without uploading it again.
+
+#### UI/UX
+
+* Highlight AI-filled fields with an "AI" badge or subtle color.
+* Allow users to edit any extracted value before saving.
+* Display OCR confidence score (optional).
+* Show success or warning messages when duplicate or expired documents are detected.
+
+Build this as a reusable service so every current and future module can use the same OCR engine without duplicating code.

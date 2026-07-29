@@ -99,6 +99,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 
 
 
+// ------------- OCR DOCUMENT IMPORT SEARCH AJAX -------------
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_GET['ocr_import_ajax']) && !empty($_SESSION['agency_id'])) {
+    $q   = '%' . trim($_GET['q'] ?? '') . '%';
+    $aid = (int)$_SESSION['agency_id'];
+    $results = [];
+    if (strlen(trim($_GET['q'] ?? '')) >= 2) {
+        $s = $conn->prepare("SELECT id, document_type, document_number, full_name, date_of_birth, expiry_date, nationality, gender, father_name, mother_name, address, nid_number, mobile, email, issue_date, issue_country
+            FROM ocr_documents WHERE agency_id=? AND status='Active'
+            AND (full_name LIKE ? OR document_number LIKE ? OR nid_number LIKE ? OR mobile LIKE ?)
+            ORDER BY created_at DESC LIMIT 10");
+        $s->execute([$aid, $q, $q, $q, $q]);
+        $results = $s->fetchAll(PDO::FETCH_ASSOC);
+    }
+    header('Content-Type: application/json');
+    echo json_encode($results);
+    exit;
+}
+
 // ------------- GLOBAL SEARCH AJAX -------------
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_GET['search_ajax']) && !empty($_SESSION['agency_id'])) {
     $q   = '%' . trim($_GET['q'] ?? '') . '%';

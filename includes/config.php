@@ -115,6 +115,7 @@ $modules = [
     'sc_settings'     => ['title' => 'Settings',                 'icon' => 'fa-solid fa-gear',              'hidden' => true, 'sc_module' => true, 'admin_only' => true],
     'whatsapp' => ['title' => 'WhatsApp', 'icon' => 'fa-brands fa-whatsapp'],
     'invoices' => ['title' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
+    'ocr_scanner' => ['title' => 'Document Scanner', 'icon' => 'fa-solid fa-id-card-clip'],
     // Accounting group sentinel — sub-pages are acc_* with hidden+acc_module flags
     'acc'                    => ['title' => 'Accounting', 'icon' => 'fa-solid fa-calculator'],
     'accounting'             => ['title' => 'Accounting (legacy redirect)', 'icon' => 'fa-solid fa-calculator', 'hidden' => true, 'acc_module' => true],

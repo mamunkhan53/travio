@@ -700,6 +700,53 @@ try {
     }
     if (!empty($accPermAlters)) $conn->exec("ALTER TABLE staff_permissions " . implode(', ', $accPermAlters));
 
+    // ── OCR Document Scanner table ──────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS ocr_documents (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            customer_id VARCHAR(50) NULL,
+            document_type VARCHAR(50) NOT NULL DEFAULT 'Other',
+            document_number VARCHAR(100),
+            full_name VARCHAR(150),
+            mobile VARCHAR(30),
+            email VARCHAR(150),
+            date_of_birth DATE NULL,
+            age INT NULL,
+            gender VARCHAR(20),
+            nationality VARCHAR(100),
+            issue_date DATE NULL,
+            expiry_date DATE NULL,
+            issue_country VARCHAR(100),
+            father_name VARCHAR(150),
+            mother_name VARCHAR(150),
+            address TEXT,
+            nid_number VARCHAR(100),
+            ocr_confidence DECIMAL(5,2) NULL,
+            file_path VARCHAR(500),
+            file_type VARCHAR(50),
+            file_size INT,
+            status VARCHAR(30) DEFAULT 'Active',
+            uploaded_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_ocr_docs_agency (agency_id),
+            INDEX idx_ocr_docs_type (agency_id, document_type)
+        )
+    ");
+
+    // ── Extend customers table with OCR-relevant fields (additive only) ─────
+    $custCols = $conn->query("SHOW COLUMNS FROM customers")->fetchAll(PDO::FETCH_COLUMN);
+    $custAlters = [];
+    if (!in_array('passport_number', $custCols)) $custAlters[] = "ADD COLUMN passport_number VARCHAR(100) NULL";
+    if (!in_array('nid_number',      $custCols)) $custAlters[] = "ADD COLUMN nid_number VARCHAR(100) NULL";
+    if (!in_array('date_of_birth',   $custCols)) $custAlters[] = "ADD COLUMN date_of_birth DATE NULL";
+    if (!in_array('gender',          $custCols)) $custAlters[] = "ADD COLUMN gender VARCHAR(20) NULL";
+    if (!in_array('nationality',     $custCols)) $custAlters[] = "ADD COLUMN nationality VARCHAR(100) NULL";
+    if (!in_array('address',         $custCols)) $custAlters[] = "ADD COLUMN address TEXT NULL";
+    if (!empty($custAlters)) $conn->exec("ALTER TABLE customers " . implode(', ', $custAlters));
+
     // Add can_send_whatsapp permission to staff_permissions (additive only)
     $spermCols = $conn->query("SHOW COLUMNS FROM staff_permissions")->fetchAll(PDO::FETCH_COLUMN);
     if (!in_array('can_send_whatsapp', $spermCols)) {

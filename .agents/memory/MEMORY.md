@@ -1,3 +1,4 @@
 - [WhatsApp module architecture](whatsapp-module.md) — additive WA messaging module; AJAX handlers must live in actions_get.php (before HTML output), never at the bottom of page files.
 - [Student Consultancy module](sc-module.md) — 9-page SC module; actions in includes/sc_actions.php (required at end of actions_agency.php); SC pages dispatched via sc_module flag in agency_app.php.
 - [Accounting module architecture](acc-module.md) — 17-page Finance & Accounting module; pages live in pages/agency/acc/; dispatched via acc_module flag in agency_app.php; actions in includes/acc_actions.php; acc sidebar uses toggleAccMenu() JS.
+- [OCR Document Scanner module](ocr-module.md) — standalone module; page=ocr_scanner dispatched directly in agency_app.php; ocr_get_api_key() must have function_exists guard (loaded on both GET and POST paths); customers table was extended with 6 extra columns via migration.

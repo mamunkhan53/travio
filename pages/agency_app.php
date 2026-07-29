@@ -93,7 +93,7 @@ function renderAgencyApp($conn, $modules) {
 
     // Fetch Standard Records
     $records = [];
-    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation'])
+    if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation', 'ocr_scanner'])
         && empty($modules[$page]['sc_module'])
         && empty($modules[$page]['acc_module'])) {
         if ($page === 'customers') {
@@ -479,6 +479,37 @@ function renderAgencyApp($conn, $modules) {
                 </div>
             </div>
         </div>
+        <!-- OCR Import from Scanner Modal (global — available on every page) -->
+        <div id="ocrImportModal" class="fixed inset-0 z-[210] hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeOcrImport()"></div>
+            <div class="absolute top-16 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
+                                <i class="fa-solid fa-id-card-clip text-indigo-600 text-sm"></i>
+                            </span>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Import from Document Scanner</p>
+                                <p class="text-xs text-slate-400">Search by name, passport no., or NID</p>
+                            </div>
+                        </div>
+                        <button onclick="closeOcrImport()" class="w-8 h-8 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="px-4 pt-3 pb-2">
+                        <input id="ocrImportSearch" type="text" placeholder="Type name, passport number, NID…"
+                               class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                               oninput="doOcrImportSearch(this.value)" autocomplete="off">
+                    </div>
+                    <div id="ocrImportResults" class="max-h-80 overflow-y-auto px-4 pb-4">
+                        <p class="py-6 text-center text-slate-400 text-sm">Type to search existing scanned documents…</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
         // ── Global dark mode ──
         window.toggleDark = function() {
@@ -517,6 +548,56 @@ function renderAgencyApp($conn, $modules) {
             if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); openSearch(); }
             if (e.key==='Escape') closeSearch();
         });
+        // ── OCR Import Modal ──
+        let _ocrImportCb = null, _ocrSt;
+        window.openOcrImport = function(callback) {
+            _ocrImportCb = callback;
+            document.getElementById('ocrImportModal').classList.remove('hidden');
+            document.getElementById('ocrImportResults').innerHTML = '<p class="py-6 text-center text-slate-400 text-sm">Type to search existing scanned documents…</p>';
+            document.getElementById('ocrImportSearch').value = '';
+            setTimeout(function(){ document.getElementById('ocrImportSearch').focus(); }, 50);
+        };
+        window.closeOcrImport = function() {
+            document.getElementById('ocrImportModal').classList.add('hidden');
+            _ocrImportCb = null;
+        };
+        window.selectOcrDoc = function(data) {
+            if (_ocrImportCb) _ocrImportCb(data);
+            closeOcrImport();
+        };
+        window.doOcrImportSearch = function(q) {
+            clearTimeout(_ocrSt);
+            const el = document.getElementById('ocrImportResults');
+            if (!q || q.trim().length < 2) { el.innerHTML = '<p class="py-6 text-center text-slate-400 text-sm">Type to search existing scanned documents…</p>'; return; }
+            el.innerHTML = '<p class="py-6 text-center text-slate-400 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Searching…</p>';
+            _ocrSt = setTimeout(function() {
+                fetch('?ocr_import_ajax=1&q=' + encodeURIComponent(q))
+                    .then(r => r.json())
+                    .then(function(rows) {
+                        if (!rows.length) { el.innerHTML = '<p class="py-6 text-center text-slate-400 text-sm">No documents found for "' + q + '"</p>'; return; }
+                        const typeIcons = { Passport: 'fa-passport', NID: 'fa-id-card', Visa: 'fa-file-signature', 'Birth Certificate': 'fa-baby', Other: 'fa-file-alt' };
+                        const typeColors = { Passport: 'bg-blue-100 text-blue-600', NID: 'bg-indigo-100 text-indigo-600', Visa: 'bg-purple-100 text-purple-600', 'Birth Certificate': 'bg-green-100 text-green-600', Other: 'bg-slate-100 text-slate-600' };
+                        el.innerHTML = rows.map(function(r) {
+                            const icon  = typeIcons[r.document_type]  || 'fa-file-alt';
+                            const color = typeColors[r.document_type] || 'bg-slate-100 text-slate-600';
+                            const exp   = r.expiry_date ? (' · Exp: ' + r.expiry_date) : '';
+                            return `<button type="button" onclick='selectOcrDoc(${JSON.stringify(r)})'
+                                class="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-indigo-50 transition text-left border border-transparent hover:border-indigo-100 mb-1">
+                                <span class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}">
+                                    <i class="fa-solid ${icon} text-sm"></i>
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 truncate">${r.full_name || '—'}</p>
+                                    <p class="text-xs text-slate-400 truncate">${r.document_type} · ${r.document_number || '—'}${exp}</p>
+                                </div>
+                                <span class="text-xs font-bold text-indigo-600 flex-shrink-0">Use →</span>
+                            </button>`;
+                        }).join('');
+                    })
+                    .catch(function() { el.innerHTML = '<p class="py-6 text-center text-slate-400 text-sm">Search unavailable.</p>'; });
+            }, 300);
+        };
+        // ── Search ──
         window.doSearch = function(q) {
             clearTimeout(_st);
             const el=document.getElementById('searchResults');
@@ -572,6 +653,8 @@ function renderAgencyApp($conn, $modules) {
             elseif (isset($modules[$page]) && !empty($modules[$page]['sc_module'])):
                 if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=dashboard"); }
                 include __DIR__ . '/agency/' . $page . '.php';
+            elseif ($page === 'ocr_scanner'):
+                include __DIR__ . '/agency/ocr_scanner.php';
             elseif ($page === 'accounting'):
                 redirect("?route=app&page=acc_dashboard");
             elseif (isset($modules[$page]) && !empty($modules[$page]['acc_module'])):
