@@ -24,7 +24,7 @@ class OcrSpaceProvider extends OcrProvider {
     /**
      * Send the file to OCR.Space and return extracted plain text.
      */
-    public function extractText($filePath, $mimeType) {
+    public function extractText($filePath, $mimeType, $originalName = '') {
         if (!$this->apiKey) {
             return ['success' => false, 'text' => '', 'message' => 'No OCR.Space API key configured.'];
         }
@@ -35,9 +35,36 @@ class OcrSpaceProvider extends OcrProvider {
         // File-size advisory (free tier = 1 MB)
         $sizeKB = round(filesize($filePath) / 1024);
 
+        // Build a filename with a real extension so OCR.Space can detect the file type.
+        // The tmp path (e.g. /tmp/phpXXXXXX) has no extension — derive one from MIME type
+        // or fall back to whatever extension the client sent.
+        $mimeToExt = [
+            'image/jpeg'      => 'jpg',
+            'image/jpg'       => 'jpg',
+            'image/png'       => 'png',
+            'image/webp'      => 'webp',
+            'image/gif'       => 'gif',
+            'image/tiff'      => 'tiff',
+            'image/bmp'       => 'bmp',
+            'image/heic'      => 'heic',
+            'image/heif'      => 'heic',
+            'application/pdf' => 'pdf',
+        ];
+
+        if (isset($mimeToExt[$mimeType])) {
+            $ext          = $mimeToExt[$mimeType];
+            $uploadName   = 'document.' . $ext;
+        } elseif ($originalName && pathinfo($originalName, PATHINFO_EXTENSION)) {
+            $uploadName   = basename($originalName);
+            $ext          = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        } else {
+            $uploadName   = 'document.jpg';
+            $ext          = 'jpg';
+        }
+
         $postFields = [
             'apikey'            => $this->apiKey,
-            'file'              => new CURLFile($filePath, $mimeType, basename($filePath)),
+            'file'              => new CURLFile($filePath, $mimeType, $uploadName),
             'language'          => 'eng',
             'isOverlayRequired' => 'false',
             'detectOrientation' => 'true',
@@ -45,6 +72,11 @@ class OcrSpaceProvider extends OcrProvider {
             // Engine 2 handles printed documents (passports, IDs) better
             'OCREngine'         => '2',
         ];
+
+        // PDFs require an explicit filetype hint
+        if ($ext === 'pdf') {
+            $postFields['filetype'] = 'PDF';
+        }
 
         $ch = curl_init(self::API_ENDPOINT);
         curl_setopt_array($ch, [

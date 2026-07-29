@@ -292,7 +292,7 @@ if ($action === 'ocr_process_file' && isset($_SESSION['agency_id'])) {
     $file     = $_FILES['ocr_file'];
     $mime     = mime_content_type($file['tmp_name']);
     $provider = ocr_get_provider($conn, $agency_id, $apiKey);
-    $result   = $provider->extractText($file['tmp_name'], $mime);
+    $result   = $provider->extractText($file['tmp_name'], $mime, $file['name']);
 
     if (!$result['success']) {
         echo json_encode(['success' => false, 'message' => $result['message']]); exit;

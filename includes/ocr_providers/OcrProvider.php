@@ -18,7 +18,11 @@ abstract class OcrProvider {
      *   'message' => string    // human-readable status / error
      * }
      */
-    abstract public function extractText($filePath, $mimeType);
+    /**
+     * @param  string $originalName  Original client filename (e.g. "passport.jpg") — used to
+     *                               preserve the extension when the tmp path has none.
+     */
+    abstract public function extractText($filePath, $mimeType, $originalName = '');
 
     /** Machine-readable provider identifier, e.g. "ocr_space". */
     public function getName()  { return static::PROVIDER_NAME;  }
