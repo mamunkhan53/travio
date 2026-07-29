@@ -268,8 +268,10 @@ function ocr_estimate_confidence($text, $parsed) {
 }
 
 // =============================================================================
-// ── ACTION: PROCESS FILE (AJAX → JSON) ───────────────────────────────────────
+// ── ACTION DISPATCH (only runs on POST; safe to load on GET via require_once) ─
 // =============================================================================
+$action = $action ?? ($_POST['action'] ?? '');
+
 if ($action === 'ocr_process_file' && isset($_SESSION['agency_id'])) {
     header('Content-Type: application/json');
     ocr_guard($conn);
