@@ -46,9 +46,14 @@
                 <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden flex flex-col">
                     <div class="p-5 border-b flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-extrabold text-slate-800">Agency Staff & Permissions</h3>
-                        <button onclick="openStaffModal('add')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
-                            <i class="fa-solid fa-plus"></i> Add Staff
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <a href="?route=app&page=staff_history" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-100 transition">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Working History
+                            </a>
+                            <button onclick="openStaffModal('add')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
+                                <i class="fa-solid fa-plus"></i> Add Staff
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-600">

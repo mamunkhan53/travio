@@ -191,7 +191,48 @@ function renderAgencyApp($conn, $modules) {
                 if ($key === 'acc' && $_SESSION['is_staff'] && !has_permission('can_view_reports') && !has_permission('can_view_acc_reports')) continue;
                 $locked = $subscription['expired'] && !in_array($key, ['dashboard', 'profile']);
             ?>
-                <?php if ($key === 'acc'): ?>
+                <?php if ($key === 'travel_services'): ?>
+                    <?php
+                    $ts_pages = ['tickets', 'passports', 'visas', 'tours', 'download'];
+                    $ts_open  = in_array($active_page, $ts_pages);
+                    $ts_locked = $subscription['expired'];
+                    ?>
+                    <?php if ($ts_locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed" title="Locked - renew your subscription to unlock">
+                            <i class="fa-solid fa-globe w-5 text-center"></i>
+                            <span class="flex-1">Travel Services</span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" onclick="toggleTsMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $ts_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="fa-solid fa-globe w-5 text-center"></i>
+                            <span class="flex-1 text-left">Travel Services</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="tsMenuChevron"
+                               style="<?= $ts_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="tsSubMenu" class="<?= $ts_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <?php
+                            $ts_sub = [
+                                'tickets'   => ['Air Tickets',      'fa-solid fa-plane'],
+                                'passports' => ['Passports',        'fa-solid fa-passport'],
+                                'visas'     => ['Visa',             'fa-solid fa-file-signature'],
+                                'tours'     => ['Tours',            'fa-solid fa-map-location-dot'],
+                                'download'  => ['Download Reports', 'fa-solid fa-download'],
+                            ];
+                            foreach ($ts_sub as $tk => [$tlabel, $ticon]):
+                            ?>
+                            <a href="?route=app&page=<?= $tk ?>"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === $tk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="<?= $ticon ?> w-4 text-center text-xs"></i>
+                                <?= $tlabel ?>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php elseif ($key === 'acc'): ?>
                     <?php
                     $acc_pages = ['acc_dashboard','acc_chart_of_accounts','acc_general_ledger','acc_cash_book','acc_bank_book','acc_income','acc_expenses','acc_receivable','acc_payable','acc_journals','acc_payment_vouchers','acc_receipt_vouchers','acc_pl','acc_balance_sheet','acc_vat','acc_financial_reports','acc_settings','accounting'];
                     $acc_open  = in_array($active_page, $acc_pages);
@@ -511,6 +552,18 @@ function renderAgencyApp($conn, $modules) {
         </div>
 
         <script>
+        // ── Collapsible sidebar menus ──
+        function _toggleMenu(subId, chevronId) {
+            var sub = document.getElementById(subId);
+            var chev = document.getElementById(chevronId);
+            if (!sub) return;
+            var hidden = sub.classList.toggle('hidden');
+            if (chev) chev.style.transform = hidden ? '' : 'rotate(180deg)';
+        }
+        window.toggleTsMenu  = function() { _toggleMenu('tsSubMenu',  'tsMenuChevron');  };
+        window.toggleAccMenu = function() { _toggleMenu('accSubMenu', 'accMenuChevron'); };
+        window.toggleScMenu  = function() { _toggleMenu('scSubMenu',  'scMenuChevron');  };
+        window.toggleWaMenu  = function() { _toggleMenu('waSubMenu',  'waMenuChevron');  };
         // ── Global dark mode ──
         window.toggleDark = function() {
             const isDark = document.documentElement.getAttribute('data-dark') === '1';

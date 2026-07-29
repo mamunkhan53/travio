@@ -51,8 +51,10 @@ $modules = [
             'category' => ['label' => 'Category', 'type' => 'text']
         ]
     ],
+    // Travel Services group sentinel — sub-items carry 'travel_module' => true
+    'travel_services' => ['title' => 'Travel Services', 'icon' => 'fa-solid fa-globe'],
     'passports' => [
-        'title' => 'Passports', 'icon' => 'fa-solid fa-passport', 'is_service' => true, 'cat' => 'Passport Processing', 'prefix' => 'PA',
+        'title' => 'Passports', 'icon' => 'fa-solid fa-passport', 'is_service' => true, 'cat' => 'Passport Processing', 'prefix' => 'PA', 'hidden' => true, 'travel_module' => true,
         'fields' => array_merge([
             'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
             'name' => ['label' => 'Customer Name', 'type' => 'text'],
@@ -62,7 +64,7 @@ $modules = [
         ], $financialFields)
     ],
     'visas' => [
-        'title' => 'Visas', 'icon' => 'fa-solid fa-file-signature', 'is_service' => true, 'cat' => 'Visa Processing', 'prefix' => 'VI',
+        'title' => 'Visas', 'icon' => 'fa-solid fa-file-signature', 'is_service' => true, 'cat' => 'Visa Processing', 'prefix' => 'VI', 'hidden' => true, 'travel_module' => true,
         'fields' => array_merge([
             'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
             'name' => ['label' => 'Customer Name', 'type' => 'text'],
@@ -72,7 +74,7 @@ $modules = [
         ], $financialFields)
     ],
     'tickets' => [
-        'title' => 'Air Tickets', 'icon' => 'fa-solid fa-plane', 'is_service' => true, 'cat' => 'Air Ticket', 'prefix' => 'TK',
+        'title' => 'Air Tickets', 'icon' => 'fa-solid fa-plane', 'is_service' => true, 'cat' => 'Air Ticket', 'prefix' => 'TK', 'hidden' => true, 'travel_module' => true,
         'fields' => array_merge([
             'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
             'name' => ['label' => 'Passenger Name', 'type' => 'text'],
@@ -93,7 +95,7 @@ $modules = [
         ], $financialFields)
     ],
     'tours' => [
-        'title' => 'Tours', 'icon' => 'fa-solid fa-map-location-dot', 'is_service' => true, 'cat' => 'Tour Package', 'prefix' => 'TO',
+        'title' => 'Tours', 'icon' => 'fa-solid fa-map-location-dot', 'is_service' => true, 'cat' => 'Tour Package', 'prefix' => 'TO', 'hidden' => true, 'travel_module' => true,
         'fields' => array_merge([
             'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
             'name' => ['label' => 'Customer Name', 'type' => 'text'],
@@ -136,9 +138,9 @@ $modules = [
     'acc_vat'                => ['title' => 'VAT / Tax Reports',   'icon' => 'fa-solid fa-percent',             'hidden' => true, 'acc_module' => true],
     'acc_financial_reports'  => ['title' => 'Financial Reports',   'icon' => 'fa-solid fa-chart-pie',           'hidden' => true, 'acc_module' => true],
     'acc_settings'           => ['title' => 'Settings',            'icon' => 'fa-solid fa-gear',                'hidden' => true, 'acc_module' => true, 'admin_only' => true],
-    'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download'],
+    'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download', 'hidden' => true, 'travel_module' => true],
     'staff' => ['title' => 'Staff Management', 'icon' => 'fa-solid fa-user-tie', 'admin_only' => true],
-    'staff_history' => ['title' => 'Working History', 'icon' => 'fa-solid fa-clock-rotate-left', 'admin_only' => true],
-    'profile' => ['title' => 'Agency Settings', 'icon' => 'fa-solid fa-sliders', 'admin_only' => true]
+    'staff_history' => ['title' => 'Working History', 'icon' => 'fa-solid fa-clock-rotate-left', 'admin_only' => true, 'hidden' => true],
+    'profile' => ['title' => 'Agency Settings', 'icon' => 'fa-solid fa-sliders', 'admin_only' => true, 'hidden' => true]
 ];
 
