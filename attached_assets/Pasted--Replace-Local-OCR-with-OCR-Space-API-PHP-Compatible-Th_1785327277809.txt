@@ -1,0 +1,73 @@
+### Replace Local OCR with OCR.Space API (PHP Compatible)
+
+The current OCR implementation uses a local Tesseract installation, but the final ERP will be deployed on **Hostinger Shared Hosting**, where installing Tesseract or other system binaries is not possible.
+
+Please replace the OCR engine with **OCR.Space API** while keeping the existing Document Scanner module and workflow unchanged.
+
+### Requirements
+
+* Remove the dependency on the local Tesseract executable.
+* Integrate the **OCR.Space REST API** using PHP (cURL).
+* Keep all existing Document Scanner pages, database tables, customer linking, and OCR import functionality.
+
+### OCR Workflow
+
+1. User uploads a Passport, NID, Visa, PDF, or image.
+2. Send the document securely to OCR.Space API.
+3. Receive the extracted text.
+4. Parse the extracted text into structured fields using our existing rule-based parser.
+5. Save:
+
+   * Original document
+   * Extracted text
+   * Parsed data
+   * Document type
+   * Upload date
+   * Uploaded by
+
+### Existing Features Must Continue Working
+
+* Auto-detect document type.
+* Auto-create customer if no matching customer exists.
+* Detect existing Passport/NID and show:
+  **"Existing customer found. Use existing profile?"**
+* Prevent duplicate customer records.
+* Calculate age from Date of Birth.
+* Passport expiry warning.
+* Import from OCR in all ERP modules.
+* Manual editing before saving.
+
+### OCR Settings
+
+Create an OCR Settings page.
+
+Fields:
+
+* OCR Provider (Default: OCR.Space)
+* OCR.Space API Key
+
+If the API key is empty or invalid:
+
+* Display a clear error message.
+* Do not crash the application.
+
+Store the API key securely in system settings (not hardcoded in source code).
+
+### Future-Proof Architecture
+
+Design the OCR service using a provider interface so additional OCR providers can be added later without changing the rest of the ERP.
+
+Example providers:
+
+* OCR.Space (Default)
+* Google Cloud Vision (Future)
+* OpenAI Vision (Future)
+* Gemini Vision (Future)
+
+The rest of the application should only call a single OCR service regardless of the provider.
+
+### Important
+
+Do **not** redesign the UI or remove any existing functionality.
+
+Only replace the OCR engine with OCR.Space API and make the implementation fully compatible with PHP and Hostinger Shared Hosting.
