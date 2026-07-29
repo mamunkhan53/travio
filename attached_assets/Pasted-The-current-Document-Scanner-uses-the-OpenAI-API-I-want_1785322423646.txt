@@ -1,0 +1,114 @@
+The current Document Scanner uses the OpenAI API. I want to remove the OpenAI dependency and replace it with a free OCR solution.
+
+### Requirements
+
+* Remove all mandatory OpenAI API calls from the Document Scanner.
+* Use a free OCR engine instead (prefer **Tesseract OCR** or another open-source OCR library supported by the current tech stack).
+* Keep the existing Document Scanner UI unchanged.
+
+### OCR Workflow
+
+1. User uploads a PDF or image (Passport, NID, Visa, Birth Certificate, etc.).
+2. OCR extracts all text from the document.
+3. Detect the document type automatically using the extracted text (Passport, NID, Visa, etc.).
+4. Parse the extracted text using rule-based field mapping (no AI required).
+5. Save:
+
+   * Original document
+   * Extracted text
+   * Parsed structured data
+   * Document type
+   * Upload date
+   * Uploaded by
+6. Allow staff to review and edit extracted data before saving.
+
+### Keep These Features
+
+* Auto-detect document type.
+* Auto-create customer if one does not exist.
+* If Passport/NID already exists, show:
+  **"Existing customer found. Use existing profile?"**
+* Prevent duplicate customer records.
+* Calculate Age automatically from Date of Birth.
+* Warn if Passport is expired or nearing expiry.
+* Store OCR results for future reuse.
+
+### Import from OCR
+
+Do not change this feature.
+
+Every major form should still support:
+
+* Manual Entry
+* Import from OCR
+* Upload/Scan New Document
+
+When "Import from OCR" is clicked:
+
+* Search existing OCR records.
+* Select a document.
+* Automatically populate matching fields into the current form.
+
+### Smart Field Mapping
+
+Implement reusable parsers for:
+
+#### Passport
+
+Extract:
+
+* Passport Number
+* Full Name
+* Surname
+* Given Name
+* Date of Birth
+* Nationality
+* Gender
+* Place of Birth
+* Date of Issue
+* Date of Expiry
+
+#### Bangladesh NID
+
+Extract:
+
+* NID Number
+* Full Name
+* Father's Name
+* Mother's Name
+* Date of Birth
+* Gender
+* Address
+
+#### Visa
+
+Extract available information such as:
+
+* Visa Number
+* Country
+* Visa Type
+* Issue Date
+* Expiry Date
+
+### OCR Confidence
+
+If OCR confidence is low:
+
+* Show a warning.
+* Allow manual correction before saving.
+
+### Architecture
+
+Create a reusable OCR service that all ERP modules use.
+
+Future modules should simply call:
+
+`OCR Service → Parsed Data`
+
+without duplicating OCR logic.
+
+### Important
+
+Do NOT remove the existing Document Scanner menu, database tables, customer linking, document storage, or Import from OCR functionality.
+
+Only replace the OpenAI-based extraction process with a free OCR + rule-based parser while preserving all current features and user experience.

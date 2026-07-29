@@ -736,6 +736,11 @@ try {
         )
     ");
 
+    // ── Add ocr_raw_text column to ocr_documents (additive only) ────────────
+    $ocrCols = $conn->query("SHOW COLUMNS FROM ocr_documents")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('ocr_raw_text', $ocrCols))
+        $conn->exec("ALTER TABLE ocr_documents ADD COLUMN ocr_raw_text MEDIUMTEXT NULL AFTER ocr_confidence");
+
     // ── Extend customers table with OCR-relevant fields (additive only) ─────
     $custCols = $conn->query("SHOW COLUMNS FROM customers")->fetchAll(PDO::FETCH_COLUMN);
     $custAlters = [];

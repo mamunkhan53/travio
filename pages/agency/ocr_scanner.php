@@ -3,30 +3,12 @@
 // OCR DOCUMENT SCANNER — Main Page
 // =========================================================================
 
-// Helper defined here so it's available on GET requests (ocr_actions.php
-// only loads during POST). A function_exists guard prevents redefinition.
-if (!function_exists('ocr_get_api_key')) {
-    function ocr_get_api_key($conn, $agency_id) {
-        $k = getenv('OPENAI_API_KEY');
-        if ($k) return $k;
-        $stmt = $conn->prepare("SELECT setting_value FROM acc_settings WHERE agency_id=? AND setting_key='ocr_openai_key' LIMIT 1");
-        $stmt->execute([$agency_id]);
-        return $stmt->fetchColumn() ?: null;
-    }
-}
-
 $ocr_agency_id = $_SESSION['agency_id'];
 $ocr_tab  = $_GET['tab'] ?? 'documents';
 $ocr_edit = trim($_GET['edit'] ?? '');
 
-// ── API key & settings ────────────────────────────────────────────────────
-$ocrApiKey = ocr_get_api_key($conn, $ocr_agency_id);
-$storedKey = '';
-if (!$_SESSION['is_staff']) {
-    $sk = $conn->prepare("SELECT setting_value FROM acc_settings WHERE agency_id=? AND setting_key='ocr_openai_key' LIMIT 1");
-    $sk->execute([$ocr_agency_id]);
-    $storedKey = $sk->fetchColumn() ?: '';
-}
+// ── OCR engine availability ───────────────────────────────────────────────
+$ocrAvailable = (trim(shell_exec('which tesseract 2>/dev/null') ?? '') !== '');
 
 // ── Fetch document list ───────────────────────────────────────────────────
 $ocr_type_filter = trim($_GET['type'] ?? '');
@@ -99,13 +81,13 @@ function ocrExpiryBadge($expiryDate) {
     </a>
     <?php endif; ?>
     <div class="ml-auto flex items-center gap-2">
-        <?php if ($ocrApiKey): ?>
+        <?php if ($ocrAvailable): ?>
         <span class="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-            <i class="fa-solid fa-robot"></i> AI OCR Active
+            <i class="fa-solid fa-font"></i> Tesseract OCR Ready
         </span>
         <?php else: ?>
-        <span class="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-            <i class="fa-solid fa-triangle-exclamation"></i> Manual Mode
+        <span class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+            <i class="fa-solid fa-triangle-exclamation"></i> OCR Engine Missing
         </span>
         <?php endif; ?>
     </div>
@@ -266,16 +248,12 @@ function ocrExpiryBadge($expiryDate) {
 <!-- ═══════════════════════════════ UPLOAD & SCAN TAB ═══════════════════════════════ -->
 
 <div class="max-w-4xl mx-auto">
-    <?php if (!$ocrApiKey): ?>
-    <div class="mb-5 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm text-amber-700">
+    <?php if (!$ocrAvailable): ?>
+    <div class="mb-5 flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-sm text-rose-700">
         <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
         <div>
-            <p class="font-bold">AI OCR not configured — Manual Mode active</p>
-            <p class="mt-0.5 font-medium opacity-80">Upload a document and fill in the fields manually.
-            <?php if (!$_SESSION['is_staff']): ?>
-            <a href="?route=app&page=ocr_scanner&tab=settings" class="underline">Configure AI in Settings →</a>
-            <?php endif; ?>
-            </p>
+            <p class="font-bold">Tesseract OCR engine not found</p>
+            <p class="mt-0.5 font-medium opacity-80">The OCR engine is not installed on this server. Contact your administrator. You can still upload documents and fill in fields manually.</p>
         </div>
     </div>
     <?php endif; ?>
@@ -285,6 +263,7 @@ function ocrExpiryBadge($expiryDate) {
         <input type="hidden" name="action" value="ocr_save_document">
         <?php if ($editDoc): ?><input type="hidden" name="id" value="<?= $editDoc['id'] ?>"><?php endif; ?>
         <input type="hidden" name="ocr_confidence" id="ocrConfidenceInput" value="<?= $editDoc['ocr_confidence'] ?? '' ?>">
+        <input type="hidden" name="ocr_raw_text" id="ocrRawTextInput" value="">
         <input type="hidden" name="create_customer" id="createCustomerInput" value="0">
 
         <!-- File upload zone -->
@@ -294,9 +273,9 @@ function ocrExpiryBadge($expiryDate) {
                     <i class="fa-solid fa-cloud-arrow-up text-indigo-500"></i>
                     <?= $editDoc ? 'Replace Document File (optional)' : 'Upload Document' ?>
                 </h3>
-                <?php if ($ocrApiKey): ?>
+                <?php if ($ocrAvailable): ?>
                 <span class="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                    <i class="fa-solid fa-robot"></i> AI OCR Ready
+                    <i class="fa-solid fa-font"></i> Tesseract OCR Ready
                 </span>
                 <?php endif; ?>
             </div>
@@ -321,7 +300,7 @@ function ocrExpiryBadge($expiryDate) {
                 <div id="dropZoneContent">
                     <i class="fa-solid fa-id-card-clip text-slate-300 text-4xl mb-3 block"></i>
                     <p class="text-sm font-bold text-slate-500">Drag & drop a document here, or <span class="text-indigo-600">click to browse</span></p>
-                    <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG, WEBP<?= $ocrApiKey ? ' (AI extraction)' : '' ?>, PDF, HEIC</p>
+                    <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG, WEBP, PDF, HEIC — text extracted via Tesseract OCR</p>
                 </div>
                 <div id="filePreview" class="hidden flex-col items-center gap-3">
                     <img id="filePreviewImg" src="" alt="" class="max-h-40 rounded-xl shadow-md object-contain hidden">
@@ -330,11 +309,13 @@ function ocrExpiryBadge($expiryDate) {
                     </div>
                     <p id="filePreviewName" class="text-sm font-bold text-slate-700"></p>
                     <button type="button" onclick="clearFile(event)" class="text-xs text-rose-500 hover:underline">Remove file</button>
-                    <?php if ($ocrApiKey): ?>
+                    <?php if ($ocrAvailable): ?>
                     <button type="button" id="scanBtn" onclick="runOcrScan()"
                             class="mt-1 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 mx-auto">
-                        <i class="fa-solid fa-robot"></i> Scan with AI
+                        <i class="fa-solid fa-magnifying-glass"></i> Extract with OCR
                     </button>
+                    <?php else: ?>
+                    <p class="text-xs text-amber-600 font-semibold mt-2">OCR engine unavailable — fill fields manually.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -342,7 +323,7 @@ function ocrExpiryBadge($expiryDate) {
             <!-- OCR Status -->
             <div id="ocrStatus" class="hidden mt-3">
                 <div id="ocrLoading" class="hidden flex items-center gap-3 p-3 bg-indigo-50 rounded-xl text-sm text-indigo-700 font-semibold">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Processing document with AI…
+                    <i class="fa-solid fa-spinner fa-spin"></i> Running Tesseract OCR — this may take a moment…
                 </div>
                 <div id="ocrSuccess" class="hidden flex items-center gap-2 p-3 bg-emerald-50 rounded-xl text-sm text-emerald-700 font-semibold">
                     <i class="fa-solid fa-circle-check"></i> <span id="ocrSuccessMsg"></span>
@@ -360,7 +341,7 @@ function ocrExpiryBadge($expiryDate) {
                     <i class="fa-solid fa-file-lines text-indigo-500"></i> Document Information
                 </h3>
                 <div id="aiBadge" class="hidden items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-100 border border-purple-200 px-3 py-1 rounded-xl">
-                    <i class="fa-solid fa-robot text-xs"></i> AI Filled
+                    <i class="fa-solid fa-font text-xs"></i> OCR Filled
                 </div>
             </div>
 
@@ -560,45 +541,64 @@ function ocrExpiryBadge($expiryDate) {
 <!-- ═══════════════════════════════ SETTINGS TAB ═══════════════════════════════ -->
 
 <div class="max-w-2xl mx-auto space-y-5">
+    <!-- Engine status card -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-1">
-            <i class="fa-solid fa-robot text-indigo-500"></i> AI OCR Configuration
+            <i class="fa-solid fa-font text-indigo-500"></i> OCR Engine
         </h3>
-        <p class="text-sm text-slate-400 mb-5">Connect your OpenAI API key to enable automatic data extraction from document images.</p>
-
-        <form method="POST">
-            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-            <input type="hidden" name="action" value="ocr_save_settings">
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-500 mb-1.5">OpenAI API Key</label>
-                <input type="password" name="ocr_api_key"
-                       value="<?= xss_clean($storedKey) ?>"
-                       placeholder="sk-…"
-                       class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                <p class="mt-1.5 text-xs text-slate-400">Leave empty to clear. Key is stored securely per agency. Requires <strong>gpt-4o-mini</strong> model access.</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition">
-                    Save API Key
-                </button>
-                <?php if ($ocrApiKey): ?>
-                <span class="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-check"></i> Key is active
-                </span>
+        <p class="text-sm text-slate-400 mb-5">This module uses <strong>Tesseract OCR</strong> — a free, open-source engine. No API key or internet connection required.</p>
+        <div class="flex items-center gap-3 p-4 rounded-xl <?= $ocrAvailable ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200' ?>">
+            <i class="fa-solid <?= $ocrAvailable ? 'fa-circle-check text-emerald-600' : 'fa-circle-xmark text-rose-600' ?> text-xl"></i>
+            <div>
+                <p class="font-bold text-sm <?= $ocrAvailable ? 'text-emerald-800' : 'text-rose-800' ?>">
+                    <?= $ocrAvailable ? 'Tesseract OCR is installed and ready' : 'Tesseract OCR is NOT installed' ?>
+                </p>
+                <?php if ($ocrAvailable): ?>
+                <p class="text-xs text-emerald-600 mt-0.5 font-mono"><?= htmlspecialchars(trim(shell_exec('tesseract --version 2>&1 | head -1') ?? '')) ?></p>
+                <?php else: ?>
+                <p class="text-xs text-rose-600 mt-0.5">Contact your server administrator to install the <code>tesseract</code> package.</p>
                 <?php endif; ?>
             </div>
-        </form>
+        </div>
     </div>
 
+    <!-- Supported documents -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-id-card-clip text-indigo-500"></i> Supported Document Types
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <?php foreach ([
+                ['fa-passport','text-blue-500','bg-blue-50','Passport','MRZ zone parsed automatically. Extracts passport number, name, nationality, DOB, expiry, gender.'],
+                ['fa-id-card','text-orange-500','bg-orange-50','Bangladesh NID','Extracts NID number (10/13/17 digits), name, father, mother, DOB, address.'],
+                ['fa-stamp','text-violet-500','bg-violet-50','Visa','Extracts visa number, name, nationality, issue/expiry dates, country.'],
+                ['fa-file-lines','text-slate-500','bg-slate-50','Other Documents','Generic field extraction for birth certificates, driving licences, etc.'],
+            ] as [$icon,$clr,$bg,$title,$desc]): ?>
+            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-100 <?= $bg ?>">
+                <i class="fa-solid <?= $icon ?> <?= $clr ?> mt-0.5 text-lg flex-shrink-0"></i>
+                <div>
+                    <p class="font-bold text-sm text-slate-700"><?= $title ?></p>
+                    <p class="text-xs text-slate-500 mt-0.5"><?= $desc ?></p>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- How it works -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-circle-info text-indigo-500"></i> How AI OCR Works
+            <i class="fa-solid fa-circle-info text-indigo-500"></i> How OCR Extraction Works
         </h3>
         <div class="space-y-2.5 text-sm text-slate-600">
-            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</span><p>Upload a photo or scan of a Passport, NID, Visa, or other document (JPG/PNG/WEBP).</p></div>
-            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</span><p>Click <strong>Scan with AI</strong> — the document is sent to OpenAI's vision model for extraction.</p></div>
-            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</span><p>All extracted fields are pre-filled in the form. Review and correct any errors before saving.</p></div>
-            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">4</span><p>Once saved, use <strong>Import from OCR</strong> in any form to reuse the data without re-scanning.</p></div>
+            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</span><p>Upload a clear photo or scan of a Passport, NID, Visa, or other identity document.</p></div>
+            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</span><p>Click <strong>Extract with OCR</strong> — Tesseract reads the text locally on the server (no data sent externally).</p></div>
+            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</span><p>The system auto-detects the document type and fills in all matching fields. Review and correct if needed.</p></div>
+            <div class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">4</span><p>Once saved, use <strong>Import from OCR</strong> in any booking form to reuse the data without re-scanning.</p></div>
+        </div>
+        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+            <i class="fa-solid fa-lightbulb mr-1"></i>
+            <strong>Best results:</strong> Use a well-lit, high-resolution scan (at least 200 DPI). Blurry or low-contrast images reduce OCR accuracy. Always review extracted fields before saving.
         </div>
     </div>
 </div>
@@ -669,7 +669,7 @@ function clearFile(e) {
     document.getElementById('ocrStatus').classList.add('hidden');
 }
 
-// ── AI OCR Scan ────────────────────────────────────────────────────────────────
+// ── Tesseract OCR Scan ─────────────────────────────────────────────────────────
 function runOcrScan() {
     if (!_selectedFile) { alert('Please select a file first.'); return; }
     const status = document.getElementById('ocrStatus');
@@ -677,7 +677,8 @@ function runOcrScan() {
     document.getElementById('ocrLoading').classList.remove('hidden');
     document.getElementById('ocrSuccess').classList.add('hidden');
     document.getElementById('ocrError').classList.add('hidden');
-    document.getElementById('scanBtn').disabled = true;
+    const scanBtn = document.getElementById('scanBtn');
+    if (scanBtn) scanBtn.disabled = true;
 
     const fd = new FormData();
     fd.append('action', 'ocr_process_file');
@@ -688,26 +689,37 @@ function runOcrScan() {
         .then(r => r.json())
         .then(function(res) {
             document.getElementById('ocrLoading').classList.add('hidden');
-            document.getElementById('scanBtn').disabled = false;
+            if (scanBtn) scanBtn.disabled = false;
             if (!res.success) {
                 document.getElementById('ocrError').classList.remove('hidden');
                 document.getElementById('ocrErrorMsg').textContent = res.message || 'OCR failed.';
                 return;
             }
+            // Store raw text for saving
+            if (res.raw_text) document.getElementById('ocrRawTextInput').value = res.raw_text;
+            // Store confidence
+            if (res.confidence !== undefined) document.getElementById('ocrConfidenceInput').value = res.confidence;
+
+            if (res.low_confidence) {
+                // Show warning in amber
+                document.getElementById('ocrError').classList.remove('hidden');
+                document.getElementById('ocrError').className = document.getElementById('ocrError').className
+                    .replace('bg-rose-50','bg-amber-50').replace('text-rose-700','text-amber-700');
+                document.getElementById('ocrErrorMsg').textContent = res.message || 'Low confidence — please review all fields.';
+            }
             document.getElementById('ocrSuccess').classList.remove('hidden');
-            if (res.ai_used && res.data && Object.keys(res.data).length) {
+            if (res.data && Object.keys(res.data).length > 1) {
                 fillOcrFields(res.data);
-                document.getElementById('ocrSuccessMsg').textContent = 'AI extracted data — review and save.';
-                if (res.data.confidence) document.getElementById('ocrConfidenceInput').value = res.data.confidence;
+                document.getElementById('ocrSuccessMsg').textContent = res.message || 'Fields extracted — review before saving.';
             } else {
-                document.getElementById('ocrSuccessMsg').textContent = res.message || 'File ready — enter data manually.';
+                document.getElementById('ocrSuccessMsg').textContent = res.message || 'OCR complete — enter data manually.';
             }
         })
-        .catch(function(e) {
+        .catch(function() {
             document.getElementById('ocrLoading').classList.add('hidden');
             document.getElementById('ocrError').classList.remove('hidden');
             document.getElementById('ocrErrorMsg').textContent = 'Network error. Try again.';
-            document.getElementById('scanBtn').disabled = false;
+            if (scanBtn) scanBtn.disabled = false;
         });
 }
 
