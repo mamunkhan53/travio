@@ -4,6 +4,9 @@
 // Included at the bottom of actions_agency.php via require_once.
 // =========================================================================
 
+// Safe to require_once on GET pages — $action resolves to '' so all dispatch blocks are skipped
+$action = $action ?? ($_POST['action'] ?? '');
+
 function umrah_guard($conn) {
     if (!isset($_SESSION['agency_id'])) { http_response_code(403); die("Unauthorised."); }
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
