@@ -59,7 +59,7 @@ if ($viewMode === 'summary') {
                SUM(a.status='Present') AS present,
                SUM(a.status='Absent')  AS absent,
                SUM(a.status='Late')    AS late,
-               SUM(a.status='Leave')   AS leave,
+               SUM(a.status='Leave')   AS `leave`,
                COUNT(a.id)             AS total_days
         FROM staff_attendance a
         JOIN staff s ON a.staff_id = s.id
