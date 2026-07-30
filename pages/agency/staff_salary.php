@@ -10,7 +10,7 @@ $staffList = $staffList->fetchAll(PDO::FETCH_ASSOC);
 $staffMap  = array_column($staffList, null, 'id');
 
 // Agency info (for salary slip)
-$agency = $conn->prepare("SELECT agency_name, email, phone FROM agencies WHERE id=?");
+$agency = $conn->prepare("SELECT company_name, company_email, company_phone FROM agencies WHERE id=?");
 $agency->execute([$agency_id]);
 $agency = $agency->fetch(PDO::FETCH_ASSOC);
 
@@ -75,8 +75,8 @@ if ($printId) {
     <!-- Header -->
     <div class="flex justify-between items-start border-b border-slate-200 pb-5 mb-5">
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-800"><?= htmlspecialchars($agency['agency_name'] ?? '') ?></h1>
-            <p class="text-sm text-slate-400 mt-1"><?= htmlspecialchars($agency['email'] ?? '') ?> · <?= htmlspecialchars($agency['phone'] ?? '') ?></p>
+            <h1 class="text-2xl font-extrabold text-slate-800"><?= htmlspecialchars($agency['company_name'] ?? '') ?></h1>
+            <p class="text-sm text-slate-400 mt-1"><?= htmlspecialchars($agency['company_email'] ?? '') ?> · <?= htmlspecialchars($agency['company_phone'] ?? '') ?></p>
         </div>
         <div class="text-right">
             <div class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide">SALARY SLIP</div>
