@@ -27,7 +27,7 @@ $bookings = $conn->prepare("
     LEFT JOIN staff           s  ON b.reference_staff_id = s.id
     WHERE $where
     GROUP BY b.id
-    ORDER BY b.created_at DESC
+    ORDER BY b.booking_date DESC, b.created_at DESC
 ");
 $bookings->execute($params);
 $bookings = $bookings->fetchAll(PDO::FETCH_ASSOC);
@@ -93,6 +93,7 @@ $statusColors = [
                 <thead class="bg-white text-slate-400 uppercase tracking-wider text-xs border-b">
                     <tr>
                         <th class="px-6 py-4 font-bold">ID</th>
+                        <th class="px-6 py-4 font-bold">Booking Date</th>
                         <th class="px-6 py-4 font-bold">Customer</th>
                         <th class="px-6 py-4 font-bold">Package</th>
                         <th class="px-6 py-4 font-bold">Travel Date</th>
@@ -110,6 +111,7 @@ $statusColors = [
                     ?>
                     <tr class="hover:bg-slate-50 transition text-slate-700">
                         <td class="px-6 py-4 font-extrabold text-indigo-600"><?= htmlspecialchars($b['id']) ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><?= $b['booking_date'] ? date('d M Y', strtotime($b['booking_date'])) : '—' ?></td>
                         <td class="px-6 py-4">
                             <div class="font-semibold"><?= htmlspecialchars($b['customer_name'] ?: '—') ?></div>
                             <?php if ($b['customer_id']): ?>
@@ -151,7 +153,7 @@ $statusColors = [
                         </td>
                     </tr>
                     <?php endforeach; else: ?>
-                    <tr><td colspan="10" class="px-6 py-12 text-center text-slate-400">No bookings found. Create your first booking.</td></tr>
+                    <tr><td colspan="11" class="px-6 py-12 text-center text-slate-400">No bookings found. Create your first booking.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -192,6 +194,12 @@ $statusColors = [
                     <label class="block text-sm font-bold text-slate-700 mb-1">Mobile</label>
                     <input type="text" name="customer_mobile" id="bk_cust_mobile" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Mobile number">
                 </div>
+            </div>
+
+            <!-- Booking Date -->
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Booking Date *</label>
+                <input type="date" name="booking_date" id="bk_booking_date" required class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
 
             <!-- Package + Price -->
@@ -265,8 +273,9 @@ function openBkModal(data) {
         document.getElementById('bk_cust_name').value   = data.customer_name || '';
         document.getElementById('bk_cust_mobile').value = data.customer_mobile || '';
         document.getElementById('bk_package_id').value  = data.package_id || '';
-        document.getElementById('bk_travel_date').value = data.travel_date || '';
-        document.getElementById('bk_pilgrims').value    = data.num_pilgrims || 1;
+        document.getElementById('bk_booking_date').value = data.booking_date || '';
+        document.getElementById('bk_travel_date').value  = data.travel_date || '';
+        document.getElementById('bk_pilgrims').value     = data.num_pilgrims || 1;
         document.getElementById('bk_total_price').value = data.total_price || '';
         document.getElementById('bk_status').value      = data.booking_status || 'Inquiry';
         document.getElementById('bk_notes').value       = data.notes || '';
@@ -276,6 +285,7 @@ function openBkModal(data) {
         document.getElementById('bkModalTitle').innerHTML = '<i class="fa-solid fa-plus text-indigo-500 mr-2"></i> New Booking';
         document.getElementById('bk_id').value = '';
         document.getElementById('bkModal').querySelector('form').reset();
+        document.getElementById('bk_booking_date').value = new Date().toISOString().split('T')[0];
         document.getElementById('bk_pilgrims').value = 1;
     }
 }

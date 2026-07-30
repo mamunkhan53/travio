@@ -18,8 +18,8 @@ $statusColors = [
 if ($tab === 'bookings') {
     $where  = "b.agency_id = ?";
     $params = [$agency_id];
-    if ($f_from)   { $where .= " AND b.created_at >= ?";       $params[] = $f_from . ' 00:00:00'; }
-    if ($f_to)     { $where .= " AND b.created_at <= ?";       $params[] = $f_to   . ' 23:59:59'; }
+    if ($f_from)   { $where .= " AND b.booking_date >= ?";      $params[] = $f_from; }
+    if ($f_to)     { $where .= " AND b.booking_date <= ?";      $params[] = $f_to; }
     if ($f_status) { $where .= " AND b.booking_status = ?";    $params[] = $f_status; }
 
     $rows = $conn->prepare("
@@ -142,6 +142,7 @@ if ($tab === 'packages') {
                 <thead class="bg-white text-slate-400 uppercase tracking-wider text-xs border-b">
                     <tr>
                         <th class="px-5 py-3 font-bold text-left">Booking ID</th>
+                        <th class="px-5 py-3 font-bold text-left">Booking Date</th>
                         <th class="px-5 py-3 font-bold text-left">Customer</th>
                         <th class="px-5 py-3 font-bold text-left">Package</th>
                         <th class="px-5 py-3 font-bold text-left">Travel Date</th>
@@ -156,6 +157,7 @@ if ($tab === 'packages') {
                     <?php if ($rows): foreach ($rows as $r): $due = $r['total_price'] - $r['paid']; ?>
                     <tr class="hover:bg-slate-50 text-slate-700">
                         <td class="px-5 py-3 font-bold text-indigo-600"><?= htmlspecialchars($r['id']) ?></td>
+                        <td class="px-5 py-3 whitespace-nowrap"><?= $r['booking_date'] ? date('d M Y', strtotime($r['booking_date'])) : '—' ?></td>
                         <td class="px-5 py-3 font-medium"><?= htmlspecialchars($r['customer_name'] ?: '—') ?></td>
                         <td class="px-5 py-3 text-slate-500"><?= htmlspecialchars($r['package_name'] ?: '—') ?></td>
                         <td class="px-5 py-3"><?= $r['travel_date'] ? date('d M Y', strtotime($r['travel_date'])) : '—' ?></td>
@@ -166,7 +168,7 @@ if ($tab === 'packages') {
                         <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-lg text-xs font-bold <?= $statusColors[$r['booking_status']] ?? 'bg-slate-100 text-slate-600' ?>"><?= htmlspecialchars($r['booking_status']) ?></span></td>
                     </tr>
                     <?php endforeach; else: ?>
-                    <tr><td colspan="9" class="px-5 py-12 text-center text-slate-400">No bookings in this period.</td></tr>
+                    <tr><td colspan="10" class="px-5 py-12 text-center text-slate-400">No bookings in this period.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -186,6 +188,7 @@ if ($tab === 'packages') {
                 <thead class="bg-white text-slate-400 uppercase tracking-wider text-xs border-b">
                     <tr>
                         <th class="px-5 py-3 font-bold text-left">Booking ID</th>
+                        <th class="px-5 py-3 font-bold text-left">Booking Date</th>
                         <th class="px-5 py-3 font-bold text-left">Customer</th>
                         <th class="px-5 py-3 font-bold text-left">Package</th>
                         <th class="px-5 py-3 font-bold text-left">Travel Date</th>
@@ -200,6 +203,7 @@ if ($tab === 'packages') {
                     <?php if ($rows): foreach ($rows as $r): $due = $r['total_price'] - $r['paid']; ?>
                     <tr class="hover:bg-slate-50 text-slate-700">
                         <td class="px-5 py-3 font-bold text-indigo-600"><?= htmlspecialchars($r['id']) ?></td>
+                        <td class="px-5 py-3 whitespace-nowrap"><?= $r['booking_date'] ? date('d M Y', strtotime($r['booking_date'])) : '—' ?></td>
                         <td class="px-5 py-3 font-medium"><?= htmlspecialchars($r['customer_name'] ?: '—') ?></td>
                         <td class="px-5 py-3 text-slate-500"><?= htmlspecialchars($r['package_name'] ?: '—') ?></td>
                         <td class="px-5 py-3"><?= $r['travel_date'] ? date('d M Y', strtotime($r['travel_date'])) : '—' ?></td>
@@ -212,7 +216,7 @@ if ($tab === 'packages') {
                         </td>
                     </tr>
                     <?php endforeach; else: ?>
-                    <tr><td colspan="9" class="px-5 py-12 text-center text-slate-400 font-semibold">🎉 No outstanding dues — all bookings are fully paid!</td></tr>
+                    <tr><td colspan="10" class="px-5 py-12 text-center text-slate-400 font-semibold">🎉 No outstanding dues — all bookings are fully paid!</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

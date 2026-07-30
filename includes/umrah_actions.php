@@ -73,8 +73,9 @@ if ($action === 'umrah_save_booking' && isset($_SESSION['agency_id'])) {
     $custName   = trim($_POST['customer_name'] ?? '');
     $custMobile = trim($_POST['customer_mobile'] ?? '');
     $pkgId      = trim($_POST['package_id']    ?? '') ?: null;
-    $travelDate = trim($_POST['travel_date']   ?? '') ?: null;
-    $pilgrims   = max(1, (int)($_POST['num_pilgrims'] ?? 1));
+    $travelDate  = trim($_POST['travel_date']    ?? '') ?: null;
+    $bookingDate = trim($_POST['booking_date']   ?? '') ?: date('Y-m-d');
+    $pilgrims    = max(1, (int)($_POST['num_pilgrims'] ?? 1));
     $totalPrice = is_numeric($_POST['total_price'] ?? '') ? (float)$_POST['total_price'] : 0;
     $status     = trim($_POST['booking_status'] ?? 'Inquiry');
     $notes      = trim($_POST['notes'] ?? '');
@@ -93,18 +94,18 @@ if ($action === 'umrah_save_booking' && isset($_SESSION['agency_id'])) {
     if (empty($id)) {
         $newId = generateSerialId($conn, 'umrah_bookings', 'UB', $agency_id);
         $conn->prepare("INSERT INTO umrah_bookings
-            (id,agency_id,customer_id,customer_name,customer_mobile,package_id,travel_date,num_pilgrims,
+            (id,agency_id,customer_id,customer_name,customer_mobile,package_id,booking_date,travel_date,num_pilgrims,
              total_price,booking_status,notes,reference_staff_id,created_by_staff_id)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-             ->execute([$newId,$agency_id,$custId,$custName,$custMobile,$pkgId,$travelDate,$pilgrims,
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+             ->execute([$newId,$agency_id,$custId,$custName,$custMobile,$pkgId,$bookingDate,$travelDate,$pilgrims,
                         $totalPrice,$status,$notes,$refId,$staffId]);
         flash("Booking created (ID: $newId).");
     } else {
         $conn->prepare("UPDATE umrah_bookings SET
-            customer_id=?,customer_name=?,customer_mobile=?,package_id=?,travel_date=?,num_pilgrims=?,
+            customer_id=?,customer_name=?,customer_mobile=?,package_id=?,booking_date=?,travel_date=?,num_pilgrims=?,
             total_price=?,booking_status=?,notes=?,reference_staff_id=?
             WHERE id=? AND agency_id=?")
-             ->execute([$custId,$custName,$custMobile,$pkgId,$travelDate,$pilgrims,
+             ->execute([$custId,$custName,$custMobile,$pkgId,$bookingDate,$travelDate,$pilgrims,
                         $totalPrice,$status,$notes,$refId,$id,$agency_id]);
         flash("Booking updated.");
     }

@@ -809,6 +809,8 @@ try {
             INDEX idx_ub_status (agency_id, booking_status)
         )
     ");
+    // Add booking_date column (migration for existing installs)
+    try { $conn->exec("ALTER TABLE umrah_bookings ADD COLUMN booking_date DATE NULL AFTER travel_date"); } catch(PDOException $e) {}
 
     // ── Hajj & Umrah — Payments ─────────────────────────────────────────────
     $conn->exec("
