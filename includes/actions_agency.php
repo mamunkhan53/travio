@@ -567,3 +567,6 @@
         // ------------- OCR DOCUMENT SCANNER MODULE ACTIONS -------------
         require_once __DIR__ . '/ocr_actions.php';
 
+        // ------------- HAJJ & UMRAH MODULE ACTIONS -------------------
+        require_once __DIR__ . '/umrah_actions.php';
+

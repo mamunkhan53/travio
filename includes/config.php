@@ -85,7 +85,7 @@ $modules = [
         ], $financialFields)
     ],
     'umrah' => [
-        'title' => 'Umrah', 'icon' => 'fa-solid fa-kaaba', 'is_service' => true, 'cat' => 'Umrah Package', 'prefix' => 'UM',
+        'title' => 'Umrah', 'icon' => 'fa-solid fa-kaaba', 'is_service' => true, 'cat' => 'Umrah Package', 'prefix' => 'UM', 'hidden' => true,
         'fields' => array_merge([
             'transaction_date' => ['label' => 'Transaction Date', 'type' => 'date'],
             'name' => ['label' => 'Pilgrim Name', 'type' => 'text'],
@@ -94,6 +94,13 @@ $modules = [
             'depDate' => ['label' => 'Departure Date', 'type' => 'date'],
         ], $financialFields)
     ],
+    // Hajj & Umrah group sentinel — sub-pages carry 'umrah_module' => true
+    'hajj_umrah'      => ['title' => 'Hajj & Umrah',      'icon' => 'fa-solid fa-kaaba'],
+    'umrah_packages'  => ['title' => 'Packages',           'icon' => 'fa-solid fa-box-open',       'hidden' => true, 'umrah_module' => true],
+    'umrah_bookings'  => ['title' => 'Bookings',           'icon' => 'fa-solid fa-calendar-check', 'hidden' => true, 'umrah_module' => true],
+    'umrah_payments'  => ['title' => 'Payments',           'icon' => 'fa-solid fa-coins',          'hidden' => true, 'umrah_module' => true],
+    'umrah_checklist' => ['title' => 'Document Checklist', 'icon' => 'fa-solid fa-list-check',     'hidden' => true, 'umrah_module' => true],
+    'umrah_reports'   => ['title' => 'Reports',            'icon' => 'fa-solid fa-chart-bar',      'hidden' => true, 'umrah_module' => true],
     'tours' => [
         'title' => 'Tours', 'icon' => 'fa-solid fa-map-location-dot', 'is_service' => true, 'cat' => 'Tour Package', 'prefix' => 'TO', 'hidden' => true, 'travel_module' => true,
         'fields' => array_merge([

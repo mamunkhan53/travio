@@ -764,6 +764,70 @@ try {
         }
     }
 
+    // ── Hajj & Umrah — Packages ────────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS umrah_packages (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            package_type VARCHAR(20) NOT NULL DEFAULT 'Umrah',
+            package_name VARCHAR(200) NOT NULL,
+            duration VARCHAR(100),
+            price DECIMAL(12,2) NOT NULL DEFAULT 0,
+            description TEXT,
+            status VARCHAR(20) NOT NULL DEFAULT 'Active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_up_agency (agency_id)
+        )
+    ");
+
+    // ── Hajj & Umrah — Bookings ─────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS umrah_bookings (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            customer_id VARCHAR(50) NULL,
+            customer_name VARCHAR(150),
+            customer_mobile VARCHAR(30),
+            package_id VARCHAR(50) NULL,
+            travel_date DATE NULL,
+            num_pilgrims INT NOT NULL DEFAULT 1,
+            total_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+            booking_status VARCHAR(30) NOT NULL DEFAULT 'Inquiry',
+            notes TEXT,
+            passport_received TINYINT(1) NOT NULL DEFAULT 0,
+            visa_completed TINYINT(1) NOT NULL DEFAULT 0,
+            ticket_issued TINYINT(1) NOT NULL DEFAULT 0,
+            hotel_confirmed TINYINT(1) NOT NULL DEFAULT 0,
+            reference_staff_id INT NULL,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_ub_agency (agency_id),
+            INDEX idx_ub_status (agency_id, booking_status)
+        )
+    ");
+
+    // ── Hajj & Umrah — Payments ─────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS umrah_payments (
+            id VARCHAR(50) PRIMARY KEY,
+            agency_id INT NOT NULL,
+            booking_id VARCHAR(50) NOT NULL,
+            amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+            payment_date DATE NOT NULL,
+            payment_method VARCHAR(50) NOT NULL DEFAULT 'Cash',
+            notes TEXT,
+            created_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            INDEX idx_upy_agency (agency_id),
+            INDEX idx_upy_booking (booking_id)
+        )
+    ");
+
 } catch (PDOException $e) {
     die("Database Connection / Migration failed: " . $e->getMessage() . ". Please check credentials.");
 }

@@ -95,7 +95,8 @@ function renderAgencyApp($conn, $modules) {
     $records = [];
     if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation', 'ocr_scanner'])
         && empty($modules[$page]['sc_module'])
-        && empty($modules[$page]['acc_module'])) {
+        && empty($modules[$page]['acc_module'])
+        && empty($modules[$page]['umrah_module'])) {
         if ($page === 'customers') {
             $stmt = $conn->prepare("SELECT * FROM customers WHERE agency_id = ? ORDER BY id DESC");
             $stmt->execute([$agency_id]);
@@ -279,6 +280,46 @@ function renderAgencyApp($conn, $modules) {
                                       <?= $active_page === $ak ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $aicon ?> w-4 text-center text-xs"></i>
                                 <?= $alabel ?>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php elseif ($key === 'hajj_umrah'): ?>
+                    <?php
+                    $hu_pages = ['umrah_packages','umrah_bookings','umrah_payments','umrah_checklist','umrah_reports'];
+                    $hu_open  = in_array($active_page, $hu_pages);
+                    ?>
+                    <?php if ($locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed">
+                            <i class="fa-solid fa-kaaba w-5 text-center"></i>
+                            <span class="flex-1">Hajj &amp; Umrah</span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" onclick="toggleHuMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $hu_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="fa-solid fa-kaaba w-5 text-center"></i>
+                            <span class="flex-1 text-left">Hajj &amp; Umrah</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="huMenuChevron"
+                               style="<?= $hu_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="huSubMenu" class="<?= $hu_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <?php
+                            $hu_sub = [
+                                'umrah_packages'  => ['Packages',           'fa-solid fa-box-open'],
+                                'umrah_bookings'  => ['Bookings',           'fa-solid fa-calendar-check'],
+                                'umrah_payments'  => ['Payments',           'fa-solid fa-coins'],
+                                'umrah_checklist' => ['Document Checklist', 'fa-solid fa-list-check'],
+                                'umrah_reports'   => ['Reports',            'fa-solid fa-chart-bar'],
+                            ];
+                            foreach ($hu_sub as $hk => [$hlabel, $hicon]):
+                            ?>
+                            <a href="?route=app&page=<?= $hk ?>"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === $hk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="<?= $hicon ?> w-4 text-center text-xs"></i>
+                                <?= $hlabel ?>
                             </a>
                             <?php endforeach; ?>
                         </div>
@@ -561,6 +602,7 @@ function renderAgencyApp($conn, $modules) {
             if (chev) chev.style.transform = hidden ? '' : 'rotate(180deg)';
         }
         window.toggleTsMenu  = function() { _toggleMenu('tsSubMenu',  'tsMenuChevron');  };
+        window.toggleHuMenu  = function() { _toggleMenu('huSubMenu',  'huMenuChevron');  };
         window.toggleAccMenu = function() { _toggleMenu('accSubMenu', 'accMenuChevron'); };
         window.toggleScMenu  = function() { _toggleMenu('scSubMenu',  'scMenuChevron');  };
         window.toggleWaMenu  = function() { _toggleMenu('waSubMenu',  'waMenuChevron');  };
@@ -705,6 +747,8 @@ function renderAgencyApp($conn, $modules) {
                 include __DIR__ . '/agency/whatsapp_automation.php';
             elseif (isset($modules[$page]) && !empty($modules[$page]['sc_module'])):
                 if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=dashboard"); }
+                include __DIR__ . '/agency/' . $page . '.php';
+            elseif (isset($modules[$page]) && !empty($modules[$page]['umrah_module'])):
                 include __DIR__ . '/agency/' . $page . '.php';
             elseif ($page === 'ocr_scanner'):
                 include __DIR__ . '/agency/ocr_scanner.php';
