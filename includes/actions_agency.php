@@ -570,3 +570,6 @@
         // ------------- HAJJ & UMRAH MODULE ACTIONS -------------------
         require_once __DIR__ . '/umrah_actions.php';
 
+        // ------------- STAFF MANAGEMENT MODULE ACTIONS ---------------
+        require_once __DIR__ . '/staff_actions.php';
+

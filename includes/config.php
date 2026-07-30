@@ -146,8 +146,12 @@ $modules = [
     'acc_financial_reports'  => ['title' => 'Financial Reports',   'icon' => 'fa-solid fa-chart-pie',           'hidden' => true, 'acc_module' => true],
     'acc_settings'           => ['title' => 'Settings',            'icon' => 'fa-solid fa-gear',                'hidden' => true, 'acc_module' => true, 'admin_only' => true],
     'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download', 'hidden' => true, 'travel_module' => true],
-    'staff' => ['title' => 'Staff Management', 'icon' => 'fa-solid fa-user-tie', 'admin_only' => true],
-    'staff_history' => ['title' => 'Working History', 'icon' => 'fa-solid fa-clock-rotate-left', 'admin_only' => true, 'hidden' => true],
+    // Staff Management group sentinel — sub-pages carry 'staff_module' => true
+    'staff_mgmt'       => ['title' => 'Staff Management', 'icon' => 'fa-solid fa-user-tie',            'admin_only' => true],
+    'staff'            => ['title' => 'Staff',             'icon' => 'fa-solid fa-users',               'admin_only' => true, 'hidden' => true, 'staff_module' => true],
+    'staff_history'    => ['title' => 'Working History',   'icon' => 'fa-solid fa-clock-rotate-left',   'admin_only' => true, 'hidden' => true, 'staff_module' => true],
+    'staff_attendance' => ['title' => 'Attendance',        'icon' => 'fa-solid fa-calendar-day',        'admin_only' => true, 'hidden' => true, 'staff_module' => true],
+    'staff_salary'     => ['title' => 'Salary',            'icon' => 'fa-solid fa-money-bill-wave',     'admin_only' => true, 'hidden' => true, 'staff_module' => true],
     'profile' => ['title' => 'Agency Settings', 'icon' => 'fa-solid fa-sliders', 'admin_only' => true, 'hidden' => true]
 ];
 

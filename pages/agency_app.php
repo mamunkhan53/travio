@@ -96,7 +96,8 @@ function renderAgencyApp($conn, $modules) {
     if (!in_array($page, ['dashboard', 'profile', 'staff', 'staff_history', 'customer_profile', 'query_history', 'download', 'subscription_payment', 'accounting', 'whatsapp', 'whatsapp_automation', 'ocr_scanner'])
         && empty($modules[$page]['sc_module'])
         && empty($modules[$page]['acc_module'])
-        && empty($modules[$page]['umrah_module'])) {
+        && empty($modules[$page]['umrah_module'])
+        && empty($modules[$page]['staff_module'])) {
         if ($page === 'customers') {
             $stmt = $conn->prepare("SELECT * FROM customers WHERE agency_id = ? ORDER BY id DESC");
             $stmt->execute([$agency_id]);
@@ -367,6 +368,45 @@ function renderAgencyApp($conn, $modules) {
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                <?php elseif ($key === 'staff_mgmt'): ?>
+                    <?php
+                    $sm_pages = ['staff','staff_history','staff_attendance','staff_salary'];
+                    $sm_open  = in_array($active_page, $sm_pages);
+                    ?>
+                    <?php if ($locked): ?>
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-300 cursor-not-allowed">
+                            <i class="fa-solid fa-user-tie w-5 text-center"></i>
+                            <span class="flex-1">Staff Management</span>
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" onclick="toggleSmMenu()"
+                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                                       <?= $sm_open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                            <i class="fa-solid fa-user-tie w-5 text-center"></i>
+                            <span class="flex-1 text-left">Staff Management</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="smMenuChevron"
+                               style="<?= $sm_open ? 'transform:rotate(180deg)' : '' ?>"></i>
+                        </button>
+                        <div id="smSubMenu" class="<?= $sm_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
+                            <?php
+                            $sm_sub = [
+                                'staff'            => ['Staff',           'fa-solid fa-users'],
+                                'staff_history'    => ['Working History', 'fa-solid fa-clock-rotate-left'],
+                                'staff_attendance' => ['Attendance',      'fa-solid fa-calendar-day'],
+                                'staff_salary'     => ['Salary',          'fa-solid fa-money-bill-wave'],
+                            ];
+                            foreach ($sm_sub as $smk => [$smlabel, $smicon]):
+                            ?>
+                            <a href="?route=app&page=<?= $smk ?>"
+                               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
+                                      <?= $active_page === $smk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                                <i class="<?= $smicon ?> w-4 text-center text-xs"></i>
+                                <?= $smlabel ?>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 <?php elseif ($key === 'whatsapp' && !$_SESSION['is_staff']): ?>
                     <?php
                     $wa_open   = in_array($active_page, ['whatsapp', 'whatsapp_automation']);
@@ -606,6 +646,7 @@ function renderAgencyApp($conn, $modules) {
         window.toggleAccMenu = function() { _toggleMenu('accSubMenu', 'accMenuChevron'); };
         window.toggleScMenu  = function() { _toggleMenu('scSubMenu',  'scMenuChevron');  };
         window.toggleWaMenu  = function() { _toggleMenu('waSubMenu',  'waMenuChevron');  };
+        window.toggleSmMenu  = function() { _toggleMenu('smSubMenu',  'smMenuChevron');  };
         // ── Global dark mode ──
         window.toggleDark = function() {
             const isDark = document.documentElement.getAttribute('data-dark') === '1';
@@ -735,6 +776,10 @@ function renderAgencyApp($conn, $modules) {
                 include __DIR__ . '/agency/staff.php';
             elseif ($page === 'staff_history' && !$_SESSION['is_staff']):
                 include __DIR__ . '/agency/staff.php';
+            elseif ($page === 'staff_attendance' && !$_SESSION['is_staff']):
+                include __DIR__ . '/agency/staff_attendance.php';
+            elseif ($page === 'staff_salary' && !$_SESSION['is_staff']):
+                include __DIR__ . '/agency/staff_salary.php';
             elseif ($page === 'profile'):
                 include __DIR__ . '/agency/profile.php';
             elseif ($page === 'subscription_payment' && !$_SESSION['is_staff']):

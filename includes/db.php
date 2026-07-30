@@ -812,6 +812,47 @@ try {
     // Add booking_date column (migration for existing installs)
     try { $conn->exec("ALTER TABLE umrah_bookings ADD COLUMN booking_date DATE NULL AFTER travel_date"); } catch(PDOException $e) {}
 
+    // ── Staff Attendance ─────────────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS staff_attendance (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id     INT NOT NULL,
+            staff_id      INT NOT NULL,
+            attendance_date DATE NOT NULL,
+            status        ENUM('Present','Absent','Late','Leave') NOT NULL DEFAULT 'Present',
+            check_in      TIME NULL,
+            check_out     TIME NULL,
+            notes         TEXT,
+            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_att_staff_date (agency_id, staff_id, attendance_date),
+            INDEX idx_att_agency_date (agency_id, attendance_date),
+            INDEX idx_att_staff (agency_id, staff_id)
+        )
+    ");
+
+    // ── Staff Salary ─────────────────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS staff_salary (
+            id              INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id       INT NOT NULL,
+            staff_id        INT NOT NULL,
+            salary_month    DATE NOT NULL,
+            basic_salary    DECIMAL(12,2) NOT NULL DEFAULT 0,
+            bonus           DECIMAL(12,2) NOT NULL DEFAULT 0,
+            deduction       DECIMAL(12,2) NOT NULL DEFAULT 0,
+            commission      DECIMAL(12,2) NOT NULL DEFAULT 0,
+            net_salary      DECIMAL(12,2) NOT NULL DEFAULT 0,
+            payment_status  ENUM('Paid','Unpaid') NOT NULL DEFAULT 'Unpaid',
+            payment_date    DATE NULL,
+            notes           TEXT,
+            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_sal_agency_month (agency_id, salary_month),
+            INDEX idx_sal_staff (agency_id, staff_id)
+        )
+    ");
+
     // ── Hajj & Umrah — Payments ─────────────────────────────────────────────
     $conn->exec("
         CREATE TABLE IF NOT EXISTS umrah_payments (
