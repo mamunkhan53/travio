@@ -52,6 +52,31 @@ if ($printId) {
     $pr->execute([$printId, $agency_id]);
     $printRow = $pr->fetch(PDO::FETCH_ASSOC);
 }
+// ── CSV Export ───────────────────────────────────────────────────────────────
+if (($_GET['export'] ?? '') === 'csv') {
+    $filename = 'salary_' . $f_year . ($f_staff ? '_staff'.$f_staff : '') . ($f_status ? '_'.strtolower($f_status) : '') . '.csv';
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['Staff', 'Role', 'Salary Month', 'Basic Salary', 'Bonus', 'Commission', 'Deduction', 'Net Salary', 'Status', 'Payment Date', 'Notes']);
+    foreach ($records as $r) {
+        fputcsv($out, [
+            $r['full_name'],
+            $r['role'],
+            date('M Y', strtotime($r['salary_month'])),
+            number_format($r['basic_salary'], 2, '.', ''),
+            number_format($r['bonus'], 2, '.', ''),
+            number_format($r['commission'], 2, '.', ''),
+            number_format($r['deduction'], 2, '.', ''),
+            number_format($r['net_salary'], 2, '.', ''),
+            $r['payment_status'],
+            $r['payment_date'] ?? '',
+            $r['notes'] ?? ''
+        ]);
+    }
+    fclose($out);
+    exit;
+}
 ?>
 <?php if ($printRow): ?>
 <!-- ── Salary Slip Print View ─────────────────────────────────────────────── -->
@@ -174,9 +199,15 @@ if ($printId) {
                 </h2>
                 <p class="text-xs text-slate-400 mt-0.5"><?= count($records) ?> record(s) found</p>
             </div>
-            <button onclick="openSalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
-                <i class="fa-solid fa-plus"></i> Add Salary
-            </button>
+            <div class="flex gap-2">
+                <a href="?route=app&page=staff_salary<?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>&year=<?= urlencode($f_year) ?><?= $f_status ? '&status='.urlencode($f_status) : '' ?>&export=csv"
+                   class="px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
+                </a>
+                <button onclick="openSalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
+                    <i class="fa-solid fa-plus"></i> Add Salary
+                </button>
+            </div>
         </div>
 
         <!-- Filters -->

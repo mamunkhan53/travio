@@ -70,6 +70,39 @@ if ($viewMode === 'summary') {
     $q->execute($sumParams);
     $summary = $q->fetchAll(PDO::FETCH_ASSOC);
 }
+// ── CSV Export ───────────────────────────────────────────────────────────────
+if (($_GET['export'] ?? '') === 'csv') {
+    $filename = 'attendance_' . $f_month . ($f_staff ? '_staff'.$f_staff : '') . '.csv';
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    $out = fopen('php://output', 'w');
+    if ($viewMode === 'summary') {
+        fputcsv($out, ['Staff', 'Role', 'Present', 'Absent', 'Late', 'Leave', 'Total Days', 'Attendance %']);
+        foreach ($summary as $r) {
+            $pct = $r['total_days'] > 0 ? round(($r['present'] + $r['late']) / $r['total_days'] * 100) : 0;
+            fputcsv($out, [
+                $r['full_name'], $r['role'],
+                (int)$r['present'], (int)$r['absent'], (int)$r['late'], (int)$r['leave'],
+                (int)$r['total_days'], $pct . '%'
+            ]);
+        }
+    } else {
+        fputcsv($out, ['Date', 'Staff', 'Role', 'Status', 'Check In', 'Check Out', 'Notes']);
+        foreach ($records as $r) {
+            fputcsv($out, [
+                $r['attendance_date'],
+                $r['full_name'],
+                $r['role'],
+                $r['status'],
+                $r['check_in'] ? date('H:i', strtotime($r['check_in'])) : '',
+                $r['check_out'] ? date('H:i', strtotime($r['check_out'])) : '',
+                $r['notes'] ?? ''
+            ]);
+        }
+    }
+    fclose($out);
+    exit;
+}
 ?>
 <div class="space-y-6">
     <!-- Header -->
@@ -89,6 +122,10 @@ if ($viewMode === 'summary') {
                 <a href="?route=app&page=staff_attendance&view=summary&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>"
                    class="px-4 py-2 rounded-xl text-sm font-bold transition <?= $viewMode==='summary' ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
                     <i class="fa-solid fa-chart-bar mr-1"></i> Monthly Summary
+                </a>
+                <a href="?route=app&page=staff_attendance&view=<?= urlencode($viewMode) ?>&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?><?= $f_status ? '&status='.urlencode($f_status) : '' ?><?= $f_from ? '&from='.urlencode($f_from) : '' ?><?= $f_to ? '&to='.urlencode($f_to) : '' ?>&export=csv"
+                   class="px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
                 </a>
                 <button onclick="openAttModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
                     <i class="fa-solid fa-plus"></i> Add Record
