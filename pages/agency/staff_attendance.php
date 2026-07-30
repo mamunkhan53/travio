@@ -70,44 +70,21 @@ if ($viewMode === 'summary') {
     $q->execute($sumParams);
     $summary = $q->fetchAll(PDO::FETCH_ASSOC);
 }
-// ── CSV Export ───────────────────────────────────────────────────────────────
-if (($_GET['export'] ?? '') === 'csv') {
-    $filename = 'attendance_' . $f_month . ($f_staff ? '_staff'.$f_staff : '') . '.csv';
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    $out = fopen('php://output', 'w');
-    if ($viewMode === 'summary') {
-        fputcsv($out, ['Staff', 'Role', 'Present', 'Absent', 'Late', 'Leave', 'Total Days', 'Attendance %']);
-        foreach ($summary as $r) {
-            $pct = $r['total_days'] > 0 ? round(($r['present'] + $r['late']) / $r['total_days'] * 100) : 0;
-            fputcsv($out, [
-                $r['full_name'], $r['role'],
-                (int)$r['present'], (int)$r['absent'], (int)$r['late'], (int)$r['leave'],
-                (int)$r['total_days'], $pct . '%'
-            ]);
-        }
-    } else {
-        fputcsv($out, ['Date', 'Staff', 'Role', 'Status', 'Check In', 'Check Out', 'Notes']);
-        foreach ($records as $r) {
-            fputcsv($out, [
-                $r['attendance_date'],
-                $r['full_name'],
-                $r['role'],
-                $r['status'],
-                $r['check_in'] ? date('H:i', strtotime($r['check_in'])) : '',
-                $r['check_out'] ? date('H:i', strtotime($r['check_out'])) : '',
-                $r['notes'] ?? ''
-            ]);
-        }
-    }
-    fclose($out);
-    exit;
-}
 ?>
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #attPrintArea, #attPrintArea * { visibility: visible; }
+    #attPrintArea { position: fixed; top: 0; left: 0; width: 100%; padding: 24px; }
+    .no-print { display: none !important; }
+    .att-action-col { display: none !important; }
+    .att-print-header { display: block !important; }
+}
+</style>
 <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
-        <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+    <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden" id="attPrintArea">
+        <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50 no-print">
             <div>
                 <h2 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-calendar-day text-indigo-500"></i> Attendance
@@ -123,10 +100,9 @@ if (($_GET['export'] ?? '') === 'csv') {
                    class="px-4 py-2 rounded-xl text-sm font-bold transition <?= $viewMode==='summary' ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
                     <i class="fa-solid fa-chart-bar mr-1"></i> Monthly Summary
                 </a>
-                <a href="?route=app&page=staff_attendance&view=<?= urlencode($viewMode) ?>&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?><?= $f_status ? '&status='.urlencode($f_status) : '' ?><?= $f_from ? '&from='.urlencode($f_from) : '' ?><?= $f_to ? '&to='.urlencode($f_to) : '' ?>&export=csv"
-                   class="px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
-                </a>
+                <button onclick="window.print()" class="px-4 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2 no-print">
+                    <i class="fa-solid fa-file-pdf text-rose-500"></i> Export PDF
+                </button>
                 <button onclick="openAttModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
                     <i class="fa-solid fa-plus"></i> Add Record
                 </button>
@@ -134,7 +110,7 @@ if (($_GET['export'] ?? '') === 'csv') {
         </div>
 
         <!-- Filters -->
-        <form method="GET" class="flex flex-wrap gap-3 p-4 border-b bg-slate-50/30">
+        <form method="GET" class="flex flex-wrap gap-3 p-4 border-b bg-slate-50/30 no-print">
             <input type="hidden" name="route" value="app">
             <input type="hidden" name="page"  value="staff_attendance">
             <input type="hidden" name="view"  value="<?= htmlspecialchars($viewMode) ?>">
@@ -156,6 +132,15 @@ if (($_GET['export'] ?? '') === 'csv') {
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Filter</button>
         </form>
 
+        <!-- Print header (hidden on screen, visible on print) -->
+        <div class="hidden px-6 pt-4 pb-2 att-print-header">
+            <h2 class="text-xl font-extrabold text-slate-800 mb-1">
+                <?= $viewMode === 'summary' ? 'Monthly Attendance Summary' : 'Attendance Records' ?>
+                — <?= htmlspecialchars(date('F Y', strtotime($f_month.'-01'))) ?>
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">Generated: <?= date('d M Y H:i') ?></p>
+        </div>
+
         <?php if ($viewMode === 'list'): ?>
         <!-- List View -->
         <div class="overflow-x-auto">
@@ -169,7 +154,7 @@ if (($_GET['export'] ?? '') === 'csv') {
                         <th class="px-6 py-4 font-bold">Check In</th>
                         <th class="px-6 py-4 font-bold">Check Out</th>
                         <th class="px-6 py-4 font-bold">Notes</th>
-                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                        <th class="px-6 py-4 font-bold text-right att-action-col">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -186,7 +171,7 @@ if (($_GET['export'] ?? '') === 'csv') {
                         <td class="px-6 py-4"><?= $r['check_in'] ? date('h:i A', strtotime($r['check_in'])) : '—' ?></td>
                         <td class="px-6 py-4"><?= $r['check_out'] ? date('h:i A', strtotime($r['check_out'])) : '—' ?></td>
                         <td class="px-6 py-4 text-slate-400 text-xs max-w-[160px] truncate"><?= htmlspecialchars($r['notes'] ?: '—') ?></td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-6 py-4 text-right whitespace-nowrap att-action-col">
                             <button onclick='openAttModal(<?= htmlspecialchars(json_encode($r)) ?>)' class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 transition"><i class="fa-solid fa-pen text-xs"></i></button>
                             <form method="POST" action="?route=app" class="inline ml-1" onsubmit="return confirm('Delete this attendance record?')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">

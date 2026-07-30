@@ -52,32 +52,17 @@ if ($printId) {
     $pr->execute([$printId, $agency_id]);
     $printRow = $pr->fetch(PDO::FETCH_ASSOC);
 }
-// ── CSV Export ───────────────────────────────────────────────────────────────
-if (($_GET['export'] ?? '') === 'csv') {
-    $filename = 'salary_' . $f_year . ($f_staff ? '_staff'.$f_staff : '') . ($f_status ? '_'.strtolower($f_status) : '') . '.csv';
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    $out = fopen('php://output', 'w');
-    fputcsv($out, ['Staff', 'Role', 'Salary Month', 'Basic Salary', 'Bonus', 'Commission', 'Deduction', 'Net Salary', 'Status', 'Payment Date', 'Notes']);
-    foreach ($records as $r) {
-        fputcsv($out, [
-            $r['full_name'],
-            $r['role'],
-            date('M Y', strtotime($r['salary_month'])),
-            number_format($r['basic_salary'], 2, '.', ''),
-            number_format($r['bonus'], 2, '.', ''),
-            number_format($r['commission'], 2, '.', ''),
-            number_format($r['deduction'], 2, '.', ''),
-            number_format($r['net_salary'], 2, '.', ''),
-            $r['payment_status'],
-            $r['payment_date'] ?? '',
-            $r['notes'] ?? ''
-        ]);
-    }
-    fclose($out);
-    exit;
-}
 ?>
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #salListPrintArea, #salListPrintArea * { visibility: visible; }
+    #salListPrintArea { position: fixed; top: 0; left: 0; width: 100%; padding: 24px; }
+    .no-print { display: none !important; }
+    .sal-action-col { display: none !important; }
+    .sal-print-header { display: block !important; }
+}
+</style>
 <?php if ($printRow): ?>
 <!-- ── Salary Slip Print View ─────────────────────────────────────────────── -->
 <style>
@@ -191,8 +176,13 @@ if (($_GET['export'] ?? '') === 'csv') {
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
-        <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+    <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden" id="salListPrintArea">
+        <!-- Print header (hidden on screen) -->
+        <div class="sal-print-header hidden px-6 pt-4 pb-2">
+            <h2 class="text-xl font-extrabold text-slate-800 mb-1">Salary Records — <?= htmlspecialchars($f_year) ?><?= $f_staff && isset($staffMap[$f_staff]) ? ' · '.htmlspecialchars($staffMap[$f_staff]['full_name']) : '' ?><?= $f_status ? ' · '.$f_status : '' ?></h2>
+            <p class="text-xs text-slate-400 mb-4">Generated: <?= date('d M Y H:i') ?></p>
+        </div>
+        <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50 no-print">
             <div>
                 <h2 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
                     <i class="fa-solid fa-money-bill-wave text-indigo-500"></i> Salary Records
@@ -200,10 +190,9 @@ if (($_GET['export'] ?? '') === 'csv') {
                 <p class="text-xs text-slate-400 mt-0.5"><?= count($records) ?> record(s) found</p>
             </div>
             <div class="flex gap-2">
-                <a href="?route=app&page=staff_salary<?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>&year=<?= urlencode($f_year) ?><?= $f_status ? '&status='.urlencode($f_status) : '' ?>&export=csv"
-                   class="px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                    <i class="fa-solid fa-file-csv text-emerald-600"></i> Export CSV
-                </a>
+                <button onclick="window.print()" class="px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center gap-2 no-print">
+                    <i class="fa-solid fa-file-pdf text-rose-500"></i> Export PDF
+                </button>
                 <button onclick="openSalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
                     <i class="fa-solid fa-plus"></i> Add Salary
                 </button>
@@ -246,7 +235,7 @@ if (($_GET['export'] ?? '') === 'csv') {
                         <th class="px-6 py-4 font-bold text-right">Deduction</th>
                         <th class="px-6 py-4 font-bold text-right">Net Salary</th>
                         <th class="px-6 py-4 font-bold">Status</th>
-                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                        <th class="px-6 py-4 font-bold text-right sal-action-col">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -272,7 +261,7 @@ if (($_GET['export'] ?? '') === 'csv') {
                             <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-700">Unpaid</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <td class="px-6 py-4 text-right whitespace-nowrap sal-action-col">
                             <!-- Print Slip -->
                             <a href="?route=app&page=staff_salary&print=<?= $r['id'] ?>" class="text-slate-600 bg-slate-100 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-slate-200 transition" title="Print Salary Slip"><i class="fa-solid fa-print text-xs"></i></a>
                             <!-- Mark Paid -->
