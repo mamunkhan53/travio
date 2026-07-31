@@ -322,8 +322,8 @@
                 flash("Expense recorded successfully.");
             }
 
-            $redirectQs = !empty($_POST['redirect_qs']) ? '&' . ltrim($_POST['redirect_qs'], '&') : '';
-            redirect("/app/accounting" . $redirectQs);
+            $redirectQs = !empty($_POST['redirect_qs']) ? '?' . ltrim($_POST['redirect_qs'], '?&') : '';
+            redirect("/app/acc_expenses" . $redirectQs);
         }
 
         // ------------- WHATSAPP AUTOMATION: SAVE SETTINGS (Agency Admin only) -------------

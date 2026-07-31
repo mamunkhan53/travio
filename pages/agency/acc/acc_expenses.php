@@ -35,8 +35,7 @@ $accRedirectQs = "from_date=$accFrom&to_date=$accTo";
     <?php endif; ?>
 </div>
 
-<form method="GET" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
-    <input type="hidden" name="route" value="app"><input type="hidden" name="page" value="acc_expenses">
+<form method="GET" action="/app/acc_expenses" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
     <div><label class="block text-xs font-bold text-slate-500 mb-1">From</label><input type="date" name="from_date" value="<?= $accFrom ?>" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
     <div><label class="block text-xs font-bold text-slate-500 mb-1">To</label><input type="date" name="to_date" value="<?= $accTo ?>" class="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
     <div><label class="block text-xs font-bold text-slate-500 mb-1">Category</label>
@@ -93,7 +92,7 @@ $accRedirectQs = "from_date=$accFrom&to_date=$accTo";
     <td class="px-4 py-3 text-xs text-slate-500"><?= xss_clean($ex['staff_name']??'—') ?></td>
     <td class="px-4 py-3">
         <?php if($accCanEdit): ?><button onclick="openExpModal('edit','<?= rawurlencode(json_encode($ex)) ?>')" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Edit</button><?php endif; ?>
-        <?php if($accCanDel): ?><a href="/app?action=delete_expense&id=<?= urlencode($ex['id']) ?>&redirect_qs=<?= urlencode('page=acc_expenses&from_date='.$accFrom.'&to_date='.$accTo) ?>" onclick="return confirm('Delete?')" class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition inline-block">Del</a><?php endif; ?>
+        <?php if($accCanDel): ?><a href="/app?action=delete_expense&id=<?= urlencode($ex['id']) ?>&redirect_qs=<?= urlencode('from_date='.$accFrom.'&to_date='.$accTo) ?>" onclick="return confirm('Delete?')" class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition inline-block">Del</a><?php endif; ?>
     </td>
 </tr>
 <?php endforeach; endif; ?>
@@ -116,7 +115,7 @@ $accRedirectQs = "from_date=$accFrom&to_date=$accTo";
             <input type="hidden" name="action" value="save_expense">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="expense_id" id="exp_id" value="">
-            <input type="hidden" name="redirect_qs" value="page=acc_expenses&from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>">
+            <input type="hidden" name="redirect_qs" value="from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>">
             <div class="grid grid-cols-2 gap-4">
                 <div><label class="block text-sm font-bold text-slate-700 mb-2">Date</label><input type="date" name="expense_date" id="exp_date" required value="<?= date('Y-m-d') ?>" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"></div>
                 <div><label class="block text-sm font-bold text-slate-700 mb-2">Category</label><input type="text" list="expCategoryList" name="category" id="exp_category" required placeholder="e.g. Office Rent" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"><datalist id="expCategoryList"><?php foreach($expCats as $cat): ?><option value="<?= xss_clean($cat) ?>"><?php endforeach; ?></datalist></div>

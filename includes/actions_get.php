@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     flash("Expense deleted.");
 
     $redirectQs = !empty($_GET['redirect_qs']) ? '?' . ltrim($_GET['redirect_qs'], '?&') : '';
-    redirect("/app/accounting" . $redirectQs);
+    redirect("/app/acc_expenses" . $redirectQs);
 }
 
 // ------------- WHATSAPP: AJAX — FETCH RECIPIENTS FOR A LOG ENTRY -------------
