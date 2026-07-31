@@ -6,6 +6,12 @@
 // small included files below, split by feature area for easier maintenance.
 $route = $_GET['route'] ?? 'home';
 
+// Support clean URL: /travio-bangla (PHP built-in server passes full REQUEST_URI through index.php)
+$_uriPath = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+if (trim($_uriPath, '/') === 'travio-bangla') {
+    $route = 'travio-bangla';
+}
+
 // Process Actions First
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();

@@ -778,6 +778,7 @@ function renderLandingPage($conn) {
                         <li><a href="?route=login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Login</a></li>
                         <li><a href="?route=register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Register</a></li>
                         <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Documentation</a></li>
+                        <li><a href="/travio-bangla" class="text-[#2BC4B0] hover:text-[#1FB8A4] transition font-semibold">Bangla Portal</a></li>
                     </ul>
                 </div>
 
@@ -808,6 +809,9 @@ function renderLandingPage($conn) {
 
             </div>
         </div>
+
+        <!-- Payment Icons -->
+        <?php include __DIR__ . '/../includes/payment_icons.php'; ?>
 
         <!-- Bottom bar -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#68727F]">

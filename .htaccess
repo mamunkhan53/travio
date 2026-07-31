@@ -1,0 +1,13 @@
+Options -Indexes
+RewriteEngine On
+
+# Clean URL: /travio-bangla → /?route=travio-bangla
+RewriteRule ^travio-bangla/?$ index.php?route=travio-bangla [QSA,L]
+
+# Route all other requests through index.php (skip real files/dirs)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Security: block direct access to includes/
+RewriteRule ^includes/ - [F,L]

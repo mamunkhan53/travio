@@ -1,0 +1,98 @@
+## Create a Separate Bangla Landing Page (Not a Full Multilingual Website)
+
+I do **NOT** want a multilingual website or translated versions of every page.
+
+I only need **one dedicated landing page** in Bangla.
+
+### Requirements
+
+### 1. Create a new page
+
+Create a new page with the URL:
+
+`/travio-bangla`
+
+This page will be completely separate from the existing homepage.
+
+---
+
+### 2. Homepage only
+
+This page should use the **same design, layout, sections, animations, colors, and components** as the current homepage.
+
+Only change the **content** to Bangla.
+
+Everything else should remain identical.
+
+Examples:
+
+* Hero Section
+* Features
+* Why Choose Us
+* Pricing
+* FAQ
+* CTA
+* Footer
+
+All text should be in Bangla.
+
+---
+
+### 3. Keep all other pages unchanged
+
+Do **NOT** create Bangla versions of other pages.
+
+When users click any navigation menu or button on `/travio-bangla`, it should continue to open the existing English pages.
+
+Example:
+
+* `/travio-bangla` → Bangla Homepage
+* Pricing button → `/pricing` (English)
+* Features → `/features` (English)
+* Login → `/login`
+* Register → `/register`
+* Documentation → Existing page
+* Contact → Existing page
+
+Only the homepage content is Bangla.
+
+---
+
+### 4. Footer Menu
+
+In the footer, under the **Portal** section, add a new menu item:
+
+**Bangla Portal**
+
+Place it below **Documentation**.
+
+It should link to:
+
+`/travio-bangla`
+
+---
+
+### 5. Payment Icons
+
+Above the copyright/footer section, add a centered row of payment method icons:
+
+* bKash
+* Nagad
+* Visa
+* Mastercard
+* Pubali Bank
+
+Requirements:
+
+* Center aligned
+* Responsive
+* Even spacing
+* Use official brand icons where available
+
+---
+
+### Important
+
+Do **not** modify the current English homepage.
+
+Create `/travio-bangla` as a separate landing page that shares the same UI but contains Bangla content only. All navigation from this page should continue using the existing English pages, except the "Bangla Portal" footer link, which should always point back to `/travio-bangla`.

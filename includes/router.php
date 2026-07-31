@@ -50,6 +50,7 @@ switch ($route) {
     case 'home': renderLandingPage($conn); break;
     case 'login': renderAuthPage('login', $countryCurrencyMap); break;
     case 'register': renderAuthPage('register', $countryCurrencyMap); break;
+    case 'travio-bangla': renderBanglaLandingPage($conn); break;
     case 'forgot_password': renderForgotPasswordPage(); break;
     case 'reset_password': renderResetPasswordPage($conn); break;
     case 'verify_email':

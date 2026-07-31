@@ -35,6 +35,7 @@ require_once __DIR__ . '/includes/config.php';
 
 // Define every page-rendering function BEFORE the router tries to call one of them
 require_once __DIR__ . '/pages/landing.php';
+require_once __DIR__ . '/pages/landing_bangla.php';
 require_once __DIR__ . '/pages/auth.php';
 require_once __DIR__ . '/pages/superadmin.php';
 require_once __DIR__ . '/pages/agency_app.php';
