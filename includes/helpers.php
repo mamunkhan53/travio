@@ -505,6 +505,27 @@ function sendAppEmail($to, $subject, $htmlBody) {
     }
 }
 
+function sendPasswordResetEmail($email, $name, $token) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '?route=reset_password&token=' . $token;
+    $subject = "Reset Your Password - Travio ERP";
+    $body = "<!DOCTYPE html><html><body style='font-family:Inter,sans-serif;background:#0A0C11;color:#EAEDF3;padding:40px 20px;'>"
+          . "<div style='max-width:520px;margin:0 auto;background:rgba(22,26,35,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px;'>"
+          . "<div style='margin-bottom:28px;'>"
+          . "<div style='display:inline-flex;align-items:center;gap:10px;'>"
+          . "<div style='width:36px;height:36px;background:linear-gradient(135deg,#2BC4B0,#61DAFB);border-radius:10px;display:flex;align-items:center;justify-content:center;'>"
+          . "<span style='color:#fff;font-size:16px;'>✈</span></div>"
+          . "<span style='font-size:20px;font-weight:700;color:#fff;'>Travio</span></div></div>"
+          . "<h2 style='font-size:22px;font-weight:700;color:#fff;margin:0 0 12px;'>Password Reset Request</h2>"
+          . "<p style='color:#9AA4B2;margin:0 0 24px;line-height:1.6;'>Hi " . htmlspecialchars($name) . ", we received a request to reset your Travio ERP password. Click the button below to set a new password. This link expires in <strong style='color:#EAEDF3;'>1 hour</strong>.</p>"
+          . "<a href=\"$link\" style='display:inline-block;background:#2BC4B0;color:#fff;padding:13px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;margin-bottom:24px;'>Reset My Password</a>"
+          . "<p style='color:#68727F;font-size:12px;margin:0 0 8px;'>Or copy this link into your browser:</p>"
+          . "<p style='color:#68727F;font-size:12px;word-break:break-all;margin:0 0 28px;'>$link</p>"
+          . "<p style='color:#68727F;font-size:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;margin:0;'>If you didn't request this, you can safely ignore this email. Your password will not change.</p>"
+          . "</div></body></html>";
+    return sendAppEmail($email, $subject, $body);
+}
+
 function sendVerificationEmail($email, $name, $token) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '?route=verify_email&token=' . $token;

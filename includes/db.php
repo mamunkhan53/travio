@@ -871,6 +871,19 @@ try {
         )
     ");
 
+    // ── Password Reset Tokens ────────────────────────────────────────────────
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS password_resets (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL,
+            token VARCHAR(64) NOT NULL,
+            created_at DATETIME NOT NULL,
+            used TINYINT(1) NOT NULL DEFAULT 0,
+            INDEX idx_pr_token (token),
+            INDEX idx_pr_email (email)
+        )
+    ");
+
 } catch (PDOException $e) {
     die("Database Connection / Migration failed: " . $e->getMessage() . ". Please check credentials.");
 }

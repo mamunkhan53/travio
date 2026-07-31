@@ -151,6 +151,56 @@
             redirect("?route=login");
         }
 
+        // ------------- FORGOT PASSWORD -------------
+        if ($action === 'forgot_password') {
+            $email = trim($_POST['email'] ?? '');
+            // Look up user in users table (agency admins)
+            $stmt = $conn->prepare("SELECT id, full_name, email FROM users WHERE email = ? AND role != 'Super Admin'");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user) {
+                // Invalidate any old tokens for this email
+                $conn->prepare("UPDATE password_resets SET used = 1 WHERE email = ?")->execute([$email]);
+                $token = bin2hex(random_bytes(32));
+                $conn->prepare("INSERT INTO password_resets (email, token, created_at, used) VALUES (?, ?, NOW(), 0)")
+                     ->execute([$email, $token]);
+                sendPasswordResetEmail($email, $user['full_name'], $token);
+            }
+            // Always redirect to sent=1 regardless — never reveal whether email exists
+            redirect("?route=forgot_password&sent=1");
+        }
+
+        // ------------- RESET PASSWORD -------------
+        if ($action === 'reset_password') {
+            $token   = trim($_POST['token'] ?? '');
+            $pass    = $_POST['password'] ?? '';
+            $confirm = $_POST['confirm_password'] ?? '';
+
+            if (!$token || $pass !== $confirm || strlen($pass) < 8) {
+                flash("Invalid request. Please try again.", "error");
+                redirect("?route=forgot_password");
+            }
+
+            $stmt = $conn->prepare("SELECT * FROM password_resets WHERE token = ? AND used = 0 AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+            $stmt->execute([$token]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                flash("This reset link has expired or already been used.", "error");
+                redirect("?route=forgot_password");
+            }
+
+            $hash = password_hash($pass, PASSWORD_DEFAULT);
+            // Update the user's password
+            $conn->prepare("UPDATE users SET password_hash = ? WHERE email = ?")->execute([$hash, $row['email']]);
+            // Mark token used
+            $conn->prepare("UPDATE password_resets SET used = 1 WHERE token = ?")->execute([$token]);
+
+            flash("Password reset successfully! You can now sign in with your new password.");
+            redirect("?route=login");
+        }
+
         if ($action === 'register') {
             $company = $_POST['company_name'];
             $name = $_POST['full_name'];
