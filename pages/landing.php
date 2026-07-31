@@ -498,14 +498,14 @@ function renderLandingPage($conn) {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <?php
                 $featuresList = [
-                    ['icon' => 'fa-plane', 'title' => 'Air Ticket Management', 'desc' => 'Manage airline bookings, track passenger details, and store ticket information.'],
-                    ['icon' => 'fa-users-viewfinder', 'title' => 'Lead & CRM Management', 'desc' => 'Capture enquiries, follow-up customers, and convert leads into sales easily.'],
-                    ['icon' => 'fa-file-signature', 'title' => 'Visa Processing', 'desc' => 'Track visa applications, document statuses, and embassy appointments.'],
-                    ['icon' => 'fa-map-location-dot', 'title' => 'Tour Packages', 'desc' => 'Create and manage local or international tour packages efficiently.'],
-                    ['icon' => 'fa-hotel', 'title' => 'Hotel Booking', 'desc' => 'Manage hotel reservations, room types, and supplier payments.'],
-                    ['icon' => 'fa-chart-pie', 'title' => 'Sales & Profit Analytics', 'desc' => 'Real-time dashboard showing turnover, due amounts, and net profit.'],
-                    ['icon' => 'fa-address-book', 'title' => 'Customer Database', 'desc' => 'Auto-save customer profiles securely when sales are completed.'],
-                    ['icon' => 'fa-users-gear', 'title' => 'Staff Permissions', 'desc' => 'Add your staff members with granular permissions and track their performance.']
+                    ['icon' => 'fa-plane-departure', 'title' => 'Air Ticket & Visa Processing', 'desc' => 'Manage airline bookings, track passenger details, visa applications, and embassy appointments in one place.'],
+                    ['icon' => 'fa-users-viewfinder', 'title' => 'Lead & CRM Management', 'desc' => 'Capture enquiries, follow-up customers, and convert leads into confirmed sales effortlessly.'],
+                    ['icon' => 'fa-graduation-cap', 'title' => 'Student Consultancy', 'desc' => 'Handle student visa applications, university admissions, and consultancy case tracking end-to-end.'],
+                    ['icon' => 'fa-kaaba', 'title' => 'Hajj & Umrah', 'desc' => 'Manage pilgrimage bookings, group packages, passenger documents, and payment tracking.'],
+                    ['icon' => 'fa-file-invoice-dollar', 'title' => 'Invoice', 'desc' => 'Generate professional invoices instantly, track payments, and manage outstanding dues easily.'],
+                    ['icon' => 'fa-calculator', 'title' => 'Finance & Accounting', 'desc' => 'Track income, expenses, profit/loss, and generate financial reports for your agency.'],
+                    ['icon' => 'fa-address-book', 'title' => 'Customer Database', 'desc' => 'Auto-save customer profiles, purchase history, and documents securely when sales are completed.'],
+                    ['icon' => 'fa-users-gear', 'title' => 'Staff Management', 'desc' => 'Add staff with role-based permissions, track attendance, manage salaries, and monitor performance.'],
                 ];
                 foreach ($featuresList as $f): ?>
                     <div class="sz-card">
@@ -734,36 +734,88 @@ function renderLandingPage($conn) {
     <!-- FOOTER                                                        -->
     <!-- ============================================================ -->
     <footer style="background: #0A0C11; border-top: 1px solid rgba(255,255,255,0.06);" class="pt-16 pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-[rgba(255,255,255,0.06)] pb-12 mb-8">
-            <div class="col-span-1 md:col-span-2">
-                <div class="flex items-center gap-2 mb-6">
-                    <div class="w-8 h-8 bg-gradient-to-br from-[#2BC4B0] to-[#61DAFB] rounded-lg flex items-center justify-center text-white">
-                        <i class="fa-solid fa-plane-departure text-sm"></i>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mb-8 border-b border-[rgba(255,255,255,0.06)]">
+            <!-- 4-column grid: 2 cols on mobile, 4 on desktop -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-10">
+
+                <!-- Col 1: Logo & About -->
+                <div class="col-span-2 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="w-8 h-8 bg-gradient-to-br from-[#2BC4B0] to-[#61DAFB] rounded-lg flex items-center justify-center text-white">
+                            <i class="fa-solid fa-plane-departure text-sm"></i>
+                        </div>
+                        <h1 class="sz-display text-xl font-bold text-white tracking-tight">Travio</h1>
                     </div>
-                    <h1 class="sz-display text-2xl font-bold text-white tracking-tight">Travio</h1>
+                    <p class="text-[#68727F] text-sm leading-relaxed mb-6">The premium ERP designed exclusively to help travel agencies automate and scale their operations.</p>
+                    <div class="flex items-center gap-4">
+                        <a href="https://facebook.com" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(24,119,242,0.2)';this.style.color='#4F9EF7'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
+                            <i class="fa-brands fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(255,0,0,0.2)';this.style.color='#FF4444'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
+                            <i class="fa-brands fa-youtube text-sm"></i>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(225,48,108,0.2)';this.style.color='#E1306C'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
+                            <i class="fa-brands fa-instagram text-sm"></i>
+                        </a>
+                    </div>
                 </div>
-                <p class="text-[#68727F] mb-6 max-w-sm leading-relaxed">The premium Travio ERP designed exclusively to help travel agencies automate and scale their operations.</p>
-            </div>
-            <div>
-                <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Quick Links</h4>
-                <ul class="space-y-4 text-sm">
-                    <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Home</a></li>
-                    <li><a href="#features" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Features</a></li>
-                    <li><a href="#pricing" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Pricing</a></li>
-                    <li><a href="#faq" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">FAQ</a></li>
-                    <li><a href="?route=login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Login</a></li>
-                    <li><a href="?route=register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Register</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Contact Us</h4>
-                <ul class="space-y-4 text-sm">
-                    <li class="flex items-center gap-3 text-[#9AA4B2]"><i class="fa-solid fa-envelope text-[#68727F]"></i> hello@southzone.com</li>
-                </ul>
+
+                <!-- Col 2: Company -->
+                <div>
+                    <h4 class="text-white font-bold mb-5 uppercase tracking-wider text-xs">Company</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Home</a></li>
+                        <li><a href="#features" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Features</a></li>
+                        <li><a href="#pricing" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Pricing</a></li>
+                        <li><a href="#faq" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Portal -->
+                <div>
+                    <h4 class="text-white font-bold mb-5 uppercase tracking-wider text-xs">Portal</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="?route=login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Login</a></li>
+                        <li><a href="?route=register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Register</a></li>
+                        <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Documentation</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Contact Us -->
+                <div>
+                    <h4 class="text-white font-bold mb-5 uppercase tracking-wider text-xs">Contact Us</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li>
+                            <a href="https://wa.me/8801XXXXXXXXX" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#25D366] transition group">
+                                <i class="fa-brands fa-whatsapp text-base mt-0.5 text-[#25D366]"></i>
+                                <span>+880 1XXX-XXXXXX</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="mailto:support@travioerp.com" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#2BC4B0] transition">
+                                <i class="fa-solid fa-envelope text-base mt-0.5" style="color: var(--sz-teal);"></i>
+                                <span>support@travioerp.com</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://facebook.com" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#4F9EF7] transition">
+                                <i class="fa-brands fa-facebook-f text-base mt-0.5 text-[#4F9EF7]"></i>
+                                <span>Travel Agency Solution - Travio</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-[#68727F]">
-            &copy; <?= date('Y') ?> Travio ERP. All rights reserved. Developed for Travel Agencies.
+
+        <!-- Bottom bar -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#68727F]">
+            <span>&copy; <?= date('Y') ?> Travio ERP. All rights reserved.</span>
+            <div class="flex items-center gap-5">
+                <a href="#" class="hover:text-[#2BC4B0] transition">Privacy Policy</a>
+                <a href="#" class="hover:text-[#2BC4B0] transition">Terms of Service</a>
+            </div>
         </div>
     </footer>
     </div>
