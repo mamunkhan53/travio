@@ -220,5 +220,20 @@
                             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                         }).save();
                     }
+
+                    function searchTable() {
+                        const filter = document.getElementById("searchInput").value.toLowerCase();
+                        const tr = document.getElementById("dataTable").getElementsByTagName("tr");
+                        for (let i = 1; i < tr.length; i++) {
+                            let visible = false;
+                            const tds = tr[i].getElementsByTagName("td");
+                            for (let j = 0; j < tds.length - 1; j++) {
+                                if (tds[j] && tds[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                                    visible = true; break;
+                                }
+                            }
+                            tr[i].style.display = visible ? "" : "none";
+                        }
+                    }
                 </script>
 
