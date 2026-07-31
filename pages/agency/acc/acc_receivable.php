@@ -21,7 +21,7 @@ $waActive = !empty($conn->query("SELECT COUNT(*) FROM whatsapp_providers WHERE a
 <div class="space-y-5">
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div><h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-hand-holding-dollar text-indigo-500"></i> Accounts Receivable</h2><p class="text-sm text-slate-500 mt-1">Customer dues from invoices.</p></div>
-    <a href="?route=app&page=invoices" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar"></i> Create Invoice</a>
+    <a href="/app/invoices" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar"></i> Create Invoice</a>
 </div>
 
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -36,7 +36,7 @@ $waActive = !empty($conn->query("SELECT COUNT(*) FROM whatsapp_providers WHERE a
     <input type="text" name="q" value="<?= xss_clean($filterSearch) ?>" placeholder="Search customer, invoice…" class="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none w-52">
     <div class="flex gap-2">
         <?php foreach(['all'=>'All','due'=>'Outstanding','paid'=>'Paid'] as $k=>$l): ?>
-        <a href="?route=app&page=acc_receivable&status=<?= $k ?>&q=<?= urlencode($filterSearch) ?>"
+        <a href="/app/acc_receivable?status=<?= $k ?>&q=<?= urlencode($filterSearch) ?>"
            class="px-3 py-2 rounded-xl text-sm font-bold transition <?= $filterStatus===$k?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600 hover:bg-indigo-50' ?>"><?= $l ?></a>
         <?php endforeach; ?>
     </div>
@@ -69,9 +69,9 @@ $waActive = !empty($conn->query("SELECT COUNT(*) FROM whatsapp_providers WHERE a
     <td class="px-4 py-3 font-bold text-emerald-600"><?= $currencySymbol ?> <?= number_format($inv['paid_amount'],2) ?></td>
     <td class="px-4 py-3 font-bold <?= $inv['due_amount']>0?'text-rose-600':'text-slate-400' ?>"><?= $currencySymbol ?> <?= number_format($inv['due_amount'],2) ?></td>
     <td class="px-4 py-3">
-        <a href="?route=app&page=invoices" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition inline-block">View</a>
+        <a href="/app/invoices" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition inline-block">View</a>
         <?php if($inv['due_amount']>0 && $waActive && !$_SESSION['is_staff']): ?>
-        <a href="?route=app&page=whatsapp&prefill_msg=<?= urlencode("Dear ".$inv['customer_name'].", your invoice ".$inv['invoice_number']." has an outstanding due of {$currencySymbol} ".$inv['due_amount'].". Please arrange payment at your earliest. Thank you.") ?>" class="ml-1 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition inline-block"><i class="fa-brands fa-whatsapp"></i> Remind</a>
+        <a href="/app/whatsapp?prefill_msg=<?= urlencode("Dear ".$inv['customer_name'].", your invoice ".$inv['invoice_number']." has an outstanding due of {$currencySymbol} ".$inv['due_amount'].". Please arrange payment at your earliest. Thank you.") ?>" class="ml-1 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition inline-block"><i class="fa-brands fa-whatsapp"></i> Remind</a>
         <?php endif; ?>
     </td>
 </tr>

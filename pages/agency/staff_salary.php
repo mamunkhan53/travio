@@ -77,7 +77,7 @@ if ($printId) {
     <button onclick="window.print()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow flex items-center gap-2">
         <i class="fa-solid fa-print"></i> Print / Download
     </button>
-    <a href="?route=app&page=staff_salary" class="border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50">
+    <a href="/app/staff_salary" class="border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50">
         <i class="fa-solid fa-arrow-left mr-1"></i> Back
     </a>
 </div>
@@ -263,7 +263,7 @@ if ($printId) {
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap sal-action-col">
                             <!-- Print Slip -->
-                            <a href="?route=app&page=staff_salary&print=<?= $r['id'] ?>" class="text-slate-600 bg-slate-100 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-slate-200 transition" title="Print Salary Slip"><i class="fa-solid fa-print text-xs"></i></a>
+                            <a href="/app/staff_salary?print=<?= $r['id'] ?>" class="text-slate-600 bg-slate-100 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-slate-200 transition" title="Print Salary Slip"><i class="fa-solid fa-print text-xs"></i></a>
                             <!-- Mark Paid -->
                             <?php if ($r['payment_status'] === 'Unpaid'): ?>
                             <button onclick="markPaid(<?= $r['id'] ?>)" class="text-emerald-600 bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-emerald-100 ml-1 transition" title="Mark as Paid"><i class="fa-solid fa-check text-xs"></i></button>
@@ -271,7 +271,7 @@ if ($printId) {
                             <!-- Edit -->
                             <button onclick='openSalModal(<?= htmlspecialchars(json_encode($r)) ?>)' class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 ml-1 transition"><i class="fa-solid fa-pen text-xs"></i></button>
                             <!-- Delete -->
-                            <form method="POST" action="?route=app" class="inline ml-1" onsubmit="return confirm('Delete this salary record?')">
+                            <form method="POST" action="" class="inline ml-1" onsubmit="return confirm('Delete this salary record?')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                 <input type="hidden" name="action" value="staff_delete_salary">
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
@@ -289,7 +289,7 @@ if ($printId) {
 </div>
 
 <!-- Mark Paid Form (hidden) -->
-<form id="markPaidForm" method="POST" action="?route=app" class="hidden">
+<form id="markPaidForm" method="POST" action="" class="hidden">
     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
     <input type="hidden" name="action" value="staff_mark_salary_paid">
     <input type="hidden" name="id" id="markPaidId">
@@ -305,7 +305,7 @@ if ($printId) {
             </h3>
             <button onclick="closeSalModal()" class="w-8 h-8 rounded-full bg-slate-200/50 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4">
+        <form method="POST" action="" class="p-6 space-y-4">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="action" value="staff_save_salary">
             <input type="hidden" name="id" id="sal_id" value="">

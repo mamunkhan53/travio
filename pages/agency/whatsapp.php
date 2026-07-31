@@ -119,7 +119,7 @@ function waStatusBadge($status) {
                     <span class="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>
                     Not Configured
                 </p>
-                <a href="?route=app&page=whatsapp&tab=settings" class="text-xs text-indigo-500 hover:underline font-bold">Set up now →</a>
+                <a href="/app/whatsapp?tab=settings" class="text-xs text-indigo-500 hover:underline font-bold">Set up now →</a>
             <?php endif; ?>
         </div>
         <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
@@ -147,7 +147,7 @@ function waStatusBadge($status) {
         foreach ($waTabs as $key => [$icon, $label]):
             $active = $wa_tab === $key;
         ?>
-            <a href="?route=app&page=whatsapp&tab=<?= $key ?>"
+            <a href="/app/whatsapp?tab=<?= $key ?>"
                class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition <?= $active ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600' ?>">
                 <i class="fa-solid <?= $icon ?>"></i>
                 <span class="hidden sm:inline"><?= $label ?></span>
@@ -168,7 +168,7 @@ function waStatusBadge($status) {
         </div>
     <?php else: ?>
 
-    <form method="GET" action="?route=app" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
+    <form method="GET" action="" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
         <input type="hidden" name="route" value="app">
         <input type="hidden" name="page" value="whatsapp">
         <input type="hidden" name="tab" value="compose">
@@ -190,7 +190,7 @@ function waStatusBadge($status) {
             <i class="fa-solid fa-filter mr-1"></i> Filter
         </button>
         <?php if (!empty($wa_search) || !empty($wa_filter)): ?>
-            <a href="?route=app&page=whatsapp&tab=compose" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">
+            <a href="/app/whatsapp?tab=compose" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">
                 <i class="fa-solid fa-xmark mr-1"></i> Clear
             </a>
         <?php endif; ?>
@@ -216,7 +216,7 @@ function waStatusBadge($status) {
                     <div>
                         <i class="fa-solid fa-users-slash text-4xl text-slate-200 mb-3"></i>
                         <p class="text-slate-400 font-medium text-sm">No customers with phone numbers found.</p>
-                        <a href="?route=app&page=customers" class="text-indigo-500 text-xs hover:underline font-bold">Go to Customer DB →</a>
+                        <a href="/app/customers" class="text-indigo-500 text-xs hover:underline font-bold">Go to Customer DB →</a>
                     </div>
                 </div>
             <?php else: ?>
@@ -294,7 +294,7 @@ function waStatusBadge($status) {
                             <p class="text-sm font-bold text-amber-800">No active provider configured</p>
                             <p class="text-xs text-amber-700">Messages will be <strong>logged but not sent</strong> until you configure a provider.</p>
                         </div>
-                        <a href="?route=app&page=whatsapp&tab=settings" class="text-xs font-bold text-indigo-600 hover:underline whitespace-nowrap">Set up →</a>
+                        <a href="/app/whatsapp?tab=settings" class="text-xs font-bold text-indigo-600 hover:underline whitespace-nowrap">Set up →</a>
                     </div>
                 <?php endif; ?>
 
@@ -327,7 +327,7 @@ function waStatusBadge($status) {
                 </button>
             </div>
 
-            <form method="POST" action="?route=app" id="waSendForm">
+            <form method="POST" action="" id="waSendForm">
                 <input type="hidden" name="action" value="send_whatsapp">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="send_to_all" id="waSendToAllInput" value="">
@@ -377,7 +377,7 @@ function waStatusBadge($status) {
     <?php elseif ($wa_tab === 'history'): ?>
 
     <!-- History filters -->
-    <form method="GET" action="?route=app" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
+    <form method="GET" action="" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 flex flex-wrap gap-3 items-end">
         <input type="hidden" name="route" value="app">
         <input type="hidden" name="page" value="whatsapp">
         <input type="hidden" name="tab" value="history">
@@ -403,7 +403,7 @@ function waStatusBadge($status) {
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition">
             <i class="fa-solid fa-filter mr-1"></i> Filter
         </button>
-        <a href="?route=app&page=whatsapp&tab=history" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">
+        <a href="/app/whatsapp?tab=history" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition">
             <i class="fa-solid fa-xmark mr-1"></i> Clear
         </a>
     </form>
@@ -434,7 +434,7 @@ function waStatusBadge($status) {
                             <td colspan="9" class="p-12 text-center">
                                 <i class="fa-brands fa-whatsapp text-5xl text-slate-200 mb-3 block" style="color: #d1d5db;"></i>
                                 <p class="text-slate-400 font-medium">No messages sent yet.</p>
-                                <a href="?route=app&page=whatsapp&tab=compose" class="text-indigo-500 text-sm font-bold hover:underline">Compose your first message →</a>
+                                <a href="/app/whatsapp?tab=compose" class="text-indigo-500 text-sm font-bold hover:underline">Compose your first message →</a>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -465,7 +465,7 @@ function waStatusBadge($status) {
                                     <i class="fa-solid fa-list-ul mr-1"></i>Details
                                 </button>
                                 <?php if (!$_SESSION['is_staff']): ?>
-                                <a href="?route=app&action=delete_whatsapp_log&id=<?= $wl['id'] ?>"
+                                <a href="/app?action=delete_whatsapp_log&id=<?= $wl['id'] ?>"
                                    onclick="return confirm('Delete this message log and all recipient records?')"
                                    class="text-rose-500 bg-rose-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-100 transition">
                                     <i class="fa-solid fa-trash"></i>
@@ -525,7 +525,7 @@ function waStatusBadge($status) {
                 </h3>
                 <p class="text-xs text-slate-400 mt-1">Connect your WhatsApp Business API. Credentials are stored only in your database.</p>
             </div>
-            <form method="POST" action="?route=app" class="p-6 space-y-5">
+            <form method="POST" action="" class="p-6 space-y-5">
                 <input type="hidden" name="action" value="save_whatsapp_provider">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="provider_id" value="<?= $wa_provider ? $wa_provider['id'] : 0 ?>">
@@ -782,7 +782,7 @@ function waShowRecipients(logId) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
-    fetch('?route=app&page=whatsapp&wa_recipients_ajax=1&log_id=' + encodeURIComponent(logId))
+    fetch('/app/whatsapp?wa_recipients_ajax=1&log_id=' + encodeURIComponent(logId))
         .then(r => r.json())
         .then(data => {
             if (!data.length) {

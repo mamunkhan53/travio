@@ -66,7 +66,7 @@ $checks = [
             </select>
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Filter</button>
             <?php if ($f_status || $f_bk): ?>
-            <a href="?route=app&page=umrah_checklist" class="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-sm hover:bg-slate-50 transition">Clear</a>
+            <a href="/app/umrah_checklist" class="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-sm hover:bg-slate-50 transition">Clear</a>
             <?php endif; ?>
         </form>
 
@@ -134,7 +134,7 @@ function toggleCheck(bookingId, field, btn) {
     const next = cur ? 0 : 1;
     const col  = { passport_received:'indigo', visa_completed:'violet', ticket_issued:'sky', hotel_confirmed:'amber' }[field] || 'indigo';
 
-    fetch('?route=app', {
+    fetch('/app', {
         method : 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body   : new URLSearchParams({

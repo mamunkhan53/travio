@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
         flash("Your subscription has expired. Please renew your plan to delete records.", "error");
-        redirect("?route=app&page=dashboard");
+        redirect("/app/dashboard");
     }
     
     // Strict Delete Permission Backend Checks
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
         }
         flash("Record deleted.");
     }
-    redirect("?route=app&page=" . $table);
+    redirect("/app/" . $table);
 }
 
 // Handle GET Action: Delete Accounting Expense (separate from the generic module CRUD delete above,
@@ -31,15 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete_expense' && isset($_SESSION['agency_id'])) {
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
         flash("Your subscription has expired. Please renew your plan to delete expenses.", "error");
-        redirect("?route=app&page=dashboard");
+        redirect("/app/dashboard");
     }
     if (!has_permission('can_delete_expense')) { http_response_code(403); die("403 Access Denied: You do not have permission to delete expenses."); }
 
     $conn->prepare("DELETE FROM accounting_expenses WHERE id = ? AND agency_id = ?")->execute([$_GET['id'], $_SESSION['agency_id']]);
     flash("Expense deleted.");
 
-    $redirectQs = !empty($_GET['redirect_qs']) ? '&' . ltrim($_GET['redirect_qs'], '&') : '';
-    redirect("?route=app&page=accounting" . $redirectQs);
+    $redirectQs = !empty($_GET['redirect_qs']) ? '?' . ltrim($_GET['redirect_qs'], '?&') : '';
+    redirect("/app/accounting" . $redirectQs);
 }
 
 // ------------- WHATSAPP: AJAX — FETCH RECIPIENTS FOR A LOG ENTRY -------------
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
         $conn->prepare("DELETE FROM whatsapp_message_logs WHERE id = ? AND agency_id = ?")->execute([$logId, $_SESSION['agency_id']]);
         flash("Message log deleted.");
     }
-    redirect("?route=app&page=whatsapp&tab=history");
+    redirect("/app/whatsapp?tab=history");
 }
 
 // ------------- 2FA SETUP: GENERATE A PENDING SECRET + QR CODE (JSON) -------------
@@ -127,16 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($_GET['search_ajax']) && !emp
         $s = $conn->prepare("SELECT id,'enquiries' as tbl, customer as name, mobile, status FROM enquiries WHERE agency_id=? AND (customer LIKE ? OR mobile LIKE ?) $rf LIMIT 5");
         $s->execute([$aid,$q,$q]);
         foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
-            $results[] = ['type'=>'Lead','icon'=>'fa-user-clock','color'=>'#6366f1','name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"?route=app&page=query_history&table=enquiries&id={$r['id']}"];
+            $results[] = ['type'=>'Lead','icon'=>'fa-user-clock','color'=>'#6366f1','name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"/app/query_history?table=enquiries&id={$r['id']}"];
         $s = $conn->prepare("SELECT id, full_name as name, email, phone FROM customers WHERE agency_id=? AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?) LIMIT 4");
         $s->execute([$aid,$q,$q,$q]);
         foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
-            $results[] = ['type'=>'Customer','icon'=>'fa-user','color'=>'#10b981','name'=>$r['name'],'sub'=>$r['phone']??$r['email']??'','status'=>'','url'=>"?route=app&page=customers"];
+            $results[] = ['type'=>'Customer','icon'=>'fa-user','color'=>'#10b981','name'=>$r['name'],'sub'=>$r['phone']??$r['email']??'','status'=>'','url'=>"/app/customers"];
         foreach (['passports'=>['Passport','#3b82f6'],'visas'=>['Visa','#8b5cf6'],'tickets'=>['Ticket','#06b6d4'],'umrah'=>['Umrah','#f59e0b'],'tours'=>['Tour','#f97316']] as $tbl=>[$label,$col]) {
             $s = $conn->prepare("SELECT id,name,mobile,status FROM $tbl WHERE agency_id=? AND (name LIKE ? OR mobile LIKE ?) $rf LIMIT 3");
             $s->execute([$aid,$q,$q]);
             foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r)
-                $results[] = ['type'=>$label,'icon'=>'fa-suitcase-rolling','color'=>$col,'name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"?route=app&page=query_history&table=$tbl&id={$r['id']}"];
+                $results[] = ['type'=>$label,'icon'=>'fa-suitcase-rolling','color'=>$col,'name'=>$r['name'],'sub'=>$r['mobile']??'','status'=>$r['status'],'url'=>"/app/query_history?table=$tbl&id={$r['id']}"];
         }
     }
     header('Content-Type: application/json');

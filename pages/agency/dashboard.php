@@ -49,13 +49,13 @@
         $rfStmt->execute([$agency_id, $cal_from, $cal_to]);
         foreach ($rfStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
             $moduleLabel = ['enquiries'=>'Lead','passports'=>'Passport','visas'=>'Visa','tickets'=>'Ticket','umrah'=>'Umrah','tours'=>'Tour'][$r['module_name']] ?? $r['module_name'];
-            $cal_events[] = ['date'=>$r['event_date'],'type'=>$r['module_name']==='enquiries'?'followup_lead':'followup_sale','title'=>'Follow-up — '.$moduleLabel.' #'.$r['record_id'],'note'=>$r['note']??'','url'=>'?route=app&page=query_history&table='.$r['module_name'].'&id='.rawurlencode($r['record_id'])];
+            $cal_events[] = ['date'=>$r['event_date'],'type'=>$r['module_name']==='enquiries'?'followup_lead':'followup_sale','title'=>'Follow-up — '.$moduleLabel.' #'.$r['record_id'],'note'=>$r['note']??'','url'=>'/app/query_history?table='.$r['module_name'].'&id='.rawurlencode($r['record_id'])];
         }
 
         $snStmt = $conn->prepare("SELECT sn.deadline_date as event_date, sn.module_name, sn.sale_id, sn.customer_name, sn.notification_type FROM service_notifications sn WHERE sn.agency_id = ? AND sn.deadline_date BETWEEN ? AND ? $cal_sf_sn");
         $snStmt->execute([$agency_id, $cal_from, $cal_to]);
         foreach ($snStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $cal_events[] = ['date'=>$r['event_date'],'type'=>'delivery','title'=>$r['notification_type'].' — '.($r['customer_name']??$r['sale_id']),'note'=>$r['module_name'],'url'=>'?route=app&page=query_history&table='.$r['module_name'].'&id='.rawurlencode($r['sale_id'])];
+            $cal_events[] = ['date'=>$r['event_date'],'type'=>'delivery','title'=>$r['notification_type'].' — '.($r['customer_name']??$r['sale_id']),'note'=>$r['module_name'],'url'=>'/app/query_history?table='.$r['module_name'].'&id='.rawurlencode($r['sale_id'])];
         }
 
         $travelSources = [
@@ -65,7 +65,7 @@
         ];
         foreach ($travelSources as $tbl => [$sql, $label]) {
             foreach ($conn->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $r) {
-                $cal_events[] = ['date'=>$r['ed'],'type'=>'travel','title'=>$label.' — '.($r['name']??''),'note'=>$r['extra']??'','url'=>'?route=app&page=query_history&table='.$tbl.'&id='.rawurlencode($r['id'])];
+                $cal_events[] = ['date'=>$r['ed'],'type'=>'travel','title'=>$label.' — '.($r['name']??''),'note'=>$r['extra']??'','url'=>'/app/query_history?table='.$tbl.'&id='.rawurlencode($r['id'])];
             }
         }
 
@@ -74,7 +74,7 @@
         foreach ($scVisaStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
             foreach (['biometrics_date'=>'Biometrics','medical_date'=>'Medical','interview_date'=>'Visa Interview','decision_date'=>'Visa Decision'] as $col => $lbl) {
                 if (!empty($r[$col]) && $r[$col] >= $cal_from && $r[$col] <= $cal_to) {
-                    $cal_events[] = ['date'=>$r[$col],'type'=>'travel','title'=>$lbl.' — '.$r['student_name'],'note'=>$r['destination_country']??'','url'=>'?route=app&page=sc_visa'];
+                    $cal_events[] = ['date'=>$r[$col],'type'=>'travel','title'=>$lbl.' — '.$r['student_name'],'note'=>$r['destination_country']??'','url'=>'/app/sc_visa'];
                 }
             }
         }
@@ -245,7 +245,7 @@
         </div>
     </div>
     <?php if (!$_SESSION['is_staff']): ?>
-    <a href="?route=app&page=subscription_payment" class="shrink-0 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-700 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
+    <a href="/app/subscription_payment" class="shrink-0 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-700 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
     <?php endif; ?>
 </div>
 <?php elseif ($subscription['plan']==='Trial' && $subscription['days_left']!==null && $subscription['days_left']<=7): ?>
@@ -258,7 +258,7 @@
         </div>
     </div>
     <?php if (!$_SESSION['is_staff']): ?>
-    <a href="?route=app&page=subscription_payment" class="shrink-0 bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-amber-600 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
+    <a href="/app/subscription_payment" class="shrink-0 bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-amber-600 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
     <?php endif; ?>
 </div>
 <?php endif; ?>
@@ -323,7 +323,7 @@
         </div>
         <div class="mt-3 flex items-center gap-2">
             <span class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg"><i class="fa-solid fa-circle-dot text-[8px]"></i>All time</span>
-            <a href="?route=app&page=enquiries" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition ml-auto">View →</a>
+            <a href="/app/enquiries" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition ml-auto">View →</a>
         </div>
     </div>
 
@@ -464,7 +464,7 @@
             <h3 class="font-extrabold dash-value text-slate-800 flex items-center gap-2 text-sm">
                 <i class="fa-solid fa-users-viewfinder text-violet-500"></i> Recent Queries
             </h3>
-            <a href="?route=app&page=enquiries" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+            <a href="/app/enquiries" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
         </div>
         <div class="overflow-x-auto dash-scrollable flex-1" style="max-height:380px">
             <?php if (empty($recentQueries)): ?>
@@ -486,7 +486,7 @@
                     $statusColors= ['New'=>'bg-blue-100 text-blue-700','Contacted'=>'bg-purple-100 text-purple-700','Pending'=>'bg-amber-100 text-amber-700','Follow Up'=>'bg-orange-100 text-orange-700','Closed'=>'bg-slate-100 text-slate-600','Not Interested'=>'bg-rose-100 text-rose-700'];
                     $sBadge      = $statusColors[$rq['status'] ?? ''] ?? 'bg-slate-100 text-slate-600';
                 ?>
-                <tr class="dash-row-hover hover:bg-slate-50 transition cursor-pointer" onclick="location.href='?route=app&page=query_history&table=<?= $rq['module_name'] ?>&id=<?= urlencode($rq['id']) ?>'">
+                <tr class="dash-row-hover hover:bg-slate-50 transition cursor-pointer" onclick="location.href='/app/query_history?table=<?= $rq['module_name'] ?>&id=<?= urlencode($rq['id']) ?>'">
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0"><?= $initials ?></div>
@@ -543,7 +543,7 @@
             <h3 class="font-extrabold dash-value text-slate-800 flex items-center gap-2 text-sm">
                 <i class="fa-solid fa-money-check-dollar text-emerald-500"></i> Recent Sales
             </h3>
-            <a href="?route=app&page=passports" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+            <a href="/app/passports" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
         </div>
         <div class="overflow-x-auto dash-scrollable flex-1">
             <?php if (empty($recentSales)): ?>

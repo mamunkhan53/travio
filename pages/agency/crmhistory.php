@@ -6,7 +6,7 @@
 
         if (!in_array($history_table, $allowedHistoryTables) || !array_key_exists($history_table, $modules) || empty($history_id)) {
             flash('Record history not found.', 'error');
-            redirect('?route=app&page=enquiries');
+            redirect('/app/enquiries');
         }
 
         $stmtH = $conn->prepare("
@@ -22,7 +22,7 @@
 
         if (!$history_record) {
             flash('Record not found.', 'error');
-            redirect("?route=app&page=$history_table");
+            redirect("/app/$history_table");
         }
         if ($_SESSION['is_staff'] && (int)($history_record['reference_staff_id'] ?? 0) !== (int)$_SESSION['staff_id']) {
             http_response_code(403); die("403 Access Denied");
@@ -78,7 +78,7 @@
                         </h2>
                         <p class="text-sm text-slate-500 font-bold mt-1"><?= xss_clean($modules[$history_table]['title']) ?> / <?= xss_clean($history_id) ?></p>
                     </div>
-                    <a href="?route=app&page=<?= $history_table ?>" class="text-sm font-bold text-slate-500 hover:text-indigo-600 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm transition">
+                    <a href="/app/<?= $history_table ?>" class="text-sm font-bold text-slate-500 hover:text-indigo-600 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm transition">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Back to <?= xss_clean($modules[$history_table]['title']) ?>
                     </a>
                 </div>

@@ -9,7 +9,7 @@
 
             if (!in_array($plan_key, ['monthly', 'yearly']) || $method === '' || $reference === '') {
                 flash("Please select a package, a payment method, and enter your transaction details.", "error");
-                redirect("?route=app&page=subscription_payment");
+                redirect("/app/subscription_payment");
             }
 
             $plans = getSubscriptionPlans($conn);
@@ -25,7 +25,7 @@
                  ->execute([$agency_id, $plan_key, $amount, $method, $reference, $note, $screenshot]);
 
             flash("Payment submitted! Our team will verify your transaction and activate your subscription shortly.");
-            redirect("?route=app&page=subscription_payment");
+            redirect("/app/subscription_payment");
         }
 
         // ------------- PROFILE & APP SETTINGS -------------
@@ -37,7 +37,7 @@
                     $conn->prepare("UPDATE staff SET password_hash = ? WHERE id = ?")->execute([$hash, $_SESSION['staff_id']]);
                 }
                 flash("Profile updated successfully.");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             } else {
                 $company = $_POST['company_name'];
                 $address = $_POST['address'];
@@ -59,7 +59,7 @@
                     $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$hash, $_SESSION['user_id']]);
                 }
                 flash("Agency Profile updated successfully.");
-                redirect("?route=app&page=profile");
+                redirect("/app/profile");
             }
         }
 
@@ -69,7 +69,7 @@
             $r_by = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
             $conn->prepare("UPDATE service_notifications SET is_read=1, read_by=?, read_at=NOW() WHERE id=? AND agency_id=?")->execute([$r_by, $n_id, $_SESSION['agency_id']]);
             flash("Notification marked as read.");
-            redirect("?route=app&page=dashboard");
+            redirect("/app/dashboard");
         }
 
         // ------------- ADD CUSTOMER FOLLOW UP -------------
@@ -79,7 +79,7 @@
             }
             if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
                 flash("Your subscription has expired. Please renew your plan to add follow-ups.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
             $c_id = $_POST['customer_id'];
             $st_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
@@ -87,7 +87,7 @@
             
             $conn->prepare("INSERT INTO customer_followups (agency_id, customer_id, staff_id, note, follow_up_date) VALUES (?, ?, ?, ?, ?)")->execute([$_SESSION['agency_id'], $c_id, $st_id, $_POST['note'], $f_date]);
             flash("Follow-up note added.");
-            redirect("?route=app&page=customer_profile&id=$c_id");
+            redirect("/app/customer_profile?id=$c_id");
         }
 
         // ------------- ADD QUERY / SALE FOLLOW UP -------------
@@ -111,7 +111,7 @@
             }
             if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
                 flash("Your subscription has expired. Please renew your plan to add follow-ups.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
 
             $agency_id = $_SESSION['agency_id'];
@@ -120,7 +120,7 @@
             $recordRef = $check->fetchColumn();
             if ($recordRef === false) {
                 flash("Record not found.", "error");
-                redirect("?route=app&page=$table");
+                redirect("/app/$table");
             }
             if ($_SESSION['is_staff'] && (int)$recordRef !== (int)$_SESSION['staff_id']) {
                 http_response_code(403); die("403 Access Denied");
@@ -151,16 +151,16 @@
 
             flash("Follow-up update added.");
             if (in_array($table, ['sc_leads','sc_students'])) {
-                redirect("?route=app&page=sc_followups");
+                redirect("/app/sc_followups");
             }
-            redirect("?route=app&page=query_history&table=$table&id=$record_id");
+            redirect("/app/query_history?table=$table&id=$record_id");
         }
 
         // SAVE STAFF (Admin Only)
         if ($action === 'save_staff' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
             if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
                 flash("Your subscription has expired. Please renew your plan to manage staff.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
             $agency_id = $_SESSION['agency_id'];
             $id = $_POST['id'] ?? '';
@@ -221,7 +221,7 @@
                 $conn->rollBack();
                 flash("Error: Username or Email might exist.", "error");
             }
-            redirect("?route=app&page=staff");
+            redirect("/app/staff");
         }
 
         // SAVE INVOICE (Exact Original Restoration)
@@ -229,7 +229,7 @@
             if (!has_permission('can_add_sale')) die("403 Access Denied");
             if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
                 flash("Your subscription has expired. Please renew your plan to create invoices.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
             
             $agency_id = $_SESSION['agency_id'];
@@ -285,7 +285,7 @@
             }
 
             flash("Invoice $inv_no generated successfully.");
-            redirect("?route=app&page=invoices");
+            redirect("/app/invoices");
         }
 
         // ------------- ACCOUNTING: SAVE (ADD/EDIT) MANUAL EXPENSE -------------
@@ -295,7 +295,7 @@
             $agency_id = $_SESSION['agency_id'];
             if (isAgencySubscriptionExpired($conn, $agency_id)) {
                 flash("Your subscription has expired. Please renew your plan to manage expenses.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
 
             $isEdit = !empty($_POST['expense_id']);
@@ -323,7 +323,7 @@
             }
 
             $redirectQs = !empty($_POST['redirect_qs']) ? '&' . ltrim($_POST['redirect_qs'], '&') : '';
-            redirect("?route=app&page=accounting" . $redirectQs);
+            redirect("/app/accounting" . $redirectQs);
         }
 
         // ------------- WHATSAPP AUTOMATION: SAVE SETTINGS (Agency Admin only) -------------
@@ -331,7 +331,7 @@
             $agency_id = $_SESSION['agency_id'];
             if (isAgencySubscriptionExpired($conn, $agency_id)) {
                 flash("Your subscription has expired.", "error");
-                redirect("?route=app&page=whatsapp_automation");
+                redirect("/app/whatsapp_automation");
             }
 
             $allowedTypes = ['booking_confirmation','payment_reminder','followup_reminder',
@@ -340,7 +340,7 @@
             $autoType = $_POST['automation_type'] ?? '';
             if (!in_array($autoType, $allowedTypes)) {
                 flash("Invalid automation type.", "error");
-                redirect("?route=app&page=whatsapp_automation");
+                redirect("/app/whatsapp_automation");
             }
 
             $isEnabled   = isset($_POST['is_enabled']) ? 1 : 0;
@@ -351,7 +351,7 @@
 
             if (empty($template)) {
                 flash("Message template cannot be empty.", "error");
-                redirect("?route=app&page=whatsapp_automation");
+                redirect("/app/whatsapp_automation");
             }
 
             $conn->prepare(
@@ -363,7 +363,7 @@
             )->execute([$agency_id, $autoType, $isEnabled, $template, $sendTiming, $timingValue, $timingUnit]);
 
             flash("Automation settings saved for " . ucwords(str_replace('_', ' ', $autoType)) . ".");
-            redirect("?route=app&page=whatsapp_automation");
+            redirect("/app/whatsapp_automation");
         }
 
         // ------------- WHATSAPP AUTOMATION: TEST SEND (Agency Admin only) -------------
@@ -375,7 +375,7 @@
 
             if (empty($testPhone) || empty($template)) {
                 flash("A test phone number and a template are required.", "error");
-                redirect("?route=app&page=whatsapp_automation");
+                redirect("/app/whatsapp_automation");
             }
 
             // Build sample variable data
@@ -405,7 +405,7 @@
 
             if (!$provider) {
                 flash("No active provider configured. Configure a provider in WhatsApp → Provider Settings first.", "error");
-                redirect("?route=app&page=whatsapp_automation");
+                redirect("/app/whatsapp_automation");
             }
 
             $result = sendWhatsAppViaProvider($provider, $testPhone, $message);
@@ -414,7 +414,7 @@
             } else {
                 flash("Test failed: " . ($result['error'] ?? 'Unknown error'), "error");
             }
-            redirect("?route=app&page=whatsapp_automation");
+            redirect("/app/whatsapp_automation");
         }
 
         // ------------- WHATSAPP: SAVE PROVIDER SETTINGS (Agency Admin only) -------------
@@ -422,7 +422,7 @@
             $agency_id = $_SESSION['agency_id'];
             if (isAgencySubscriptionExpired($conn, $agency_id)) {
                 flash("Your subscription has expired.", "error");
-                redirect("?route=app&page=whatsapp&tab=settings");
+                redirect("/app/whatsapp?tab=settings");
             }
 
             $allowedTypes = ['meta_cloud', 'twilio', 'vonage', 'wati', 'custom_webhook'];
@@ -439,7 +439,7 @@
             // Validate extra_params JSON if supplied
             if (!empty($extraParams) && json_decode($extraParams) === null) {
                 flash("Extra Parameters must be valid JSON (or leave blank).", "error");
-                redirect("?route=app&page=whatsapp&tab=settings");
+                redirect("/app/whatsapp?tab=settings");
             }
 
             if ($providerId > 0) {
@@ -451,7 +451,7 @@
             }
 
             flash("WhatsApp provider settings saved successfully.");
-            redirect("?route=app&page=whatsapp&tab=settings");
+            redirect("/app/whatsapp?tab=settings");
         }
 
         // ------------- WHATSAPP: SEND MESSAGE -------------
@@ -460,7 +460,7 @@
 
             if (isAgencySubscriptionExpired($conn, $agency_id)) {
                 flash("Your subscription has expired. Please renew your plan to send messages.", "error");
-                redirect("?route=app&page=whatsapp");
+                redirect("/app/whatsapp");
             }
             if (!has_permission('can_send_whatsapp')) {
                 http_response_code(403); die("403 Access Denied: You do not have permission to send WhatsApp messages.");
@@ -472,7 +472,7 @@
 
             if (empty($messageBody)) {
                 flash("Message body cannot be empty.", "error");
-                redirect("?route=app&page=whatsapp");
+                redirect("/app/whatsapp");
             }
 
             // ---- Resolve recipient list ----
@@ -483,7 +483,7 @@
             } else {
                 if (empty($recipients)) {
                     flash("Please select at least one recipient.", "error");
-                    redirect("?route=app&page=whatsapp");
+                    redirect("/app/whatsapp");
                 }
                 $placeholders = implode(',', array_fill(0, count($recipients), '?'));
                 $stmt = $conn->prepare("SELECT id, name, mobile FROM customers WHERE agency_id = ? AND id IN ($placeholders)");
@@ -493,7 +493,7 @@
 
             if (empty($recipientRows)) {
                 flash("No recipients found with valid phone numbers.", "error");
-                redirect("?route=app&page=whatsapp");
+                redirect("/app/whatsapp");
             }
 
             // ---- Get active provider (if any) ----
@@ -555,7 +555,7 @@
                 flash($msg);
             }
 
-            redirect("?route=app&page=whatsapp&tab=history");
+            redirect("/app/whatsapp?tab=history");
         }
 
         // ------------- STUDENT CONSULTANCY MODULE ACTIONS -------------

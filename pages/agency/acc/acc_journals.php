@@ -11,7 +11,7 @@ if($viewId) {
     $lines->execute([$viewId,$agency_id]); $lines=$lines->fetchAll(PDO::FETCH_ASSOC);
     $totalDebit=array_sum(array_column($lines,'debit'));
     $totalCredit=array_sum(array_column($lines,'credit'));
-    if(!$jrn){ flash("Journal not found.","error"); redirect("?route=app&page=acc_journals"); }
+    if(!$jrn){ flash("Journal not found.","error"); redirect("/app/acc_journals"); }
 }
 
 $journals=$conn->prepare("SELECT j.*,s.full_name as staff_name, (SELECT SUM(debit) FROM acc_journal_lines WHERE journal_id=j.id) as total_debit FROM acc_journals j LEFT JOIN staff s ON j.created_by_staff_id=s.id WHERE j.agency_id=? AND j.journal_date BETWEEN ? AND ? ORDER BY j.journal_date DESC, j.created_at DESC");
@@ -34,7 +34,7 @@ $coaAccounts=$conn->query("SELECT account_code, account_name FROM acc_chart_of_a
         <div><h3 class="font-extrabold text-slate-800 text-lg"><?= xss_clean($jrn['id']) ?></h3><p class="text-sm text-slate-500"><?= date('d M Y',strtotime($jrn['journal_date'])) ?> · <?= xss_clean($jrn['description']??'') ?> <?= $jrn['reference']?'· Ref: '.xss_clean($jrn['reference']):'' ?></p></div>
         <div class="flex gap-2">
             <button onclick="window.print()" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-200 transition">Print</button>
-            <a href="?route=app&page=acc_journals&from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition">← Back</a>
+            <a href="/app/acc_journals?from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition">← Back</a>
         </div>
     </div>
     <div class="overflow-x-auto">
@@ -105,9 +105,9 @@ $coaAccounts=$conn->query("SELECT account_code, account_name FROM acc_chart_of_a
     <td class="px-4 py-3 font-bold text-slate-700"><?= $currencySymbol ?> <?= number_format($j['total_debit']??0,2) ?></td>
     <td class="px-4 py-3 text-xs text-slate-500"><?= xss_clean($j['staff_name']??'—') ?></td>
     <td class="px-4 py-3">
-        <a href="?route=app&page=acc_journals&view=<?= $j['id'] ?>&from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">View</a>
+        <a href="/app/acc_journals?view=<?= $j['id'] ?>&from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">View</a>
         <?php if(!$_SESSION['is_staff']): ?>
-        <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete this journal entry and all its lines?')"><input type="hidden" name="action" value="delete_acc_journal"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $j['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
+        <form method="POST" action="" class="inline" onsubmit="return confirm('Delete this journal entry and all its lines?')"><input type="hidden" name="action" value="delete_acc_journal"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $j['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
         <?php endif; ?>
     </td>
 </tr>
@@ -122,7 +122,7 @@ $coaAccounts=$conn->query("SELECT account_code, account_name FROM acc_chart_of_a
 <div id="accJournalModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">New Journal Entry</h3><button onclick="closeJournalModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" enctype="multipart/form-data" class="p-6 space-y-5">
+    <form method="POST" action="" enctype="multipart/form-data" class="p-6 space-y-5">
         <input type="hidden" name="action" value="save_acc_journal"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Date *</label><input type="date" name="journal_date" value="<?= date('Y-m-d') ?>" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>

@@ -136,12 +136,12 @@ $recentExpenses = $conn->query("SELECT id,expense_date,category,title,amount FRO
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5 border-l-4 border-l-teal-400">
         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cash Balance</p>
         <p class="text-2xl font-black text-teal-600"><?= $currencySymbol ?> <?= number_format($cashBalance,2) ?></p>
-        <p class="text-xs text-slate-400 mt-1"><a href="?route=app&page=acc_cash_book" class="hover:underline">View cash book</a></p>
+        <p class="text-xs text-slate-400 mt-1"><a href="/app/acc_cash_book" class="hover:underline">View cash book</a></p>
     </div>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5 border-l-4 border-l-blue-400">
         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bank Balance</p>
         <p class="text-2xl font-black text-blue-600"><?= $currencySymbol ?> <?= number_format($bankBalance,2) ?></p>
-        <p class="text-xs text-slate-400 mt-1"><a href="?route=app&page=acc_bank_book" class="hover:underline">View bank book</a></p>
+        <p class="text-xs text-slate-400 mt-1"><a href="/app/acc_bank_book" class="hover:underline">View bank book</a></p>
     </div>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Period</p>
@@ -182,7 +182,7 @@ new Chart(document.getElementById('finDashChart'), {
         </div>
         <?php endforeach; endif; ?>
         </div>
-        <a href="?route=app&page=acc_receivable" class="text-xs font-bold text-indigo-600 mt-3 inline-block hover:underline">View all receivables →</a>
+        <a href="/app/acc_receivable" class="text-xs font-bold text-indigo-600 mt-3 inline-block hover:underline">View all receivables →</a>
     </div>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
         <h3 class="font-extrabold text-slate-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-receipt text-rose-500"></i> Recent Expenses</h3>
@@ -195,7 +195,7 @@ new Chart(document.getElementById('finDashChart'), {
         </div>
         <?php endforeach; endif; ?>
         </div>
-        <a href="?route=app&page=acc_expenses" class="text-xs font-bold text-indigo-600 mt-3 inline-block hover:underline">View all expenses →</a>
+        <a href="/app/acc_expenses" class="text-xs font-bold text-indigo-600 mt-3 inline-block hover:underline">View all expenses →</a>
     </div>
 </div>
 
@@ -205,7 +205,7 @@ new Chart(document.getElementById('finDashChart'), {
     <div class="flex flex-wrap gap-3">
         <?php $ql=[['acc_income','Add Income','fa-plus text-emerald-600','bg-emerald-50'],['acc_expenses','Add Expense','fa-plus text-rose-600','bg-rose-50'],['acc_journals','New Journal','fa-journal-whills text-indigo-600','bg-indigo-50'],['acc_payment_vouchers','Payment Voucher','fa-money-check-dollar text-orange-600','bg-orange-50'],['acc_receipt_vouchers','Receipt Voucher','fa-file-lines text-teal-600','bg-teal-50'],['acc_pl','P&L Report','fa-chart-line text-violet-600','bg-violet-50']];
         foreach($ql as [$pg,$lbl,$ic,$bg]): ?>
-        <a href="?route=app&page=<?= $pg ?>" class="flex items-center gap-2 <?= $bg ?> px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-80 transition">
+        <a href="/app/<?= $pg ?>" class="flex items-center gap-2 <?= $bg ?> px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-80 transition">
             <i class="fa-solid <?= $ic ?>"></i> <?= $lbl ?>
         </a>
         <?php endforeach; ?>

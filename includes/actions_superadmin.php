@@ -5,7 +5,7 @@
             $conn->prepare("UPDATE agencies SET status = ? WHERE id = ?")->execute([$status, $agency_id]);
             $conn->prepare("UPDATE users SET status = ? WHERE agency_id = ?")->execute([$status, $agency_id]);
             flash("Agency status updated to $status.");
-            redirect("?route=admin_dashboard");
+            redirect("/admin");
         }
 
         // ------------- SUPER ADMIN: CHANGE AN AGENCY'S LOGIN EMAIL / PASSWORD / VERIFIED STATE -------------
@@ -32,7 +32,7 @@
             } catch (Exception $e) {
                 flash("Could not update login - that email may already be in use.", "error");
             }
-            redirect("?route=admin_dashboard");
+            redirect("/admin");
         }
 
         // ------------- SUPER ADMIN: MANAGE AN AGENCY'S SUBSCRIPTION -------------
@@ -58,7 +58,7 @@
             }
 
             flash("Subscription updated successfully.");
-            redirect("?route=admin_dashboard&tab=agencies");
+            redirect("/admin?tab=agencies");
         }
 
         // ------------- SUPER ADMIN: EDIT A SUBSCRIPTION PACKAGE (Trial / Monthly / Yearly) -------------
@@ -74,7 +74,7 @@
                      $_POST['plan_key']
                  ]);
             flash("Subscription package updated.");
-            redirect("?route=admin_dashboard&tab=plans");
+            redirect("/admin?tab=plans");
         }
 
         // ------------- SUPER ADMIN: EDIT A MANUAL PAYMENT METHOD (bKash / Nagad / Bank) -------------
@@ -88,7 +88,7 @@
                      $_POST['method_key']
                  ]);
             flash("Payment method updated.");
-            redirect("?route=admin_dashboard&tab=payment_methods");
+            redirect("/admin?tab=payment_methods");
         }
 
         // ------------- SUPER ADMIN: APPROVE AN AGENCY-SUBMITTED RENEWAL PAYMENT -------------
@@ -119,7 +119,7 @@
             } else {
                 flash("This payment has already been reviewed.", "error");
             }
-            redirect("?route=admin_dashboard&tab=payment_requests");
+            redirect("/admin?tab=payment_requests");
         }
 
         // ------------- SUPER ADMIN: DECLINE AN AGENCY-SUBMITTED RENEWAL PAYMENT -------------
@@ -128,7 +128,7 @@
             $conn->prepare("UPDATE subscription_payments SET status = 'Declined', decline_reason = ?, reviewed_by = ?, reviewed_at = NOW() WHERE id = ? AND status = 'Pending'")
                  ->execute([trim($_POST['decline_reason'] ?? ''), $_SESSION['role'], $payment_id]);
             flash("Payment request declined.");
-            redirect("?route=admin_dashboard&tab=payment_requests");
+            redirect("/admin?tab=payment_requests");
         }
 
         // ------------- SUPER ADMIN: TOGGLE A PLATFORM-WIDE FEATURE FLAG -------------
@@ -140,6 +140,6 @@
                 setPlatformSetting($conn, $key, $value);
                 flash("Setting updated.");
             }
-            redirect("?route=admin_dashboard&tab=settings");
+            redirect("/admin?tab=settings");
         }
 

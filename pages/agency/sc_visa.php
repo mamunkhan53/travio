@@ -47,7 +47,7 @@ $pendingVisa  = $conn->query("SELECT COUNT(*) FROM sc_visa v JOIN sc_students s 
             <?php foreach($students_list as $sl): ?><option value="<?= $sl['id'] ?>" <?= $sc_filter_student===$sl['id']?'selected':'' ?>><?= xss_clean($sl['student_name']) ?></option><?php endforeach; ?>
         </select>
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Filter</button>
-        <a href="?route=app&page=sc_visa" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
+        <a href="/app/sc_visa" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
     </form>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -67,7 +67,7 @@ $pendingVisa  = $conn->query("SELECT COUNT(*) FROM sc_visa v JOIN sc_students s 
                     <tr><td colspan="6" class="text-center py-12 text-slate-400"><i class="fa-solid fa-stamp text-3xl mb-2 block"></i>No visa records found.</td></tr>
                 <?php else: foreach ($visas as $v): ?>
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3"><a href="?route=app&page=sc_students&id=<?= $v['student_id'] ?>&tab=visa" class="font-bold text-indigo-700 hover:underline"><?= xss_clean($v['student_name']) ?></a></td>
+                        <td class="px-4 py-3"><a href="/app/sc_students?id=<?= $v['student_id'] ?>&tab=visa" class="font-bold text-indigo-700 hover:underline"><?= xss_clean($v['student_name']) ?></a></td>
                         <td class="px-4 py-3"><p class="font-bold text-slate-800"><?= xss_clean($v['destination_country']??'—') ?></p><p class="text-xs text-slate-500"><?= xss_clean($v['visa_type']??'') ?></p></td>
                         <td class="px-4 py-3 text-xs space-y-0.5">
                             <?php if($v['application_date']): ?><p class="text-slate-500">Applied: <span class="font-bold text-slate-700"><?= date('d M Y',strtotime($v['application_date'])) ?></span></p><?php endif; ?>
@@ -79,7 +79,7 @@ $pendingVisa  = $conn->query("SELECT COUNT(*) FROM sc_visa v JOIN sc_students s 
                         <td class="px-4 py-3">
                             <button onclick='openScVisaEdit(<?= htmlspecialchars(json_encode($v), ENT_QUOTES) ?>)' class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">Edit</button>
                             <?php if (!$_SESSION['is_staff']): ?>
-                            <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="sc_delete_visa"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $v['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg transition">Del</button></form>
+                            <form method="POST" action="" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="sc_delete_visa"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $v['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg transition">Del</button></form>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -94,7 +94,7 @@ $pendingVisa  = $conn->query("SELECT COUNT(*) FROM sc_visa v JOIN sc_students s 
 <div id="scVisaListModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800" id="scVisaModalTitle">Add Visa Record</h3><button onclick="closeScVisaModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_visa"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <input type="hidden" name="id" id="sv_id">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Student *</label><select name="student_id" id="sv_student" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select Student —</option><?php foreach($students_list as $sl): ?><option value="<?= $sl['id'] ?>"><?= xss_clean($sl['student_name']) ?></option><?php endforeach; ?></select></div>

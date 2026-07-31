@@ -30,7 +30,7 @@
                                 <?php foreach($records as $row): ?>
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="px-6 py-4 font-extrabold text-indigo-600">
-                                            <a href="?route=app&page=query_history&table=invoices&id=<?= $row['id'] ?>" class="hover:underline"><?= $row['invoice_number'] ?></a>
+                                            <a href="/app/query_history?table=invoices&id=<?= $row['id'] ?>" class="hover:underline"><?= $row['invoice_number'] ?></a>
                                         </td>
                                         <td class="px-6 py-4 font-bold text-slate-800"><?= xss_clean($row['customer_name']) ?></td>
                                         <td class="px-6 py-4 font-medium"><?= date('d M, Y', strtotime($row['issue_date'])) ?></td>
@@ -43,7 +43,7 @@
                                         <td class="px-6 py-4 text-right whitespace-nowrap">
                                             <button onclick="generatePDF('<?= base64_encode(json_encode($row)) ?>')" class="text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 font-bold mr-2 transition"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
                                             <?php if (has_permission('can_delete_sale')): ?>
-                                                <a href="?route=app&action=delete&table=invoices&id=<?= $row['id'] ?>" onclick="return confirm('Delete this invoice?')" class="text-rose-500 bg-rose-50 px-4 py-2 rounded-lg hover:bg-rose-100 font-bold transition"><i class="fa-solid fa-trash"></i></a>
+                                                <a href="/app?action=delete&table=invoices&id=<?= $row['id'] ?>" onclick="return confirm('Delete this invoice?')" class="text-rose-500 bg-rose-50 px-4 py-2 rounded-lg hover:bg-rose-100 font-bold transition"><i class="fa-solid fa-trash"></i></a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -63,7 +63,7 @@
                             <h2 class="text-2xl font-extrabold text-slate-800 flex items-center"><i class="fa-solid fa-file-invoice-dollar text-indigo-500 mr-3"></i> Generate New Invoice</h2>
                             <button onclick="document.getElementById('invModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=app" class="space-y-6">
+                        <form method="POST" action="" class="space-y-6">
                             <input type="hidden" name="action" value="save_invoice">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             

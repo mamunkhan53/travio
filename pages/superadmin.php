@@ -30,7 +30,7 @@ function renderSuperAdmin($conn) {
     <div class="min-h-screen bg-slate-50 flex flex-col">
         <header class="bg-indigo-900 text-white px-8 py-4 flex justify-between items-center shadow-md">
             <h1 class="text-xl font-bold"><i class="fa-solid fa-shield-halved mr-2"></i>Super Admin Portal</h1>
-            <a href="?route=logout" class="bg-rose-500 px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600">Logout</a>
+            <a href="/logout" class="bg-rose-500 px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-600">Logout</a>
         </header>
         <main class="flex-1 p-8 max-w-7xl mx-auto w-full">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -44,14 +44,14 @@ function renderSuperAdmin($conn) {
 
             <!-- TABS -->
             <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200">
-                <a href="?route=admin_dashboard&tab=agencies" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='agencies' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-building mr-2"></i>Agencies & Subscriptions</a>
-                <a href="?route=admin_dashboard&tab=plans" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='plans' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-tags mr-2"></i>Subscription Packages</a>
-                <a href="?route=admin_dashboard&tab=payment_methods" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='payment_methods' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-wallet mr-2"></i>Payment Methods</a>
-                <a href="?route=admin_dashboard&tab=payment_requests" class="px-5 py-3 font-bold text-sm rounded-t-xl relative <?= $tab==='payment_requests' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>">
+                <a href="/admin?tab=agencies" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='agencies' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-building mr-2"></i>Agencies & Subscriptions</a>
+                <a href="/admin?tab=plans" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='plans' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-tags mr-2"></i>Subscription Packages</a>
+                <a href="/admin?tab=payment_methods" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='payment_methods' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-wallet mr-2"></i>Payment Methods</a>
+                <a href="/admin?tab=payment_requests" class="px-5 py-3 font-bold text-sm rounded-t-xl relative <?= $tab==='payment_requests' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>">
                     <i class="fa-solid fa-receipt mr-2"></i>Payment Requests
                     <?php if ($pendingPaymentCount > 0): ?><span class="ml-1 bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full align-top"><?= $pendingPaymentCount ?></span><?php endif; ?>
                 </a>
-                <a href="?route=admin_dashboard&tab=settings" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='settings' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-gear mr-2"></i>Settings</a>
+                <a href="/admin?tab=settings" class="px-5 py-3 font-bold text-sm rounded-t-xl <?= $tab==='settings' ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-500 hover:text-indigo-600' ?>"><i class="fa-solid fa-gear mr-2"></i>Settings</a>
             </div>
 
             <?php if ($tab === 'plans'): ?>
@@ -80,7 +80,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg" id="planModalTitle">Edit Package</h3>
                             <button onclick="document.getElementById('planModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-4">
+                        <form method="POST" action="/admin" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="save_plan">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="plan_key" id="pl_key">
@@ -139,7 +139,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg" id="methodModalTitle">Edit Payment Method</h3>
                             <button onclick="document.getElementById('methodModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-4">
+                        <form method="POST" action="/admin" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="save_payment_method">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="method_key" id="pm_key">
@@ -201,7 +201,7 @@ function renderSuperAdmin($conn) {
                                         <td class="p-4 text-slate-500"><?= date('d M Y, h:i A', strtotime($pay['created_at'])) ?></td>
                                         <td class="p-4 text-right whitespace-nowrap">
                                             <?php if ($pay['status'] === 'Pending'): ?>
-                                                <form method="POST" action="?route=admin_dashboard" class="inline">
+                                                <form method="POST" action="/admin" class="inline">
                                                     <input type="hidden" name="action" value="approve_payment">
                                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                                     <input type="hidden" name="payment_id" value="<?= $pay['id'] ?>">
@@ -228,7 +228,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg">Decline Payment Request</h3>
                             <button onclick="document.getElementById('declineModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-4">
+                        <form method="POST" action="/admin" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="decline_payment">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="payment_id" id="dp_payment_id">
@@ -253,7 +253,7 @@ function renderSuperAdmin($conn) {
                     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6">
                         <h3 class="font-extrabold text-slate-800 text-lg mb-1"><i class="fa-solid fa-envelope-circle-check text-indigo-500 mr-2"></i>Email Verification</h3>
                         <p class="text-sm text-slate-500 mb-5">When on, new agencies must click a link in their email before they can log in. When off, accounts are usable immediately after registration.</p>
-                        <form method="POST" action="?route=admin_dashboard" class="flex items-center justify-between bg-slate-50 rounded-xl p-4">
+                        <form method="POST" action="/admin" class="flex items-center justify-between bg-slate-50 rounded-xl p-4">
                             <input type="hidden" name="action" value="save_platform_settings">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="setting_key" value="email_verification_required">
@@ -267,7 +267,7 @@ function renderSuperAdmin($conn) {
                     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6">
                         <h3 class="font-extrabold text-slate-800 text-lg mb-1"><i class="fa-solid fa-shield-halved text-indigo-500 mr-2"></i>Two-Factor Authentication</h3>
                         <p class="text-sm text-slate-500 mb-5">When on, Agency Admins get a "Two-Factor Authentication" option on their Profile page to secure their own login. This never affects your own Super Admin 2FA below.</p>
-                        <form method="POST" action="?route=admin_dashboard" class="flex items-center justify-between bg-slate-50 rounded-xl p-4">
+                        <form method="POST" action="/admin" class="flex items-center justify-between bg-slate-50 rounded-xl p-4">
                             <input type="hidden" name="action" value="save_platform_settings">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="setting_key" value="agency_2fa_enabled">
@@ -312,7 +312,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg">Disable Two-Factor Authentication</h3>
                             <button onclick="document.getElementById('disable2faModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-4">
+                        <form method="POST" action="/admin" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="disable_2fa">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <div><label class="block text-xs font-bold text-slate-700 mb-1">Confirm your password</label><input type="password" name="password" required class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50"></div>
@@ -325,14 +325,14 @@ function renderSuperAdmin($conn) {
                     function start2faSetup() {
                         document.getElementById('setup2faModal').classList.remove('hidden');
                         document.getElementById('setup2faModal').classList.add('flex');
-                        fetch('?route=admin_dashboard&action=begin_2fa_setup')
+                        fetch('/admin?action=begin_2fa_setup')
                             .then(r => r.json())
                             .then(data => {
                                 document.getElementById('setup2faBody').innerHTML = `
                                     <p class="text-sm text-slate-500">1. Scan this QR code with your authenticator app.</p>
                                     <img src="${data.qr_url}" class="mx-auto rounded-xl border border-slate-100" width="200" height="200">
                                     <p class="text-xs text-slate-400 text-center">Can't scan? Enter this key manually:<br><span class="font-mono font-bold text-slate-600">${data.secret}</span></p>
-                                    <form method="POST" action="?route=admin_dashboard" class="space-y-3 pt-3 border-t border-slate-100">
+                                    <form method="POST" action="/admin" class="space-y-3 pt-3 border-t border-slate-100">
                                         <input type="hidden" name="action" value="confirm_2fa">
                                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                         <label class="block text-xs font-bold text-slate-700">2. Enter the 6-digit code it shows</label>
@@ -411,7 +411,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg" id="subModalTitle">Manage Subscription</h3>
                             <button onclick="document.getElementById('subModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-5">
+                        <form method="POST" action="/admin" class="p-6 space-y-5">
                             <input type="hidden" name="action" value="manage_subscription">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="agency_id" id="sm_agency_id">
@@ -498,7 +498,7 @@ function renderSuperAdmin($conn) {
                             <h3 class="font-extrabold text-slate-800 text-lg" id="loginModalTitle">Manage Login</h3>
                             <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=admin_dashboard" class="p-6 space-y-4">
+                        <form method="POST" action="/admin" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="update_agency_login">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="user_id" id="lm_user_id">

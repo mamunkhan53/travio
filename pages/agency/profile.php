@@ -22,11 +22,11 @@
                     <?php if ($subscription['expired']): ?>
                         <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-50 border border-rose-200 rounded-xl p-4">
                             <p class="text-sm text-rose-600 font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i>Your subscription has expired - Monthly: ৳<?= number_format($subscriptionPlans['monthly']['price'] ?? 500, 0) ?>/month or Yearly: ৳<?= number_format($subscriptionPlans['yearly']['price'] ?? 3500, 0) ?>/year.</p>
-                            <a href="?route=app&page=subscription_payment" class="shrink-0 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl shadow hover:bg-rose-700 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
+                            <a href="/app/subscription_payment" class="shrink-0 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl shadow hover:bg-rose-700 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew Now</a>
                         </div>
                     <?php else: ?>
                         <div class="mt-4">
-                            <a href="?route=app&page=subscription_payment" class="inline-block bg-indigo-50 text-indigo-600 font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-100 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew / Upgrade Plan</a>
+                            <a href="/app/subscription_payment" class="inline-block bg-indigo-50 text-indigo-600 font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-100 transition text-center text-sm"><i class="fa-solid fa-arrow-rotate-right mr-2"></i>Renew / Upgrade Plan</a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -82,7 +82,7 @@
                             <h3 class="font-extrabold text-slate-800 text-lg">Disable Two-Factor Authentication</h3>
                             <button onclick="document.getElementById('disable2faModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=app" class="p-6 space-y-4">
+                        <form method="POST" action="" class="p-6 space-y-4">
                             <input type="hidden" name="action" value="disable_2fa">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <div><label class="block text-xs font-bold text-slate-700 mb-1">Confirm your password</label><input type="password" name="password" required class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50"></div>
@@ -95,14 +95,14 @@
                     function start2faSetup() {
                         document.getElementById('setup2faModal').classList.remove('hidden');
                         document.getElementById('setup2faModal').classList.add('flex');
-                        fetch('?route=app&action=begin_2fa_setup')
+                        fetch('/app?action=begin_2fa_setup')
                             .then(r => r.json())
                             .then(data => {
                                 document.getElementById('setup2faBody').innerHTML = `
                                     <p class="text-sm text-slate-500">1. Scan this QR code with your authenticator app.</p>
                                     <img src="${data.qr_url}" class="mx-auto rounded-xl border border-slate-100" width="200" height="200">
                                     <p class="text-xs text-slate-400 text-center">Can't scan? Enter this key manually:<br><span class="font-mono font-bold text-slate-600">${data.secret}</span></p>
-                                    <form method="POST" action="?route=app" class="space-y-3 pt-3 border-t border-slate-100">
+                                    <form method="POST" action="" class="space-y-3 pt-3 border-t border-slate-100">
                                         <input type="hidden" name="action" value="confirm_2fa">
                                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                         <label class="block text-xs font-bold text-slate-700">2. Enter the 6-digit code it shows</label>
@@ -120,7 +120,7 @@
 
                 <div class="max-w-3xl bg-white p-8 rounded-2xl soft-shadow border border-slate-100">
                     <h3 class="text-2xl font-extrabold text-slate-800 mb-6"><?= $_SESSION['is_staff'] ? 'My Profile' : 'Manage Agency Profile' ?></h3>
-                    <form method="POST" action="?route=app" enctype="multipart/form-data" class="space-y-6">
+                    <form method="POST" action="" enctype="multipart/form-data" class="space-y-6">
                         <input type="hidden" name="action" value="update_profile">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         

@@ -92,11 +92,11 @@ if ($viewMode === 'summary') {
                 <p class="text-xs text-slate-400 mt-0.5">Track daily staff check-in and check-out</p>
             </div>
             <div class="flex gap-2">
-                <a href="?route=app&page=staff_attendance&view=list&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>"
+                <a href="/app/staff_attendance?view=list&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>"
                    class="px-4 py-2 rounded-xl text-sm font-bold transition <?= $viewMode==='list' ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
                     <i class="fa-solid fa-list mr-1"></i> Records
                 </a>
-                <a href="?route=app&page=staff_attendance&view=summary&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>"
+                <a href="/app/staff_attendance?view=summary&month=<?= urlencode($f_month) ?><?= $f_staff ? '&staff='.urlencode($f_staff) : '' ?>"
                    class="px-4 py-2 rounded-xl text-sm font-bold transition <?= $viewMode==='summary' ? 'bg-indigo-600 text-white shadow-md' : 'border border-slate-200 text-slate-600 hover:bg-slate-50' ?>">
                     <i class="fa-solid fa-chart-bar mr-1"></i> Monthly Summary
                 </a>
@@ -173,7 +173,7 @@ if ($viewMode === 'summary') {
                         <td class="px-6 py-4 text-slate-400 text-xs max-w-[160px] truncate"><?= htmlspecialchars($r['notes'] ?: '—') ?></td>
                         <td class="px-6 py-4 text-right whitespace-nowrap att-action-col">
                             <button onclick='openAttModal(<?= htmlspecialchars(json_encode($r)) ?>)' class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 transition"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <form method="POST" action="?route=app" class="inline ml-1" onsubmit="return confirm('Delete this attendance record?')">
+                            <form method="POST" action="" class="inline ml-1" onsubmit="return confirm('Delete this attendance record?')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                 <input type="hidden" name="action" value="staff_delete_attendance">
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
@@ -245,7 +245,7 @@ if ($viewMode === 'summary') {
             </h3>
             <button onclick="closeAttModal()" class="w-8 h-8 rounded-full bg-slate-200/50 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4">
+        <form method="POST" action="" class="p-6 space-y-4">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="action" value="staff_save_attendance">
             <input type="hidden" name="id" id="att_id" value="">

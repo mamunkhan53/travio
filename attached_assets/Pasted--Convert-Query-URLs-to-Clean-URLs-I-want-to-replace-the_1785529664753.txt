@@ -1,0 +1,86 @@
+## Convert Query URLs to Clean URLs
+
+I want to replace the current query-based URL structure with clean, user-friendly URLs throughout the website.
+
+### Current URL Structure
+
+```
+/?route=login
+/?route=register
+/?route=contact
+/?route=app&page=dashboard
+/?route=app&page=customers
+/?route=app&page=bookings
+```
+
+### New URL Structure
+
+```
+/
+/login
+/register
+/contact
+/travio-bangla
+
+/app/dashboard
+/app/customers
+/app/bookings
+/app/accounting
+/app/staff
+/app/settings
+```
+
+### Homepage Sections
+
+**Important:** Pricing is **NOT** a separate page.
+
+It is a section on the homepage.
+
+So instead of:
+
+```
+/pricing
+```
+
+it should always use:
+
+```
+/#pricing
+```
+
+Likewise, if there are other homepage sections (Features, FAQ, Testimonials, etc.), they should continue using anchor links, for example:
+
+```
+/#features
+/#pricing
+/#faq
+/#testimonials
+```
+
+Do **not** create separate pages for these sections.
+
+### Requirements
+
+* Replace all internal links from query parameters (`?route=`) to clean URLs.
+* Keep all existing functionality unchanged.
+* Update the router to support path-based routing.
+* Ensure browser refresh works correctly on every route.
+* Protected pages under `/app/...` must continue to require authentication.
+* Replace every hardcoded `?route=` link throughout the project.
+* Add 301 redirects from old query URLs to the new URLs so existing bookmarks and links continue to work.
+
+### Examples
+
+| Old URL                      | New URL          |
+| ---------------------------- | ---------------- |
+| `/?route=login`              | `/login`         |
+| `/?route=register`           | `/register`      |
+| `/?route=contact`            | `/contact`       |
+| `/?route=app&page=dashboard` | `/app/dashboard` |
+| `/?route=app&page=customers` | `/app/customers` |
+| `/?route=app&page=bookings`  | `/app/bookings`  |
+| `/?route=app&page=staff`     | `/app/staff`     |
+
+### Important
+
+Do **not** change the application's logic, authentication, or database structure. This task is only to improve the URL structure and routing while preserving all existing functionality. The homepage should continue using anchor links (e.g. `/#pricing`) for sections that are not standalone pages.

@@ -44,7 +44,7 @@ $acceptedApps = $conn->query("SELECT COUNT(*) FROM sc_applications a JOIN sc_stu
             <?php foreach($students_list as $sl): ?><option value="<?= $sl['id'] ?>" <?= $sc_filter_student===$sl['id']?'selected':'' ?>><?= xss_clean($sl['student_name']) ?></option><?php endforeach; ?>
         </select>
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Filter</button>
-        <a href="?route=app&page=sc_applications" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
+        <a href="/app/sc_applications" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
     </form>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -64,15 +64,15 @@ $acceptedApps = $conn->query("SELECT COUNT(*) FROM sc_applications a JOIN sc_stu
                     <tr><td colspan="6" class="text-center py-12 text-slate-400"><i class="fa-solid fa-building-columns text-3xl mb-2 block"></i>No applications found.</td></tr>
                 <?php else: foreach ($apps as $ap): ?>
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3"><a href="?route=app&page=sc_students&id=<?= $ap['student_id'] ?>&tab=applications" class="font-bold text-indigo-700 hover:underline"><?= xss_clean($ap['student_name']) ?></a><p class="text-xs text-slate-500"><?= xss_clean($ap['mobile']) ?></p></td>
+                        <td class="px-4 py-3"><a href="/app/sc_students?id=<?= $ap['student_id'] ?>&tab=applications" class="font-bold text-indigo-700 hover:underline"><?= xss_clean($ap['student_name']) ?></a><p class="text-xs text-slate-500"><?= xss_clean($ap['mobile']) ?></p></td>
                         <td class="px-4 py-3"><p class="font-bold text-slate-800"><?= xss_clean($ap['university_name']??'—') ?></p><p class="text-xs text-slate-500"><?= xss_clean($ap['course']??'') ?></p></td>
                         <td class="px-4 py-3 text-sm text-slate-600"><?= xss_clean($ap['intake']??'—') ?></td>
                         <td class="px-4 py-3"><p class="text-sm font-bold text-slate-700"><?= number_format($ap['tuition_fee'],2) ?></p><?php if($ap['scholarship']>0): ?><p class="text-xs text-emerald-600 font-bold">-<?= number_format($ap['scholarship'],2) ?> scholarship</p><?php endif; ?></td>
                         <td class="px-4 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full <?= $statusColors[$ap['offer_status']] ?? 'bg-slate-100 text-slate-600' ?>"><?= xss_clean($ap['offer_status']) ?></span></td>
                         <td class="px-4 py-3">
-                            <a href="?route=app&page=sc_students&id=<?= $ap['student_id'] ?>&tab=applications" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">View</a>
+                            <a href="/app/sc_students?id=<?= $ap['student_id'] ?>&tab=applications" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">View</a>
                             <?php if (!$_SESSION['is_staff'] && has_permission('can_manage_sc_applications')): ?>
-                            <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="sc_delete_application"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $ap['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg transition">Del</button></form>
+                            <form method="POST" action="" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="sc_delete_application"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $ap['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg transition">Del</button></form>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -86,7 +86,7 @@ $acceptedApps = $conn->query("SELECT COUNT(*) FROM sc_applications a JOIN sc_stu
 <div id="scAppListModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Add Application</h3><button onclick="document.getElementById('scAppListModal').classList.add('hidden');document.getElementById('scAppListModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_application"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Student *</label><select name="student_id" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select Student —</option><?php foreach($students_list as $sl): ?><option value="<?= $sl['id'] ?>"><?= xss_clean($sl['student_name']) ?></option><?php endforeach; ?></select></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">University *</label><input list="scal_unis" name="university_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><datalist id="scal_unis"><?php foreach($sc_unis as $u): ?><option value="<?= xss_clean($u) ?>"><?php endforeach; ?></datalist></div>

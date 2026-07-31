@@ -40,7 +40,7 @@ function renderAgencyApp($conn, $modules) {
     $subscription = subscriptionStatusInfo($agency);
     if ($subscription['expired'] && !in_array($page, ['dashboard', 'profile', 'subscription_payment'])) {
         flash("Your subscription expired on " . date('d M Y', strtotime($subscription['expires_at'])) . ". Renew your plan to access this feature.", "error");
-        redirect('?route=app&page=dashboard');
+        redirect('/app/dashboard');
     }
     $subscriptionPlans = getSubscriptionPlans($conn);
     $paymentMethods = getPaymentMethods($conn);
@@ -54,19 +54,19 @@ function renderAgencyApp($conn, $modules) {
     $notifRows = $conn->query("SELECT customer_name, module_name, notification_type, deadline_date FROM service_notifications WHERE agency_id=$agency_id AND is_read=0 AND notify_date <= CURRENT_DATE() AND deadline_date >= CURRENT_DATE() $dn_sf ORDER BY deadline_date ASC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($notifRows as $nr) {
         $navNotifCount++;
-        $navNotifItems[] = ['icon'=>'fa-clock','color'=>'text-rose-500','title'=>$nr['notification_type'].' — '.$nr['customer_name'],'sub'=>date('d M Y', strtotime($nr['deadline_date'])).' deadline','url'=>'?route=app&page=dashboard#dashNotifications'];
+        $navNotifItems[] = ['icon'=>'fa-clock','color'=>'text-rose-500','title'=>$nr['notification_type'].' — '.$nr['customer_name'],'sub'=>date('d M Y', strtotime($nr['deadline_date'])).' deadline','url'=>'/app/dashboard#dashNotifications'];
     }
     // 2. Follow-up reminders (today and overdue, unhandled)
     $fuRows = $conn->query("SELECT rf.follow_up_date, rf.module_name, rf.record_id, rf.note FROM record_followups rf WHERE 1=1 $rf_sf AND rf.follow_up_date <= CURRENT_DATE() ORDER BY rf.follow_up_date DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($fuRows as $fr) {
         $navNotifCount++;
         $mlabel = ['enquiries'=>'Lead','passports'=>'Passport','visas'=>'Visa','tickets'=>'Ticket','umrah'=>'Umrah','tours'=>'Tour','sc_leads'=>'SC Lead','sc_students'=>'Student'][$fr['module_name']] ?? ucfirst($fr['module_name']);
-        $navNotifItems[] = ['icon'=>'fa-comment-dots','color'=>'text-indigo-500','title'=>'Follow-up: '.$mlabel.' #'.$fr['record_id'],'sub'=>date('d M Y', strtotime($fr['follow_up_date'])).($fr['note'] ? ' — '.substr($fr['note'],0,35) : ''),'url'=>'?route=app&page=query_history&table='.$fr['module_name'].'&id='.urlencode($fr['record_id'])];
+        $navNotifItems[] = ['icon'=>'fa-comment-dots','color'=>'text-indigo-500','title'=>'Follow-up: '.$mlabel.' #'.$fr['record_id'],'sub'=>date('d M Y', strtotime($fr['follow_up_date'])).($fr['note'] ? ' — '.substr($fr['note'],0,35) : ''),'url'=>'/app/query_history?table='.$fr['module_name'].'&id='.urlencode($fr['record_id'])];
     }
     // Language switch (handled before HTML output)
     if (!empty($_GET['set_lang']) && in_array($_GET['set_lang'], ['en','bn','ar','hi','ur'])) {
         $_SESSION['lang'] = $_GET['set_lang'];
-        redirect('?route=app&page='.urlencode($page));
+        redirect('/app/'.urlencode($page));
     }
     $currentLang = $_SESSION['lang'] ?? 'en';
     $langLabels  = ['en'=>'EN','bn'=>'বাং','ar'=>'عر','hi'=>'हि','ur'=>'اُر'];
@@ -76,7 +76,7 @@ function renderAgencyApp($conn, $modules) {
     // (mirrors how the rest of the app already gates financial/reporting screens for staff).
     if ($page === 'accounting' && $_SESSION['is_staff'] && !has_permission('can_view_reports')) {
         flash("You do not have permission to view Accounting.", "error");
-        redirect('?route=app&page=dashboard');
+        redirect('/app/dashboard');
     }
 
     // Map Staff IDs to Names
@@ -225,7 +225,7 @@ function renderAgencyApp($conn, $modules) {
                             ];
                             foreach ($ts_sub as $tk => [$tlabel, $ticon]):
                             ?>
-                            <a href="?route=app&page=<?= $tk ?>"
+                            <a href="/app/<?= $tk ?>"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === $tk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $ticon ?> w-4 text-center text-xs"></i>
@@ -276,7 +276,7 @@ function renderAgencyApp($conn, $modules) {
                         </button>
                         <div id="accSubMenu" class="<?= $acc_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
                             <?php foreach ($acc_sub as $ak => [$alabel, $aicon]): ?>
-                            <a href="?route=app&page=<?= $ak ?>"
+                            <a href="/app/<?= $ak ?>"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === $ak ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $aicon ?> w-4 text-center text-xs"></i>
@@ -316,7 +316,7 @@ function renderAgencyApp($conn, $modules) {
                             ];
                             foreach ($hu_sub as $hk => [$hlabel, $hicon]):
                             ?>
-                            <a href="?route=app&page=<?= $hk ?>"
+                            <a href="/app/<?= $hk ?>"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === $hk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $hicon ?> w-4 text-center text-xs"></i>
@@ -359,7 +359,7 @@ function renderAgencyApp($conn, $modules) {
                         </button>
                         <div id="scSubMenu" class="<?= $sc_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
                             <?php foreach ($sc_sub as $sk => [$slabel, $sicon]): ?>
-                            <a href="?route=app&page=<?= $sk ?>"
+                            <a href="/app/<?= $sk ?>"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === $sk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $sicon ?> w-4 text-center text-xs"></i>
@@ -398,7 +398,7 @@ function renderAgencyApp($conn, $modules) {
                             ];
                             foreach ($sm_sub as $smk => [$smlabel, $smicon]):
                             ?>
-                            <a href="?route=app&page=<?= $smk ?>"
+                            <a href="/app/<?= $smk ?>"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === $smk ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="<?= $smicon ?> w-4 text-center text-xs"></i>
@@ -429,13 +429,13 @@ function renderAgencyApp($conn, $modules) {
                                style="<?= $wa_open ? 'transform:rotate(180deg)' : '' ?>"></i>
                         </button>
                         <div id="waSubMenu" class="<?= $wa_open ? '' : 'hidden' ?> pl-3 mt-0.5 space-y-0.5">
-                            <a href="?route=app&page=whatsapp"
+                            <a href="/app/whatsapp"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === 'whatsapp' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="fa-solid fa-paper-plane w-4 text-center text-xs"></i>
                                 Manual
                             </a>
-                            <a href="?route=app&page=whatsapp_automation"
+                            <a href="/app/whatsapp_automation"
                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all
                                       <?= $active_page === 'whatsapp_automation' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                                 <i class="fa-solid fa-robot w-4 text-center text-xs"></i>
@@ -450,7 +450,7 @@ function renderAgencyApp($conn, $modules) {
                         <i class="fa-solid fa-lock text-xs"></i>
                     </div>
                 <?php else: ?>
-                    <a href="?route=app&page=<?= $key ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all <?= $active_page === $key ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
+                    <a href="/app/<?= $key ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all <?= $active_page === $key ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                         <i class="<?= $module['icon'] ?> w-5 text-center"></i>
                         <?= $module['title'] ?>
                     </a>
@@ -459,9 +459,9 @@ function renderAgencyApp($conn, $modules) {
         </nav>
         <div class="p-4 border-t border-slate-100 bg-white">
             <?php if ($_SESSION['is_staff']): ?>
-                <a href="?route=app&page=profile" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 mb-2 transition-colors"><i class="fa-solid fa-user w-5 text-center"></i> My Profile</a>
+                <a href="/app/profile" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 mb-2 transition-colors"><i class="fa-solid fa-user w-5 text-center"></i> My Profile</a>
             <?php endif; ?>
-            <a href="?route=logout" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+            <a href="/logout" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">
                 <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
             </a>
         </div>
@@ -508,7 +508,7 @@ function renderAgencyApp($conn, $modules) {
                     <div id="langDropdown" class="hidden absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
                         <p class="px-4 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">Language</p>
                         <?php foreach ($langNames as $lk => $lname): ?>
-                        <a href="?route=app&page=<?= $page ?>&set_lang=<?= $lk ?>"
+                        <a href="/app/<?= $page ?>?set_lang=<?= $lk ?>"
                            class="flex items-center justify-between px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 transition <?= $currentLang===$lk ? 'text-indigo-600' : 'text-slate-600' ?>">
                             <?= $lname ?>
                             <?php if ($currentLang===$lk): ?><i class="fa-solid fa-check text-indigo-500 text-xs"></i><?php endif; ?>
@@ -546,7 +546,7 @@ function renderAgencyApp($conn, $modules) {
                             <?php endforeach; ?>
                         </div>
                         <div class="notif-footer border-t border-slate-100 px-4 py-2.5">
-                            <a href="?route=app&page=dashboard#dashNotifications" class="text-xs font-bold text-indigo-600 hover:underline">View all on Dashboard →</a>
+                            <a href="/app/dashboard#dashNotifications" class="text-xs font-bold text-indigo-600 hover:underline">View all on Dashboard →</a>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -569,14 +569,14 @@ function renderAgencyApp($conn, $modules) {
                             <p class="text-xs font-bold text-slate-800"><?= xss_clean($_SESSION['role']) ?></p>
                             <p class="text-[11px] text-slate-400"><?= $_SESSION['is_staff'] ? 'Staff Account' : 'Agency Admin' ?></p>
                         </div>
-                        <a href="?route=app&page=profile" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <a href="/app/profile" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
                             <i class="fa-solid fa-user w-4 text-center text-slate-400"></i> My Profile
                         </a>
-                        <a href="?route=app&page=dashboard" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <a href="/app/dashboard" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
                             <i class="fa-solid fa-gauge w-4 text-center text-slate-400"></i> Dashboard
                         </a>
                         <hr class="my-1 border-slate-100">
-                        <a href="?route=logout" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 transition">
+                        <a href="/logout" class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 transition">
                             <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i> Logout
                         </a>
                     </div>
@@ -791,16 +791,16 @@ function renderAgencyApp($conn, $modules) {
             elseif ($page === 'whatsapp_automation' && !$_SESSION['is_staff']):
                 include __DIR__ . '/agency/whatsapp_automation.php';
             elseif (isset($modules[$page]) && !empty($modules[$page]['sc_module'])):
-                if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=dashboard"); }
+                if ($page === 'sc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("/app/dashboard"); }
                 include __DIR__ . '/agency/' . $page . '.php';
             elseif (isset($modules[$page]) && !empty($modules[$page]['umrah_module'])):
                 include __DIR__ . '/agency/' . $page . '.php';
             elseif ($page === 'ocr_scanner'):
                 include __DIR__ . '/agency/ocr_scanner.php';
             elseif ($page === 'accounting'):
-                redirect("?route=app&page=acc_dashboard");
+                redirect("/app/acc_dashboard");
             elseif (isset($modules[$page]) && !empty($modules[$page]['acc_module'])):
-                if ($page === 'acc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("?route=app&page=acc_dashboard"); }
+                if ($page === 'acc_settings' && $_SESSION['is_staff']) { flash("Access denied.", "error"); redirect("/app/acc_dashboard"); }
                 include __DIR__ . '/agency/acc/' . $page . '.php';
             elseif (array_key_exists($page, $modules) && $page !== 'dashboard'):
                 include __DIR__ . '/agency/generic_crud.php';

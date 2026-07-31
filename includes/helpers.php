@@ -507,7 +507,7 @@ function sendAppEmail($to, $subject, $htmlBody) {
 
 function sendPasswordResetEmail($email, $name, $token) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '?route=reset_password&token=' . $token;
+    $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/reset-password?token=' . $token;
     $subject = "Reset Your Password - Travio ERP";
     $body = "<!DOCTYPE html><html><body style='font-family:Inter,sans-serif;background:#0A0C11;color:#EAEDF3;padding:40px 20px;'>"
           . "<div style='max-width:520px;margin:0 auto;background:rgba(22,26,35,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px;'>"
@@ -528,7 +528,7 @@ function sendPasswordResetEmail($email, $name, $token) {
 
 function sendVerificationEmail($email, $name, $token) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '?route=verify_email&token=' . $token;
+    $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/verify-email?token=' . $token;
     $subject = "Verify your email - South Zone ERP";
     $body = "<p>Hi " . htmlspecialchars($name) . ",</p>"
           . "<p>Thanks for registering with South Zone ERP. Please confirm your email address to activate your account:</p>"

@@ -40,7 +40,7 @@ foreach ($sc_cats as $k => $_) {
         <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-3 h-fit">
             <p class="text-xs font-extrabold text-slate-400 uppercase tracking-wider px-3 mb-2">Categories</p>
             <?php foreach ($sc_cats as $k => [$label, $icon]): ?>
-            <a href="?route=app&page=sc_settings&tab=<?= $k ?>"
+            <a href="/app/sc_settings?tab=<?= $k ?>"
                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-0.5
                       <?= $sc_tab === $k ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                 <i class="<?= $icon ?> w-4 text-center text-xs"></i>
@@ -56,7 +56,7 @@ foreach ($sc_cats as $k => $_) {
                 <h3 class="font-extrabold text-slate-800 mb-4 flex items-center gap-2">
                     <i class="<?= $sc_cats[$sc_tab][1] ?> text-indigo-500"></i> <?= $sc_cats[$sc_tab][0] ?>
                 </h3>
-                <form method="POST" action="?route=app" class="flex gap-3 mb-6">
+                <form method="POST" action="" class="flex gap-3 mb-6">
                     <input type="hidden" name="action" value="sc_save_setting">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <input type="hidden" name="category" value="<?= $sc_tab ?>">
@@ -78,7 +78,7 @@ foreach ($sc_cats as $k => $_) {
                     <div class="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
                         <i class="<?= $sc_cats[$sc_tab][1] ?> text-indigo-400 text-sm"></i>
                         <span class="flex-1 text-sm font-bold text-slate-700"><?= xss_clean($item['value']) ?></span>
-                        <form method="POST" action="?route=app" onsubmit="return confirm('Delete this item?')">
+                        <form method="POST" action="" onsubmit="return confirm('Delete this item?')">
                             <input type="hidden" name="action" value="sc_delete_setting">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="id" value="<?= $item['id'] ?>">

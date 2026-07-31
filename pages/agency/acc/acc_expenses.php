@@ -93,7 +93,7 @@ $accRedirectQs = "from_date=$accFrom&to_date=$accTo";
     <td class="px-4 py-3 text-xs text-slate-500"><?= xss_clean($ex['staff_name']??'—') ?></td>
     <td class="px-4 py-3">
         <?php if($accCanEdit): ?><button onclick="openExpModal('edit','<?= rawurlencode(json_encode($ex)) ?>')" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Edit</button><?php endif; ?>
-        <?php if($accCanDel): ?><a href="?route=app&action=delete_expense&id=<?= urlencode($ex['id']) ?>&redirect_qs=<?= urlencode('page=acc_expenses&from_date='.$accFrom.'&to_date='.$accTo) ?>" onclick="return confirm('Delete?')" class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition inline-block">Del</a><?php endif; ?>
+        <?php if($accCanDel): ?><a href="/app?action=delete_expense&id=<?= urlencode($ex['id']) ?>&redirect_qs=<?= urlencode('page=acc_expenses&from_date='.$accFrom.'&to_date='.$accTo) ?>" onclick="return confirm('Delete?')" class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition inline-block">Del</a><?php endif; ?>
     </td>
 </tr>
 <?php endforeach; endif; ?>
@@ -112,7 +112,7 @@ $accRedirectQs = "from_date=$accFrom&to_date=$accTo";
             <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2" id="expModalTitle"><i class="fa-solid fa-receipt text-rose-500"></i> Add Expense</h3>
             <button onclick="closeExpModal()" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4" id="expForm">
+        <form method="POST" action="" class="p-6 space-y-4" id="expForm">
             <input type="hidden" name="action" value="save_expense">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="expense_id" id="exp_id" value="">

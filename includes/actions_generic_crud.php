@@ -6,7 +6,7 @@
 
             if (isAgencySubscriptionExpired($conn, $agency_id)) {
                 flash("Your subscription has expired. Please renew your plan to add or edit records.", "error");
-                redirect("?route=app&page=dashboard");
+                redirect("/app/dashboard");
             }
             
             // Backend Permission Checking
@@ -250,5 +250,5 @@
                     }
                 }
             }
-            redirect("?route=app&page=" . $table);
+            redirect("/app/" . $table);
         }

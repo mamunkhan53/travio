@@ -28,7 +28,7 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
 <style>@media print{.no-print{display:none!important}body{background:white}}</style>
 <div class="no-print mb-4 flex gap-2">
     <button onclick="window.print()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-print mr-2"></i>Print Voucher</button>
-    <a href="?route=app&page=acc_payment_vouchers&from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold">← Back</a>
+    <a href="/app/acc_payment_vouchers?from_date=<?= $accFrom ?>&to_date=<?= $accTo ?>" class="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold">← Back</a>
 </div>
 <div class="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden">
     <div class="bg-indigo-700 text-white px-8 py-5 flex justify-between items-start">
@@ -96,9 +96,9 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
     <td class="px-4 py-3 text-sm text-slate-500"><?= xss_clean($v['payment_method']??'') ?></td>
     <td class="px-4 py-3 font-extrabold text-rose-600"><?= $currencySymbol ?> <?= number_format($v['amount'],2) ?></td>
     <td class="px-4 py-3">
-        <a href="?route=app&page=acc_payment_vouchers&print=<?= $v['id'] ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Print</a>
+        <a href="/app/acc_payment_vouchers?print=<?= $v['id'] ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Print</a>
         <?php if(!$_SESSION['is_staff']): ?>
-        <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_acc_voucher"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $v['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
+        <form method="POST" action="" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_acc_voucher"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $v['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
         <?php endif; ?>
     </td>
 </tr>
@@ -112,7 +112,7 @@ $agencyInfo=$conn->query("SELECT * FROM agencies WHERE id=$agency_id LIMIT 1")->
 <div id="pvModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">New Payment Voucher</h3><button onclick="document.getElementById('pvModal').classList.add('hidden');document.getElementById('pvModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="save_acc_voucher"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="voucher_type" value="payment">
         <div class="grid grid-cols-2 gap-4">
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Date *</label><input type="date" name="voucher_date" value="<?= date('Y-m-d') ?>" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>

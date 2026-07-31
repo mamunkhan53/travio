@@ -9,7 +9,7 @@ function sc_guard($conn) {
     if (!isset($_SESSION['agency_id'])) { http_response_code(403); die("Unauthorised."); }
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
         flash("Subscription expired. Renew to use this feature.", "error");
-        redirect("?route=app&page=dashboard");
+        redirect("/app/dashboard");
     }
 }
 function sc_id($conn, $table, $prefix, $agency_id) {
@@ -46,7 +46,7 @@ if ($action === 'sc_save_lead' && isset($_SESSION['agency_id'])) {
         $conn->prepare("UPDATE sc_leads SET ".implode(',',$set)." WHERE agency_id=? AND id=?")->execute($vals);
         flash("Lead updated.");
     }
-    redirect("?route=app&page=sc_leads");
+    redirect("/app/sc_leads");
 }
 
 if ($action === 'sc_delete_lead' && isset($_SESSION['agency_id'])) {
@@ -57,7 +57,7 @@ if ($action === 'sc_delete_lead' && isset($_SESSION['agency_id'])) {
     $conn->prepare("DELETE FROM record_followups WHERE agency_id=? AND module_name='sc_leads' AND record_id=?")->execute([$agency_id,$id]);
     $conn->prepare("DELETE FROM sc_leads WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Lead deleted.");
-    redirect("?route=app&page=sc_leads");
+    redirect("/app/sc_leads");
 }
 
 if ($action === 'sc_convert_lead' && isset($_SESSION['agency_id'])) {
@@ -68,7 +68,7 @@ if ($action === 'sc_convert_lead' && isset($_SESSION['agency_id'])) {
     $stmt = $conn->prepare("SELECT * FROM sc_leads WHERE id=? AND agency_id=?");
     $stmt->execute([$leadId,$agency_id]);
     $lead = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$lead) { flash("Lead not found.", "error"); redirect("?route=app&page=sc_leads"); }
+    if (!$lead) { flash("Lead not found.", "error"); redirect("/app/sc_leads"); }
     $newId = sc_id($conn, 'sc_students', 'ST', $agency_id);
     $staffId = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
     $conn->prepare("INSERT INTO sc_students (id,agency_id,lead_id,student_name,mobile,email,passport_no,education_background,ielts_score,current_status,reference_staff_id,created_by_staff_id) VALUES (?,?,?,?,?,?,?,?,?,'Active',?,?)")
@@ -77,7 +77,7 @@ if ($action === 'sc_convert_lead' && isset($_SESSION['agency_id'])) {
     $conn->prepare("INSERT INTO record_followups (agency_id,module_name,record_id,staff_id,note) VALUES (?,?,?,?,?)")
          ->execute([$agency_id,'sc_students',$newId,$staffId,"Student profile created from Lead $leadId."]);
     flash("Lead converted to Student profile. Student ID: $newId");
-    redirect("?route=app&page=sc_students&id=$newId");
+    redirect("/app/sc_students?id=$newId");
 }
 
 // ── STUDENTS ───────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ if ($action === 'sc_save_student' && isset($_SESSION['agency_id'])) {
         $ph = implode(',', array_fill(0, count($cols), '?'));
         $conn->prepare("INSERT INTO sc_students (".implode(',',$cols).") VALUES ($ph)")->execute($vals);
         flash("Student profile created.");
-        redirect("?route=app&page=sc_students&id=$newId");
+        redirect("/app/sc_students?id=$newId");
     } else {
         $set = []; $vals = [];
         foreach ($fields as $f) { $set[] = "$f=?"; $vals[] = $data[$f]; }
@@ -107,7 +107,7 @@ if ($action === 'sc_save_student' && isset($_SESSION['agency_id'])) {
         $vals[] = $agency_id; $vals[] = $id;
         $conn->prepare("UPDATE sc_students SET ".implode(',',$set)." WHERE agency_id=? AND id=?")->execute($vals);
         flash("Student profile updated.");
-        redirect("?route=app&page=sc_students&id=$id");
+        redirect("/app/sc_students?id=$id");
     }
 }
 
@@ -122,7 +122,7 @@ if ($action === 'sc_delete_student' && isset($_SESSION['agency_id'])) {
     $conn->prepare("DELETE FROM record_followups WHERE agency_id=? AND module_name='sc_students' AND record_id=?")->execute([$agency_id,$id]);
     $conn->prepare("DELETE FROM sc_students WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Student deleted along with all related records.");
-    redirect("?route=app&page=sc_students");
+    redirect("/app/sc_students");
 }
 
 // ── APPLICATIONS ───────────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ if ($action === 'sc_save_application' && isset($_SESSION['agency_id'])) {
              ->execute([$d['university_name'],$d['course'],$d['intake'],$d['tuition_fee']??0,$d['scholarship']??0,$d['application_date'],$d['offer_status'],$d['notes'],$id,$agency_id]);
         flash("Application updated.");
     }
-    $redirect = !empty($_POST['student_id']) ? "?route=app&page=sc_students&id=$studentId&tab=applications" : "?route=app&page=sc_applications";
+    $redirect = !empty($_POST['student_id']) ? "/app/sc_students?id=$studentId&tab=applications" : "/app/sc_applications";
     redirect($redirect);
 }
 
@@ -155,7 +155,7 @@ if ($action === 'sc_delete_application' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM sc_applications WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Application deleted.");
-    redirect("?route=app&page=sc_applications");
+    redirect("/app/sc_applications");
 }
 
 // ── DOCUMENTS ──────────────────────────────────────────────────────────────
@@ -179,13 +179,13 @@ if ($action === 'sc_upload_document' && isset($_SESSION['agency_id'])) {
         $filePath  = 'uploads/sc_docs/' . $fileName;
         if (!move_uploaded_file($_FILES['doc_file']['tmp_name'], $uploadDir . $fileName)) {
             flash("File upload failed.", "error");
-            redirect("?route=app&page=sc_students&id=$studentId&tab=documents");
+            redirect("/app/sc_students?id=$studentId&tab=documents");
         }
     }
     $conn->prepare("INSERT INTO sc_documents (agency_id,student_id,doc_type,file_name,file_path,doc_status,expiry_date,notes,uploaded_by_staff_id) VALUES (?,?,?,?,?,?,?,?,?)")
          ->execute([$agency_id,$studentId,$docType,$fileName,$filePath,$docStatus,$expiryDate,$notes,$staffId]);
     flash("Document uploaded.");
-    redirect("?route=app&page=sc_students&id=$studentId&tab=documents");
+    redirect("/app/sc_students?id=$studentId&tab=documents");
 }
 
 if ($action === 'sc_update_document' && isset($_SESSION['agency_id'])) {
@@ -195,7 +195,7 @@ if ($action === 'sc_update_document' && isset($_SESSION['agency_id'])) {
     $conn->prepare("UPDATE sc_documents SET doc_status=?,expiry_date=?,notes=? WHERE id=? AND agency_id=?")
          ->execute([trim($_POST['doc_status']??'Pending'), trim($_POST['expiry_date']??'')?:null, trim($_POST['doc_notes']??''), $id, $agency_id]);
     flash("Document updated.");
-    redirect("?route=app&page=sc_documents");
+    redirect("/app/sc_documents");
 }
 
 if ($action === 'sc_delete_document' && isset($_SESSION['agency_id'])) {
@@ -208,9 +208,9 @@ if ($action === 'sc_delete_document' && isset($_SESSION['agency_id'])) {
         if ($row['file_path'] && file_exists(__DIR__ . '/../' . $row['file_path'])) unlink(__DIR__ . '/../' . $row['file_path']);
         $conn->prepare("DELETE FROM sc_documents WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
         flash("Document deleted.");
-        redirect("?route=app&page=sc_students&id=".$row['student_id']."&tab=documents");
+        redirect("/app/sc_students?id=".$row['student_id']."&tab=documents");
     }
-    redirect("?route=app&page=sc_documents");
+    redirect("/app/sc_documents");
 }
 
 // ── VISA ───────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ if ($action === 'sc_save_visa' && isset($_SESSION['agency_id'])) {
              ->execute([$d['destination_country'],$d['visa_type'],$d['embassy'],$d['application_date'],$d['biometrics_date'],$d['medical_date'],$d['interview_date'],$d['decision_date'],$d['visa_number'],$d['status'],$d['notes'],$id,$agency_id]);
         flash("Visa updated.");
     }
-    redirect(!empty($studentId) ? "?route=app&page=sc_students&id=$studentId&tab=visa" : "?route=app&page=sc_visa");
+    redirect(!empty($studentId) ? "/app/sc_students?id=$studentId&tab=visa" : "/app/sc_visa");
 }
 
 if ($action === 'sc_delete_visa' && isset($_SESSION['agency_id'])) {
@@ -241,7 +241,7 @@ if ($action === 'sc_delete_visa' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM sc_visa WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Visa record deleted.");
-    redirect("?route=app&page=sc_visa");
+    redirect("/app/sc_visa");
 }
 
 // ── PAYMENTS ───────────────────────────────────────────────────────────────
@@ -268,7 +268,7 @@ if ($action === 'sc_save_payment' && isset($_SESSION['agency_id'])) {
              ->execute([$ptype,$total,$paid,$due,$pdate,$notes,$id,$agency_id]);
         flash("Payment updated.");
     }
-    redirect(!empty($studentId) ? "?route=app&page=sc_students&id=$studentId&tab=payments" : "?route=app&page=sc_payments");
+    redirect(!empty($studentId) ? "/app/sc_students?id=$studentId&tab=payments" : "/app/sc_payments");
 }
 
 if ($action === 'sc_delete_payment' && isset($_SESSION['agency_id'])) {
@@ -277,7 +277,7 @@ if ($action === 'sc_delete_payment' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM sc_payments WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Payment deleted.");
-    redirect("?route=app&page=sc_payments");
+    redirect("/app/sc_payments");
 }
 
 // ── SETTINGS ───────────────────────────────────────────────────────────────
@@ -289,7 +289,7 @@ if ($action === 'sc_save_setting' && isset($_SESSION['agency_id']) && !$_SESSION
     $value = trim($_POST['value'] ?? '');
     if (!in_array($cat, $allowed_cats) || empty($value)) {
         flash("Invalid input.", "error");
-        redirect("?route=app&page=sc_settings&tab=$cat");
+        redirect("/app/sc_settings?tab=$cat");
     }
     $exists = $conn->prepare("SELECT id FROM sc_setting_items WHERE agency_id=? AND category=? AND value=?");
     $exists->execute([$agency_id,$cat,$value]);
@@ -299,7 +299,7 @@ if ($action === 'sc_save_setting' && isset($_SESSION['agency_id']) && !$_SESSION
         $conn->prepare("INSERT INTO sc_setting_items (agency_id,category,value) VALUES (?,?,?)")->execute([$agency_id,$cat,$value]);
         flash("Added: $value");
     }
-    redirect("?route=app&page=sc_settings&tab=$cat");
+    redirect("/app/sc_settings?tab=$cat");
 }
 
 if ($action === 'sc_delete_setting' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -309,5 +309,5 @@ if ($action === 'sc_delete_setting' && isset($_SESSION['agency_id']) && !$_SESSI
     $cat->execute([$id,$agency_id]); $cat = $cat->fetchColumn();
     $conn->prepare("DELETE FROM sc_setting_items WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Deleted.");
-    redirect("?route=app&page=sc_settings&tab=$cat");
+    redirect("/app/sc_settings?tab=$cat");
 }

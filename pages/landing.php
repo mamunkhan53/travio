@@ -380,8 +380,8 @@ function renderLandingPage($conn) {
                 <a href="#faq" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition">FAQ</a>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="?route=login" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">Login</a>
-                <a href="?route=register" class="sz-glow-btn-filled">Start Free Trial</a>
+                <a href="/login" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">Login</a>
+                <a href="/register" class="sz-glow-btn-filled">Start Free Trial</a>
             </div>
         </div>
     </nav>
@@ -409,7 +409,7 @@ function renderLandingPage($conn) {
                         Complete Travel Agency ERP Solution for Air Ticketing, Visa, Tour Packages, Hotel Booking & Customer Management.
                     </p>
                     <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
-                        <a href="?route=register" class="sz-glow-btn-filled w-full sm:w-auto px-8 py-4 text-lg">Start Free Trial</a>
+                        <a href="/register" class="sz-glow-btn-filled w-full sm:w-auto px-8 py-4 text-lg">Start Free Trial</a>
                         <a href="#" class="sz-ghost-btn w-full sm:w-auto px-8 py-4 text-lg rounded-xl flex items-center justify-center gap-2">
                             <i class="fa-solid fa-circle-play"></i> Watch Demo
                         </a>
@@ -568,9 +568,9 @@ function renderLandingPage($conn) {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <?php
                 $planDisplay = [
-                    'trial' => ['icon' => 'fa-rocket', 'highlight' => false, 'cta' => 'Start Free Trial', 'href' => '?route=register'],
-                    'monthly' => ['icon' => 'fa-calendar-days', 'highlight' => false, 'cta' => 'Get Started', 'href' => '?route=register'],
-                    'yearly' => ['icon' => 'fa-crown', 'highlight' => true, 'cta' => 'Get Started', 'href' => '?route=register'],
+                    'trial' => ['icon' => 'fa-rocket', 'highlight' => false, 'cta' => 'Start Free Trial', 'href' => '/register'],
+                    'monthly' => ['icon' => 'fa-calendar-days', 'highlight' => false, 'cta' => 'Get Started', 'href' => '/register'],
+                    'yearly' => ['icon' => 'fa-crown', 'highlight' => true, 'cta' => 'Get Started', 'href' => '/register'],
                 ];
                 foreach ($planDisplay as $key => $disp):
                     $p = $landingPlans[$key] ?? null;
@@ -698,7 +698,7 @@ function renderLandingPage($conn) {
 
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="?route=register" class="sz-glow-btn-filled text-lg px-10 py-4" style="height: auto;">
+                <a href="/register" class="sz-glow-btn-filled text-lg px-10 py-4" style="height: auto;">
                     Start Free Trial
                     <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
@@ -775,8 +775,8 @@ function renderLandingPage($conn) {
                 <div>
                     <h4 class="text-white font-bold mb-5 uppercase tracking-wider text-xs">Portal</h4>
                     <ul class="space-y-3 text-sm">
-                        <li><a href="?route=login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Login</a></li>
-                        <li><a href="?route=register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Register</a></li>
+                        <li><a href="/login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Login</a></li>
+                        <li><a href="/register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Register</a></li>
                         <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Documentation</a></li>
                         <li><a href="/travio-bangla" class="text-[#2BC4B0] hover:text-[#1FB8A4] transition font-semibold">Bangla Portal</a></li>
                     </ul>

@@ -18,7 +18,7 @@ if ($action === 'staff_save_attendance' && isset($_SESSION['agency_id']) && !$_S
 
     if (!$staff_id || !$att_date) {
         flash("Staff and date are required.", "error");
-        redirect("?route=app&page=staff_attendance");
+        redirect("/app/staff_attendance");
     }
 
     if ($id) {
@@ -38,7 +38,7 @@ if ($action === 'staff_save_attendance' && isset($_SESSION['agency_id']) && !$_S
              ->execute([$agency_id, $staff_id, $att_date, $status, $check_in, $check_out, $notes]);
         flash("Attendance saved.");
     }
-    redirect("?route=app&page=staff_attendance");
+    redirect("/app/staff_attendance");
 }
 
 // ── Attendance: Delete ───────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ if ($action === 'staff_delete_attendance' && isset($_SESSION['agency_id']) && !$
     $id = (int)($_POST['id'] ?? 0);
     if ($id) $conn->prepare("DELETE FROM staff_attendance WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
     flash("Attendance record deleted.");
-    redirect("?route=app&page=staff_attendance");
+    redirect("/app/staff_attendance");
 }
 
 // ── Salary: Save (Insert or Update) ─────────────────────────────────────────
@@ -70,7 +70,7 @@ if ($action === 'staff_save_salary' && isset($_SESSION['agency_id']) && !$_SESSI
 
     if (!$staff_id || !$sal_month) {
         flash("Staff and month are required.", "error");
-        redirect("?route=app&page=staff_salary");
+        redirect("/app/staff_salary");
     }
 
     // Store as first-of-month date
@@ -93,7 +93,7 @@ if ($action === 'staff_save_salary' && isset($_SESSION['agency_id']) && !$_SESSI
                         $commission, $net, $pay_status, $pay_date, $notes]);
         flash("Salary record created.");
     }
-    redirect("?route=app&page=staff_salary");
+    redirect("/app/staff_salary");
 }
 
 // ── Salary: Delete ───────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ if ($action === 'staff_delete_salary' && isset($_SESSION['agency_id']) && !$_SES
     $id = (int)($_POST['id'] ?? 0);
     if ($id) $conn->prepare("DELETE FROM staff_salary WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
     flash("Salary record deleted.");
-    redirect("?route=app&page=staff_salary");
+    redirect("/app/staff_salary");
 }
 
 // ── Salary: Mark as Paid ─────────────────────────────────────────────────────
@@ -115,5 +115,5 @@ if ($action === 'staff_mark_salary_paid' && isset($_SESSION['agency_id']) && !$_
              ->execute([$pay_date, $id, $agency_id]);
         flash("Salary marked as paid.");
     }
-    redirect("?route=app&page=staff_salary");
+    redirect("/app/staff_salary");
 }

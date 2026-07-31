@@ -42,7 +42,7 @@ $todayFups    = $conn->query("SELECT COUNT(*) FROM record_followups WHERE agency
         </select>
         <label class="flex items-center gap-2 text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" name="upcoming" <?= $sc_upcoming_only?'checked':'' ?> class="rounded"> Upcoming only</label>
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Filter</button>
-        <a href="?route=app&page=sc_followups" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
+        <a href="/app/sc_followups" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
     </form>
     <div class="space-y-3">
         <?php if (empty($fups)): ?>
@@ -85,7 +85,7 @@ $todayFups    = $conn->query("SELECT COUNT(*) FROM record_followups WHERE agency
 <div id="scFupModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
     <div class="px-6 py-4 border-b flex justify-between items-center"><h3 class="font-extrabold text-slate-800">Add Follow-up Note</h3><button onclick="document.getElementById('scFupModal').classList.add('hidden');document.getElementById('scFupModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="add_record_followup"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">For</label>
             <select name="table" id="scFupTable" onchange="updateFupRecords(this.value)" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none">

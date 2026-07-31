@@ -8,7 +8,7 @@
 function acc_guard($conn) {
     if (!isset($_SESSION['agency_id'])) { http_response_code(403); die("Unauthorised."); }
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
-        flash("Subscription expired.", "error"); redirect("?route=app&page=dashboard");
+        flash("Subscription expired.", "error"); redirect("/app/dashboard");
     }
 }
 
@@ -24,7 +24,7 @@ if ($action === 'save_acc_account' && isset($_SESSION['agency_id']) && !$_SESSIO
     $opening   = (float)($_POST['opening_balance'] ?? 0);
     $allowed_types = ['Asset','Liability','Income','Expense','Equity'];
     if (empty($code) || empty($name) || !in_array($type, $allowed_types)) {
-        flash("Invalid account data.", "error"); redirect("?route=app&page=acc_chart_of_accounts");
+        flash("Invalid account data.", "error"); redirect("/app/acc_chart_of_accounts");
     }
     if ($id) {
         $conn->prepare("UPDATE acc_chart_of_accounts SET account_code=?,account_name=?,account_type=?,account_group=?,opening_balance=? WHERE id=? AND agency_id=?")
@@ -35,7 +35,7 @@ if ($action === 'save_acc_account' && isset($_SESSION['agency_id']) && !$_SESSIO
              ->execute([$agency_id,$code,$name,$type,$group,$opening]);
         flash("Account added.");
     }
-    redirect("?route=app&page=acc_chart_of_accounts");
+    redirect("/app/acc_chart_of_accounts");
 }
 
 if ($action === 'toggle_acc_account' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -44,7 +44,7 @@ if ($action === 'toggle_acc_account' && isset($_SESSION['agency_id']) && !$_SESS
     $id = (int)($_POST['id'] ?? 0);
     $conn->prepare("UPDATE acc_chart_of_accounts SET is_active = 1 - is_active WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Account status toggled.");
-    redirect("?route=app&page=acc_chart_of_accounts");
+    redirect("/app/acc_chart_of_accounts");
 }
 
 // ── MANUAL INCOME ─────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ if ($action === 'save_acc_income' && isset($_SESSION['agency_id'])) {
         $conn->prepare("UPDATE acc_income SET income_date=?,category=?,description=?,amount=?,payment_method=?,customer_name=?,notes=?,reference_staff_id=?$setAttach WHERE agency_id=? AND id=?")->execute($params);
         flash("Income updated.");
     }
-    redirect("?route=app&page=acc_income");
+    redirect("/app/acc_income");
 }
 
 if ($action === 'delete_acc_income' && isset($_SESSION['agency_id'])) {
@@ -88,7 +88,7 @@ if ($action === 'delete_acc_income' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? '');
     $conn->prepare("DELETE FROM acc_income WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Income record deleted.");
-    redirect("?route=app&page=acc_income");
+    redirect("/app/acc_income");
 }
 
 // ── ACCOUNTS PAYABLE ──────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ if ($action === 'save_acc_payable' && isset($_SESSION['agency_id'])) {
              ->execute([$d['vendor_name'],$d['vendor_type'],$d['description'],$d['invoice_ref'],$total,$paid,$due,$d['due_date'],$d['status'],$d['notes'],$id,$agency_id]);
         flash("Payable updated.");
     }
-    redirect("?route=app&page=acc_payable");
+    redirect("/app/acc_payable");
 }
 
 if ($action === 'delete_acc_payable' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -128,7 +128,7 @@ if ($action === 'delete_acc_payable' && isset($_SESSION['agency_id']) && !$_SESS
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM acc_payables WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Payable deleted.");
-    redirect("?route=app&page=acc_payable");
+    redirect("/app/acc_payable");
 }
 
 // ── JOURNAL ENTRIES ───────────────────────────────────────────────────────
@@ -153,12 +153,12 @@ if ($action === 'save_acc_journal' && isset($_SESSION['agency_id'])) {
     $lineDebit = $_POST['line_debit'] ?? [];
     $lineCredit= $_POST['line_credit'] ?? [];
     $lineDesc  = $_POST['line_desc'] ?? [];
-    if (count($lineAcc) < 2) { flash("Journal requires at least 2 lines.", "error"); redirect("?route=app&page=acc_journals"); }
+    if (count($lineAcc) < 2) { flash("Journal requires at least 2 lines.", "error"); redirect("/app/acc_journals"); }
     $totalDebit = array_sum(array_map('floatval', $lineDebit));
     $totalCredit= array_sum(array_map('floatval', $lineCredit));
     if (round($totalDebit,2) !== round($totalCredit,2)) {
         flash("Journal entry does not balance. Debits: ".number_format($totalDebit,2)." Credits: ".number_format($totalCredit,2), "error");
-        redirect("?route=app&page=acc_journals");
+        redirect("/app/acc_journals");
     }
     $jId = generateSerialId($conn, 'acc_journals', 'JE', $agency_id);
     $conn->prepare("INSERT INTO acc_journals (id,agency_id,journal_date,reference,description,attachment_path,status,created_by_staff_id) VALUES (?,?,?,?,?,?,?,?)")
@@ -174,7 +174,7 @@ if ($action === 'save_acc_journal' && isset($_SESSION['agency_id'])) {
              ->execute([$jId,$agency_id,$aCode,$aName,$debit,$credit,trim($lineDesc[$i]??'')]);
     }
     flash("Journal entry posted: $jId");
-    redirect("?route=app&page=acc_journals");
+    redirect("/app/acc_journals");
 }
 
 if ($action === 'delete_acc_journal' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -183,7 +183,7 @@ if ($action === 'delete_acc_journal' && isset($_SESSION['agency_id']) && !$_SESS
     $conn->prepare("DELETE FROM acc_journal_lines WHERE journal_id=? AND agency_id=?")->execute([$id,$agency_id]);
     $conn->prepare("DELETE FROM acc_journals WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Journal entry deleted.");
-    redirect("?route=app&page=acc_journals");
+    redirect("/app/acc_journals");
 }
 
 // ── VOUCHERS (Payment / Receipt) ──────────────────────────────────────────
@@ -205,7 +205,7 @@ if ($action === 'save_acc_voucher' && isset($_SESSION['agency_id'])) {
             trim($_POST['notes']??''),$staffId]);
     flash(ucfirst($vtype)." voucher created: $newId");
     $page = $vtype === 'payment' ? 'acc_payment_vouchers' : 'acc_receipt_vouchers';
-    redirect("?route=app&page=$page");
+    redirect("/app/$page");
 }
 
 if ($action === 'delete_acc_voucher' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -215,7 +215,7 @@ if ($action === 'delete_acc_voucher' && isset($_SESSION['agency_id']) && !$_SESS
     $row->execute([$id,$agency_id]); $vt = $row->fetchColumn();
     $conn->prepare("DELETE FROM acc_vouchers WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Voucher deleted.");
-    redirect("?route=app&page=".($vt==='payment'?'acc_payment_vouchers':'acc_receipt_vouchers'));
+    redirect("/app/".($vt==='payment'?'acc_payment_vouchers':'acc_receipt_vouchers'));
 }
 
 // ── CASH BOOK ─────────────────────────────────────────────────────────────
@@ -236,7 +236,7 @@ if ($action === 'save_cash_transaction' && isset($_SESSION['agency_id'])) {
              ->execute([trim($_POST['transaction_date']??date('Y-m-d')),$type,trim($_POST['description']??''),(float)$_POST['amount'],trim($_POST['reference']??''),$id,$agency_id]);
         flash("Cash transaction updated.");
     }
-    redirect("?route=app&page=acc_cash_book");
+    redirect("/app/acc_cash_book");
 }
 
 if ($action === 'delete_cash_transaction' && isset($_SESSION['agency_id'])) {
@@ -244,7 +244,7 @@ if ($action === 'delete_cash_transaction' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM acc_cash_transactions WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Transaction deleted.");
-    redirect("?route=app&page=acc_cash_book");
+    redirect("/app/acc_cash_book");
 }
 
 // ── BANK BOOK ─────────────────────────────────────────────────────────────
@@ -266,7 +266,7 @@ if ($action === 'save_bank_transaction' && isset($_SESSION['agency_id'])) {
              ->execute([trim($_POST['bank_account_name']??'Main Account'),trim($_POST['transaction_date']??date('Y-m-d')),$type,trim($_POST['description']??''),(float)$_POST['amount'],trim($_POST['reference']??''),$id,$agency_id]);
         flash("Bank transaction updated.");
     }
-    redirect("?route=app&page=acc_bank_book");
+    redirect("/app/acc_bank_book");
 }
 
 if ($action === 'delete_bank_transaction' && isset($_SESSION['agency_id'])) {
@@ -274,7 +274,7 @@ if ($action === 'delete_bank_transaction' && isset($_SESSION['agency_id'])) {
     $id = trim($_POST['id'] ?? ''); $agency_id = $_SESSION['agency_id'];
     $conn->prepare("DELETE FROM acc_bank_transactions WHERE id=? AND agency_id=?")->execute([$id,$agency_id]);
     flash("Transaction deleted.");
-    redirect("?route=app&page=acc_bank_book");
+    redirect("/app/acc_bank_book");
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────
@@ -288,7 +288,7 @@ if ($action === 'save_acc_setting' && isset($_SESSION['agency_id']) && !$_SESSIO
              ->execute([$agency_id,$key,$val,$val]);
         flash("Setting saved.");
     }
-    redirect("?route=app&page=acc_settings");
+    redirect("/app/acc_settings");
 }
 
 if ($action === 'save_acc_settings_bulk' && isset($_SESSION['agency_id']) && !$_SESSION['is_staff']) {
@@ -302,5 +302,5 @@ if ($action === 'save_acc_settings_bulk' && isset($_SESSION['agency_id']) && !$_
         }
     }
     flash("Settings saved.");
-    redirect("?route=app&page=acc_settings");
+    redirect("/app/acc_settings");
 }

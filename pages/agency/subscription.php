@@ -12,7 +12,7 @@
                         </div>
                     </div>
 
-                    <form method="POST" action="?route=app" enctype="multipart/form-data" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 sm:p-8 space-y-8">
+                    <form method="POST" action="" enctype="multipart/form-data" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 sm:p-8 space-y-8">
                         <input type="hidden" name="action" value="submit_subscription_payment">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         <input type="hidden" name="plan_key" id="rp_plan_key" value="monthly" required>

@@ -35,7 +35,7 @@ $reports = ['leads'=>'Lead Report','students'=>'Student Admissions','visa'=>'Vis
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <?php $tiles=[['Leads',$totalLeads,'text-blue-600','sc_leads'],['Students',$totalStudents,'text-indigo-600','sc_students'],['Applications',$totalApps,'text-violet-600','sc_applications'],['Visas',$totalVisas,'text-emerald-600','sc_visa'],['Revenue',number_format($totalRevenue,2),'text-teal-600','sc_payments'],['Due',number_format($totalDue,2),'text-rose-500','sc_payments']];
         foreach($tiles as [$tl,$tv,$tc,$tp]): ?>
-        <a href="?route=app&page=<?= $tp ?>" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 hover:border-indigo-200 transition">
+        <a href="/app/<?= $tp ?>" class="bg-white rounded-2xl soft-shadow border border-slate-100 p-4 hover:border-indigo-200 transition">
             <p class="text-xs font-bold text-slate-400 uppercase mb-1"><?= $tl ?></p>
             <p class="text-2xl font-black <?= $tc ?>"><?= $tv ?></p>
         </a>
@@ -46,7 +46,7 @@ $reports = ['leads'=>'Lead Report','students'=>'Student Admissions','visa'=>'Vis
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
         <div class="flex border-b border-slate-100 overflow-x-auto">
             <?php foreach ($reports as $rk => $rl): ?>
-            <a href="?route=app&page=sc_reports&report=<?= $rk ?>&from=<?= $sc_from ?>&to=<?= $sc_to ?>"
+            <a href="/app/sc_reports?report=<?= $rk ?>&from=<?= $sc_from ?>&to=<?= $sc_to ?>"
                class="px-4 py-3 text-sm font-bold whitespace-nowrap transition <?= $sc_report===$rk ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500 hover:text-indigo-600' ?>"><?= $rl ?>
             </a>
             <?php endforeach; ?>

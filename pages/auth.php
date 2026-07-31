@@ -254,7 +254,7 @@ function renderAuthPage($type, $countryCurrencyMap) {
             <?php if ($unverifiedEmail): ?>
             <div class="mb-6 rounded-xl p-4 text-sm" style="background:rgba(240,169,59,0.12);border:1px solid rgba(240,169,59,0.3);">
                 <p class="font-bold mb-1" style="color:#F0A93B;"><i class="fa-solid fa-envelope-circle-check mr-1"></i>Email not verified</p>
-                <form method="POST" action="?route=login">
+                <form method="POST" action="/login">
                     <input type="hidden" name="action" value="resend_verification">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <input type="hidden" name="email" value="<?= xss_clean($unverifiedEmail) ?>">
@@ -267,7 +267,7 @@ function renderAuthPage($type, $countryCurrencyMap) {
 
             <!-- ── 2FA Step ── -->
             <?php if ($is2faStep): ?>
-            <form action="?route=login" method="POST" class="space-y-5">
+            <form action="/login" method="POST" class="space-y-5">
                 <input type="hidden" name="action" value="verify_2fa_login">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div>
@@ -281,12 +281,12 @@ function renderAuthPage($type, $countryCurrencyMap) {
                 </button>
             </form>
             <div class="mt-8 text-center" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;">
-                <a href="?route=login" class="sz-link text-sm">Cancel and start over</a>
+                <a href="/login" class="sz-link text-sm">Cancel and start over</a>
             </div>
 
             <?php else: ?>
             <!-- ── Main Form ── -->
-            <form action="?route=<?= $type ?>" method="POST" class="space-y-4" onsubmit="return validateForm()">
+            <form action="/<?= $type ?>" method="POST" class="space-y-4" onsubmit="return validateForm()">
                 <input type="hidden" name="action" value="<?= $type ?>">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
@@ -364,7 +364,7 @@ function renderAuthPage($type, $countryCurrencyMap) {
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label class="sz-label" style="margin-bottom:0;">Password</label>
-                        <a href="?route=forgot_password" class="sz-link text-xs">Forgot password?</a>
+                        <a href="/forgot-password" class="sz-link text-xs">Forgot password?</a>
                     </div>
                     <div class="sz-input-icon">
                         <i class="fa-solid fa-lock"></i>
@@ -391,9 +391,9 @@ function renderAuthPage($type, $countryCurrencyMap) {
             <!-- Switch link -->
             <div class="mt-7 text-center text-sm" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;color:#68727F;">
                 <?php if ($isLogin): ?>
-                    Don't have an account? <a href="?route=register" class="sz-link">Register Agency</a>
+                    Don't have an account? <a href="/register" class="sz-link">Register Agency</a>
                 <?php else: ?>
-                    Already have an account? <a href="?route=login" class="sz-link">Sign In Instead</a>
+                    Already have an account? <a href="/login" class="sz-link">Sign In Instead</a>
                 <?php endif; ?>
             </div>
             <?php endif; ?>
@@ -460,7 +460,7 @@ function renderForgotPasswordPage() {
                     If that email address is registered with Travio, you'll receive a password reset link shortly.
                     Check your spam folder if you don't see it within a few minutes.
                 </p>
-                <a href="?route=login" class="sz-btn" style="text-decoration:none;">
+                <a href="/login" class="sz-btn" style="text-decoration:none;">
                     <i class="fa-solid fa-arrow-left"></i> Back to Sign In
                 </a>
             </div>
@@ -471,7 +471,7 @@ function renderForgotPasswordPage() {
                 <p style="color:#9AA4B2;font-size:14px;">Enter your email address to receive a reset link.</p>
             </div>
 
-            <form action="?route=forgot_password" method="POST" class="space-y-5">
+            <form action="/forgot-password" method="POST" class="space-y-5">
                 <input type="hidden" name="action" value="forgot_password">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div>
@@ -488,7 +488,7 @@ function renderForgotPasswordPage() {
             </form>
 
             <div class="mt-7 text-center text-sm" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;color:#68727F;">
-                Remember your password? <a href="?route=login" class="sz-link">Sign In</a>
+                Remember your password? <a href="/login" class="sz-link">Sign In</a>
             </div>
             <?php endif; ?>
 
@@ -539,7 +539,7 @@ function renderResetPasswordPage($conn) {
                 </div>
                 <h1 class="disp text-3xl font-bold text-white mb-3">Link Expired</h1>
                 <p class="text-sm mb-8" style="color:#9AA4B2;line-height:1.7;"><?= xss_clean($tokenError) ?></p>
-                <a href="?route=forgot_password" class="sz-btn" style="text-decoration:none;">
+                <a href="/forgot-password" class="sz-btn" style="text-decoration:none;">
                     <i class="fa-solid fa-rotate-right"></i> Request a New Link
                 </a>
             </div>
@@ -552,7 +552,7 @@ function renderResetPasswordPage($conn) {
                 </p>
             </div>
 
-            <form action="?route=reset_password" method="POST" class="space-y-5" onsubmit="return checkNewPass()">
+            <form action="/reset-password" method="POST" class="space-y-5" onsubmit="return checkNewPass()">
                 <input type="hidden" name="action" value="reset_password">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="token" value="<?= xss_clean($token) ?>">

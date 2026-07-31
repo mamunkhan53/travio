@@ -67,7 +67,7 @@ $convertedLeads= $conn->query("SELECT COUNT(*) FROM sc_leads WHERE agency_id=$ag
         </select>
         <?php endif; ?>
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Filter</button>
-        <a href="?route=app&page=sc_leads" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
+        <a href="/app/sc_leads" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
     </form>
 
     <!-- Table -->
@@ -109,7 +109,7 @@ $convertedLeads= $conn->query("SELECT COUNT(*) FROM sc_leads WHERE agency_id=$ag
                                 <button onclick='openScLeadModal(<?= htmlspecialchars(json_encode($l), ENT_QUOTES) ?>)' class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">Edit</button>
                                 <?php endif; ?>
                                 <?php if ($l['status'] !== 'Converted' && has_permission('can_manage_sc_students')): ?>
-                                <form method="POST" action="?route=app" onsubmit="return confirm('Convert this lead to a Student profile?')">
+                                <form method="POST" action="" onsubmit="return confirm('Convert this lead to a Student profile?')">
                                     <input type="hidden" name="action" value="sc_convert_lead">
                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <input type="hidden" name="lead_id" value="<?= $l['id'] ?>">
@@ -117,7 +117,7 @@ $convertedLeads= $conn->query("SELECT COUNT(*) FROM sc_leads WHERE agency_id=$ag
                                 </form>
                                 <?php endif; ?>
                                 <?php if (!$_SESSION['is_staff'] && has_permission('can_manage_sc_leads')): ?>
-                                <form method="POST" action="?route=app" onsubmit="return confirm('Delete this lead?')">
+                                <form method="POST" action="" onsubmit="return confirm('Delete this lead?')">
                                     <input type="hidden" name="action" value="sc_delete_lead">
                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <input type="hidden" name="id" value="<?= $l['id'] ?>">
@@ -141,7 +141,7 @@ $convertedLeads= $conn->query("SELECT COUNT(*) FROM sc_leads WHERE agency_id=$ag
         <h3 class="font-extrabold text-slate-800" id="scLeadModalTitle">Add Student Lead</h3>
         <button onclick="closeScLeadModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
     </div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_lead">
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <input type="hidden" name="id" id="sl_id">

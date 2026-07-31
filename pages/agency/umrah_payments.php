@@ -123,7 +123,7 @@ $statusColors = [
                             <td class="px-5 py-3 text-xs text-slate-400"><?= htmlspecialchars($py['staff_name'] ?: 'Admin') ?></td>
                             <?php if (!$_SESSION['is_staff']): ?>
                             <td class="px-5 py-3 text-right">
-                                <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Remove this payment?')">
+                                <form method="POST" action="" class="inline" onsubmit="return confirm('Remove this payment?')">
                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <input type="hidden" name="action" value="umrah_delete_payment">
                                     <input type="hidden" name="id" value="<?= htmlspecialchars($py['id']) ?>">
@@ -161,14 +161,14 @@ $statusColors = [
                     <span class="px-2.5 py-1 rounded-lg text-xs font-bold <?= $statusColors[$selBooking['booking_status']] ?? 'bg-slate-100 text-slate-600' ?>"><?= htmlspecialchars($selBooking['booking_status']) ?></span>
                 </div>
                 <?php if ($selBooking['customer_id']): ?>
-                <a href="?route=app&page=customer_profile&id=<?= htmlspecialchars($selBooking['customer_id']) ?>" class="block text-center text-xs text-indigo-500 hover:underline pt-1">View Customer Profile →</a>
+                <a href="/app/customer_profile?id=<?= htmlspecialchars($selBooking['customer_id']) ?>" class="block text-center text-xs text-indigo-500 hover:underline pt-1">View Customer Profile →</a>
                 <?php endif; ?>
             </div>
 
             <!-- Add Payment form -->
             <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
                 <h4 class="font-extrabold text-slate-800 mb-4">Record Payment</h4>
-                <form method="POST" action="?route=app" class="space-y-3">
+                <form method="POST" action="" class="space-y-3">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <input type="hidden" name="action" value="umrah_save_payment">
                     <input type="hidden" name="booking_id" value="<?= htmlspecialchars($sel_bk_id) ?>">

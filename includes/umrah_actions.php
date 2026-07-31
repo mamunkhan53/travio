@@ -11,7 +11,7 @@ function umrah_guard($conn) {
     if (!isset($_SESSION['agency_id'])) { http_response_code(403); die("Unauthorised."); }
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
         flash("Subscription expired. Renew to use this feature.", "error");
-        redirect("?route=app&page=dashboard");
+        redirect("/app/dashboard");
     }
 }
 
@@ -31,7 +31,7 @@ if ($action === 'umrah_save_package' && isset($_SESSION['agency_id'])) {
 
     if (!in_array($type,   ['Hajj', 'Umrah'])) $type = 'Umrah';
     if (!in_array($status, ['Active', 'Inactive'])) $status = 'Active';
-    if (!$name) { flash("Package name is required.", "error"); redirect("?route=app&page=umrah_packages"); }
+    if (!$name) { flash("Package name is required.", "error"); redirect("/app/umrah_packages"); }
 
     if (empty($id)) {
         $newId = generateSerialId($conn, 'umrah_packages', 'UP', $agency_id);
@@ -45,7 +45,7 @@ if ($action === 'umrah_save_package' && isset($_SESSION['agency_id'])) {
              ->execute([$type, $name, $duration, $price, $desc, $status, $id, $agency_id]);
         flash("Package updated.");
     }
-    redirect("?route=app&page=umrah_packages");
+    redirect("/app/umrah_packages");
 }
 
 if ($action === 'umrah_delete_package' && isset($_SESSION['agency_id'])) {
@@ -56,7 +56,7 @@ if ($action === 'umrah_delete_package' && isset($_SESSION['agency_id'])) {
         $conn->prepare("DELETE FROM umrah_packages WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
         flash("Package deleted.");
     }
-    redirect("?route=app&page=umrah_packages");
+    redirect("/app/umrah_packages");
 }
 
 // =============================================================================
@@ -109,7 +109,7 @@ if ($action === 'umrah_save_booking' && isset($_SESSION['agency_id'])) {
                         $totalPrice,$status,$notes,$refId,$id,$agency_id]);
         flash("Booking updated.");
     }
-    redirect("?route=app&page=umrah_bookings");
+    redirect("/app/umrah_bookings");
 }
 
 if ($action === 'umrah_delete_booking' && isset($_SESSION['agency_id'])) {
@@ -121,7 +121,7 @@ if ($action === 'umrah_delete_booking' && isset($_SESSION['agency_id'])) {
         $conn->prepare("DELETE FROM umrah_bookings WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
         flash("Booking and its payments deleted.");
     }
-    redirect("?route=app&page=umrah_bookings");
+    redirect("/app/umrah_bookings");
 }
 
 // =============================================================================
@@ -140,20 +140,20 @@ if ($action === 'umrah_save_payment' && isset($_SESSION['agency_id'])) {
 
     if (!$bookingId || $amount <= 0) {
         flash("Invalid payment — booking and amount required.", "error");
-        redirect("?route=app&page=umrah_payments");
+        redirect("/app/umrah_payments");
     }
 
     // Verify booking belongs to agency
     $bk = $conn->prepare("SELECT id FROM umrah_bookings WHERE id=? AND agency_id=?");
     $bk->execute([$bookingId, $agency_id]);
-    if (!$bk->fetch()) { flash("Booking not found.", "error"); redirect("?route=app&page=umrah_payments"); }
+    if (!$bk->fetch()) { flash("Booking not found.", "error"); redirect("/app/umrah_payments"); }
 
     $newId = generateSerialId($conn, 'umrah_payments', 'PY', $agency_id);
     $conn->prepare("INSERT INTO umrah_payments (id,agency_id,booking_id,amount,payment_date,payment_method,notes,created_by_staff_id)
                     VALUES (?,?,?,?,?,?,?,?)")
          ->execute([$newId, $agency_id, $bookingId, $amount, $date, $method, $notes, $staffId]);
     flash("Payment of " . number_format($amount, 2) . " recorded.");
-    redirect("?route=app&page=umrah_payments&booking_id=" . urlencode($bookingId));
+    redirect("/app/umrah_payments?booking_id=" . urlencode($bookingId));
 }
 
 if ($action === 'umrah_delete_payment' && isset($_SESSION['agency_id'])) {
@@ -165,7 +165,7 @@ if ($action === 'umrah_delete_payment' && isset($_SESSION['agency_id'])) {
         $conn->prepare("DELETE FROM umrah_payments WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
         flash("Payment removed.");
     }
-    redirect("?route=app&page=umrah_payments" . ($booking_id ? "&booking_id=" . urlencode($booking_id) : ''));
+    redirect("/app/umrah_payments" . ($booking_id ? "?booking_id=" . urlencode($booking_id) : ''));
 }
 
 // =============================================================================

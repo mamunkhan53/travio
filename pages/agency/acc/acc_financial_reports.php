@@ -116,7 +116,7 @@ $reportLinks=[
 <!-- Report links grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 <?php foreach($reportLinks as [$pg,$title,$icon,$cls,$desc]): ?>
-<a href="?route=app&page=<?= $pg ?>" class="bg-white rounded-2xl soft-shadow border <?= $cls ?> p-5 hover:scale-[1.02] transition-transform group block">
+<a href="/app/<?= $pg ?>" class="bg-white rounded-2xl soft-shadow border <?= $cls ?> p-5 hover:scale-[1.02] transition-transform group block">
     <div class="flex items-center gap-3 mb-2">
         <div class="w-10 h-10 rounded-xl <?= explode(' ',$cls)[0] ?> flex items-center justify-center group-hover:scale-110 transition-transform">
             <i class="fa-solid <?= $icon ?> text-lg"></i>

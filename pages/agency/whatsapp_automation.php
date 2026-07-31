@@ -156,7 +156,7 @@ $agPhone = $agRow->fetchColumn() ?: '';
             </h2>
             <p class="text-sm text-slate-500 mt-1">Configure automatic messages triggered by business events. Manual sending is unaffected.</p>
         </div>
-        <a href="?route=app&page=whatsapp" class="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+        <a href="/app/whatsapp" class="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2.5 rounded-xl transition flex items-center gap-2">
             <i class="fa-brands fa-whatsapp"></i> Manual Send
         </a>
     </div>
@@ -174,7 +174,7 @@ $agPhone = $agRow->fetchColumn() ?: '';
                 <p class="text-sm font-extrabold text-rose-500 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>Not configured
                 </p>
-                <a href="?route=app&page=whatsapp&tab=settings" class="text-xs text-indigo-500 font-bold hover:underline">Set up →</a>
+                <a href="/app/whatsapp?tab=settings" class="text-xs text-indigo-500 font-bold hover:underline">Set up →</a>
             <?php endif; ?>
         </div>
         <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
@@ -200,7 +200,7 @@ $agPhone = $agRow->fetchColumn() ?: '';
             <p class="font-extrabold text-amber-800 text-sm">No active WhatsApp provider</p>
             <p class="text-xs text-amber-700 mt-0.5">Automations will be logged but <strong>not delivered</strong> until you configure a provider.</p>
         </div>
-        <a href="?route=app&page=whatsapp&tab=settings" class="text-xs font-bold text-indigo-600 bg-white border border-indigo-200 px-4 py-2 rounded-xl hover:bg-indigo-50 transition whitespace-nowrap">Configure Provider →</a>
+        <a href="/app/whatsapp?tab=settings" class="text-xs font-bold text-indigo-600 bg-white border border-indigo-200 px-4 py-2 rounded-xl hover:bg-indigo-50 transition whitespace-nowrap">Configure Provider →</a>
     </div>
     <?php endif; ?>
 
@@ -241,7 +241,7 @@ $agPhone = $agRow->fetchColumn() ?: '';
 
         <!-- Card Body (collapsible) -->
         <div id="<?= $cardId ?>" class="<?= $enabled ? '' : 'hidden' ?>">
-            <form method="POST" action="?route=app" class="p-5 space-y-4 border-t border-slate-50">
+            <form method="POST" action="" class="p-5 space-y-4 border-t border-slate-50">
                 <input type="hidden" name="action"          value="save_automation">
                 <input type="hidden" name="csrf_token"      value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="automation_type" value="<?= $typeKey ?>">
@@ -398,7 +398,7 @@ $agPhone = $agRow->fetchColumn() ?: '';
                 <i class="fa-solid fa-times"></i>
             </button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4">
+        <form method="POST" action="" class="p-6 space-y-4">
             <input type="hidden" name="action"          value="test_automation">
             <input type="hidden" name="csrf_token"      value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="automation_type" id="waAutoTestType" value="">

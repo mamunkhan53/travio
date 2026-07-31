@@ -47,7 +47,7 @@
                     <div class="p-5 border-b flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-extrabold text-slate-800">Agency Staff & Permissions</h3>
                         <div class="flex items-center gap-2">
-                            <a href="?route=app&page=staff_history" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-100 transition">
+                            <a href="/app/staff_history" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-100 transition">
                                 <i class="fa-solid fa-clock-rotate-left"></i> Working History
                             </a>
                             <button onclick="openStaffModal('add')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition">
@@ -80,7 +80,7 @@
                                             $s_data = array_merge($s, $p?:[]);
                                             ?>
                                             <button onclick="openStaffModal('edit', '<?= rawurlencode(json_encode($s_data)) ?>')" class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 transition"><i class="fa-solid fa-pen"></i></button>
-                                            <a href="?route=app&action=delete&table=staff&id=<?= $s['id'] ?>" onclick="return confirm('Delete this staff member?')" class="text-rose-600 bg-rose-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-rose-100 transition ml-1"><i class="fa-solid fa-trash"></i></a>
+                                            <a href="/app?action=delete&table=staff&id=<?= $s['id'] ?>" onclick="return confirm('Delete this staff member?')" class="text-rose-600 bg-rose-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-rose-100 transition ml-1"><i class="fa-solid fa-trash"></i></a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -95,7 +95,7 @@
                             <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2" id="staffModalTitle"><i class="fa-solid fa-user-tie text-indigo-500"></i> Manage Staff</h3>
                             <button onclick="document.getElementById('staffModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=app" class="p-6 sm:p-8">
+                        <form method="POST" action="" class="p-6 sm:p-8">
                             <input type="hidden" name="action" value="save_staff">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="id" id="st_id" value="">

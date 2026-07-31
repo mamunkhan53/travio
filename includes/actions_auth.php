@@ -12,7 +12,7 @@
             if ($user && password_verify($password, $user['password_hash'])) {
                 if ($user['status'] !== 'Active') {
                     flash("Your account is {$user['status']}. Please contact the Super Admin.", "error");
-                    redirect("?route=login");
+                    redirect("/login");
                 }
 
                 // Email verification gate (Super Admin's own account is exempt - it's a system account)
@@ -20,7 +20,7 @@
                 if ($verificationRequired && $user['role'] !== 'Super Admin' && !$user['email_verified']) {
                     $_SESSION['unverified_email'] = $user['email'];
                     flash("Please verify your email address before logging in. Check your inbox, or use the resend link below.", "error");
-                    redirect("?route=login");
+                    redirect("/login");
                 }
 
                 // Two-Factor Authentication challenge (Super Admin always eligible; Agency Admin only
@@ -28,7 +28,7 @@
                 $agency2faOn = getPlatformSetting($conn, 'agency_2fa_enabled', '0') === '1';
                 if ($user['totp_enabled'] && ($user['role'] === 'Super Admin' || $agency2faOn)) {
                     $_SESSION['pending_2fa_user_id'] = $user['id'];
-                    redirect("?route=login&step=2fa");
+                    redirect("/login?step=2fa");
                 }
 
                 $_SESSION['user_id'] = $user['id'];
@@ -36,8 +36,8 @@
                 $_SESSION['agency_id'] = $user['agency_id'];
                 $_SESSION['is_staff'] = false;
                 
-                if ($user['role'] === 'Super Admin') redirect("?route=admin_dashboard");
-                else redirect("?route=app&page=dashboard");
+                if ($user['role'] === 'Super Admin') redirect("/admin");
+                else redirect("/app/dashboard");
             } else {
                 // Check Staff table
                 $stmt = $conn->prepare("SELECT * FROM staff WHERE (email = ? OR username = ?)");
@@ -46,14 +46,14 @@
                 
                 if ($staff && password_verify($password, $staff['password_hash'])) {
                     if ($staff['status'] !== 'Active') {
-                        flash("Your staff account is inactive.", "error"); redirect("?route=login");
+                        flash("Your staff account is inactive.", "error"); redirect("/login");
                     }
 
                     // Two-Factor Authentication challenge (same platform-wide switch that gates Agency Admin 2FA)
                     $agency2faOn = getPlatformSetting($conn, 'agency_2fa_enabled', '0') === '1';
                     if ($staff['totp_enabled'] && $agency2faOn) {
                         $_SESSION['pending_2fa_staff_id'] = $staff['id'];
-                        redirect("?route=login&step=2fa");
+                        redirect("/login?step=2fa");
                     }
 
                     $_SESSION['user_id'] = $staff['id'];
@@ -70,10 +70,10 @@
                     
                     $conn->prepare("UPDATE staff SET last_login = NOW() WHERE id = ?")->execute([$staff['id']]);
                     
-                    redirect("?route=app&page=dashboard");
+                    redirect("/app/dashboard");
                 } else {
                     flash("Invalid credentials.", "error");
-                    redirect("?route=login");
+                    redirect("/login");
                 }
             }
         }
@@ -102,16 +102,16 @@
 
                     $conn->prepare("UPDATE staff SET last_login = NOW() WHERE id = ?")->execute([$staff['id']]);
 
-                    redirect("?route=app&page=dashboard");
+                    redirect("/app/dashboard");
                 } else {
                     flash("Incorrect authentication code. Please try again.", "error");
-                    redirect("?route=login&step=2fa");
+                    redirect("/login?step=2fa");
                 }
             }
 
             if (empty($_SESSION['pending_2fa_user_id'])) {
                 flash("Your session expired. Please log in again.", "error");
-                redirect("?route=login");
+                redirect("/login");
             }
             $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
             $stmt->execute([$_SESSION['pending_2fa_user_id']]);
@@ -124,11 +124,11 @@
                 $_SESSION['agency_id'] = $user['agency_id'];
                 $_SESSION['is_staff'] = false;
 
-                if ($user['role'] === 'Super Admin') redirect("?route=admin_dashboard");
-                else redirect("?route=app&page=dashboard");
+                if ($user['role'] === 'Super Admin') redirect("/admin");
+                else redirect("/app/dashboard");
             } else {
                 flash("Incorrect authentication code. Please try again.", "error");
-                redirect("?route=login&step=2fa");
+                redirect("/login?step=2fa");
             }
         }
 
@@ -148,7 +148,7 @@
                 sendVerificationEmail($user['email'], $user['full_name'], $newToken);
             }
             flash("If that email needs verifying, a new link has just been sent.");
-            redirect("?route=login");
+            redirect("/login");
         }
 
         // ------------- FORGOT PASSWORD -------------
@@ -168,7 +168,7 @@
                 sendPasswordResetEmail($email, $user['full_name'], $token);
             }
             // Always redirect to sent=1 regardless — never reveal whether email exists
-            redirect("?route=forgot_password&sent=1");
+            redirect("/forgot-password?sent=1");
         }
 
         // ------------- RESET PASSWORD -------------
@@ -179,7 +179,7 @@
 
             if (!$token || $pass !== $confirm || strlen($pass) < 8) {
                 flash("Invalid request. Please try again.", "error");
-                redirect("?route=forgot_password");
+                redirect("/forgot-password");
             }
 
             $stmt = $conn->prepare("SELECT * FROM password_resets WHERE token = ? AND used = 0 AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
@@ -188,7 +188,7 @@
 
             if (!$row) {
                 flash("This reset link has expired or already been used.", "error");
-                redirect("?route=forgot_password");
+                redirect("/forgot-password");
             }
 
             $hash = password_hash($pass, PASSWORD_DEFAULT);
@@ -198,7 +198,7 @@
             $conn->prepare("UPDATE password_resets SET used = 1 WHERE token = ?")->execute([$token]);
 
             flash("Password reset successfully! You can now sign in with your new password.");
-            redirect("?route=login");
+            redirect("/login");
         }
 
         if ($action === 'register') {
@@ -242,11 +242,11 @@
                 } else {
                     flash("Registration successful! You can now log in.");
                 }
-                redirect("?route=login");
+                redirect("/login");
             } catch (Exception $e) {
                 $conn->rollBack();
                 flash("Error: Email might already exist.", "error");
-                redirect("?route=register");
+                redirect("/register");
             }
         }
 

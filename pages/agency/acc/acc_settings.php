@@ -1,5 +1,5 @@
 <?php
-if($_SESSION['is_staff']){ flash("Access denied.","error"); redirect("?route=app&page=acc_dashboard"); }
+if($_SESSION['is_staff']){ flash("Access denied.","error"); redirect("/app/acc_dashboard"); }
 
 // Load current settings
 function getAccSetting($conn,$agency_id,$key,$default=''){
@@ -27,7 +27,7 @@ $coaSummary=$conn->query("SELECT account_type, COUNT(*) as cnt FROM acc_chart_of
 <div class="space-y-6">
 <div><h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gear text-indigo-500"></i> Accounting Settings</h2><p class="text-sm text-slate-500 mt-1">Configure your accounting module preferences.</p></div>
 
-<form method="POST" action="?route=app" class="space-y-6">
+<form method="POST" action="" class="space-y-6">
 <input type="hidden" name="action" value="save_acc_settings_bulk">
 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
@@ -93,7 +93,7 @@ $coaSummary=$conn->query("SELECT account_type, COUNT(*) as cnt FROM acc_chart_of
 <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-5">
     <div class="flex items-center justify-between mb-4">
         <h3 class="font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list text-indigo-400"></i> Chart of Accounts Summary</h3>
-        <a href="?route=app&page=acc_chart_of_accounts" class="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition">Manage →</a>
+        <a href="/app/acc_chart_of_accounts" class="text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition">Manage →</a>
     </div>
     <div class="grid grid-cols-5 gap-3">
     <?php

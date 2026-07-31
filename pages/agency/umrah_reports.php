@@ -95,7 +95,7 @@ if ($tab === 'packages') {
             $tabs = ['bookings'=>['Booking Report','fa-calendar-check'], 'payments'=>['Payment & Due','fa-coins'], 'packages'=>['Package-wise','fa-box-open']];
             foreach ($tabs as $t => [$tlbl, $ticon]):
             ?>
-            <a href="?route=app&page=umrah_reports&rtab=<?= $t ?>&from=<?= urlencode($f_from) ?>&to=<?= urlencode($f_to) ?>"
+            <a href="/app/umrah_reports?rtab=<?= $t ?>&from=<?= urlencode($f_from) ?>&to=<?= urlencode($f_to) ?>"
                class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all
                       <?= $tab===$t ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600' ?>">
                 <i class="fa-solid <?= $ticon ?>"></i> <?= $tlbl ?>
@@ -212,7 +212,7 @@ if ($tab === 'packages') {
                         <td class="px-5 py-3 font-bold text-right text-rose-600"><?= number_format($due, 2) ?></td>
                         <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-lg text-xs font-bold <?= $statusColors[$r['booking_status']] ?? 'bg-slate-100 text-slate-600' ?>"><?= htmlspecialchars($r['booking_status']) ?></span></td>
                         <td class="px-5 py-3">
-                            <a href="?route=app&page=umrah_payments&booking_id=<?= urlencode($r['id']) ?>" class="text-indigo-500 hover:underline text-xs font-bold">Pay →</a>
+                            <a href="/app/umrah_payments?booking_id=<?= urlencode($r['id']) ?>" class="text-indigo-500 hover:underline text-xs font-bold">Pay →</a>
                         </td>
                     </tr>
                     <?php endforeach; else: ?>

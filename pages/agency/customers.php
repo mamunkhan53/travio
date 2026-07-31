@@ -7,7 +7,7 @@
         
         if (!$customer) {
             flash('Customer not found.', 'error');
-            redirect('?route=app&page=customers');
+            redirect('/app/customers');
         }
         
         $mob = $customer['mobile'];
@@ -41,7 +41,7 @@
                 <!-- ---------------------------------------------------- -->
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3"><i class="fa-solid fa-user-circle text-indigo-500"></i> Customer Profile</h2>
-                    <a href="?route=app&page=customers" class="text-sm font-bold text-slate-500 hover:text-indigo-600 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Database</a>
+                    <a href="/app/customers" class="text-sm font-bold text-slate-500 hover:text-indigo-600 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Database</a>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -138,7 +138,7 @@
                                             <tr class="hover:bg-slate-50 transition-colors">
                                                 <td class="px-6 py-4 font-medium whitespace-nowrap"><?= date('d M, Y', strtotime($ord['dt'])) ?></td>
                                                 <td class="px-6 py-4 font-extrabold text-indigo-600">
-                                                    <a href="?route=app&page=query_history&table=<?= $ord['module_table'] ?>&id=<?= $ord['invoice_no'] ?>" class="hover:underline"><?= $ord['invoice_no'] ?></a>
+                                                    <a href="/app/query_history?table=<?= $ord['module_table'] ?>&id=<?= $ord['invoice_no'] ?>" class="hover:underline"><?= $ord['invoice_no'] ?></a>
                                                 </td>
                                                 <td class="px-6 py-4">
                                                     <span class="font-bold text-slate-700 block"><?= $ord['service_type'] ?></span>

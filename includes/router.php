@@ -64,13 +64,13 @@ switch ($route) {
         } else {
             flash("This verification link is invalid or has already been used.", "error");
         }
-        redirect('?route=login');
+        redirect('/login');
         break;
     case 'admin_dashboard':
-        if (empty($_SESSION['role']) || $_SESSION['role'] !== 'Super Admin') redirect('?route=login');
+        if (empty($_SESSION['role']) || $_SESSION['role'] !== 'Super Admin') redirect('/login');
         renderSuperAdmin($conn); break;
     case 'app':
-        if (empty($_SESSION['agency_id'])) redirect('?route=login');
+        if (empty($_SESSION['agency_id'])) redirect('/login');
         renderAgencyApp($conn, $modules); break;
     default: renderLandingPage($conn);
 }

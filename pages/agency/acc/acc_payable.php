@@ -38,7 +38,7 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
     <input type="text" name="q" value="<?= xss_clean($filterSearch) ?>" placeholder="Search vendor…" class="border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none w-48">
     <div class="flex gap-2">
         <?php foreach(['all'=>'All','unpaid'=>'Unpaid','overdue'=>'Overdue','paid'=>'Paid'] as $k=>$l): ?>
-        <a href="?route=app&page=acc_payable&status=<?= $k ?>&q=<?= urlencode($filterSearch) ?>" class="px-3 py-2 rounded-xl text-sm font-bold transition <?= $filterStatus===$k?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600 hover:bg-indigo-50' ?>"><?= $l ?></a>
+        <a href="/app/acc_payable?status=<?= $k ?>&q=<?= urlencode($filterSearch) ?>" class="px-3 py-2 rounded-xl text-sm font-bold transition <?= $filterStatus===$k?'bg-indigo-600 text-white':'bg-slate-100 text-slate-600 hover:bg-indigo-50' ?>"><?= $l ?></a>
         <?php endforeach; ?>
     </div>
 </form>
@@ -74,7 +74,7 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
     <td class="px-4 py-3">
         <button onclick='editPayable(<?= htmlspecialchars(json_encode($p),ENT_QUOTES) ?>)' class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition">Edit</button>
         <?php if(!$_SESSION['is_staff']): ?>
-        <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_acc_payable"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $p['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
+        <form method="POST" action="" class="inline" onsubmit="return confirm('Delete?')"><input type="hidden" name="action" value="delete_acc_payable"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $p['id'] ?>"><button class="ml-1 text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg hover:bg-rose-100 transition">Del</button></form>
         <?php endif; ?>
     </td>
 </tr>
@@ -87,7 +87,7 @@ $pmMethods=['Cash','Bank Transfer','bKash','Nagad','Card','Cheque','Other'];
 <div id="accPayableModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800" id="apModalTitle">Add Payable</h3><button onclick="closePayableModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="save_acc_payable"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="payable_id" id="ap_id">
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2"><label class="block text-xs font-bold text-slate-700 mb-1">Vendor Name *</label><input type="text" name="vendor_name" id="ap_vendor" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>

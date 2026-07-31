@@ -26,7 +26,7 @@ if ($totalAccounts == 0 && !$_SESSION['is_staff']) {
     foreach($defaults as [$code,$name,$type,$group]){
         $conn->prepare("INSERT IGNORE INTO acc_chart_of_accounts (agency_id,account_code,account_name,account_type,account_group) VALUES (?,?,?,?,?)")->execute([$agency_id,$code,$name,$type,$group]);
     }
-    redirect("?route=app&page=acc_chart_of_accounts");
+    redirect("/app/acc_chart_of_accounts");
 }
 ?>
 <div class="space-y-5">
@@ -40,7 +40,7 @@ if ($totalAccounts == 0 && !$_SESSION['is_staff']) {
 <!-- Type summary tiles -->
 <div class="grid grid-cols-5 gap-3">
 <?php foreach(['Asset','Liability','Income','Expense','Equity'] as $t): ?>
-<a href="?route=app&page=acc_chart_of_accounts&type=<?= $t === $acc_type_filter ? '' : $t ?>"
+<a href="/app/acc_chart_of_accounts?type=<?= $t === $acc_type_filter ? '' : $t ?>"
    class="bg-white rounded-2xl soft-shadow border <?= $acc_type_filter===$t?'border-indigo-300':'border-slate-100' ?> p-4 text-center hover:border-indigo-200 transition">
     <p class="text-xs font-bold text-slate-500 uppercase mb-1"><?= $t ?></p>
     <?php $tTextMap=['Asset'=>'text-blue-700','Liability'=>'text-amber-700','Income'=>'text-emerald-700','Expense'=>'text-rose-700','Equity'=>'text-violet-700']; ?>
@@ -75,7 +75,7 @@ if ($totalAccounts == 0 && !$_SESSION['is_staff']) {
     <?php if(!$_SESSION['is_staff']): ?>
     <td class="px-4 py-3 flex items-center gap-2">
         <button onclick='editAccAccount(<?= htmlspecialchars(json_encode($ac),ENT_QUOTES) ?>)' class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition">Edit</button>
-        <form method="POST" action="?route=app" class="inline"><input type="hidden" name="action" value="toggle_acc_account"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $ac['id'] ?>"><button class="text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition"><?= $ac['is_active']?'Deactivate':'Activate' ?></button></form>
+        <form method="POST" action="" class="inline"><input type="hidden" name="action" value="toggle_acc_account"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" value="<?= $ac['id'] ?>"><button class="text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition"><?= $ac['is_active']?'Deactivate':'Activate' ?></button></form>
     </td>
     <?php endif; ?>
 </tr>
@@ -90,7 +90,7 @@ if ($totalAccounts == 0 && !$_SESSION['is_staff']) {
 <div id="accAcctModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800" id="accAcctModalTitle">Add Account</h3><button onclick="closeAcctModal()" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="save_acc_account"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="id" id="acct_id">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Account Code *</label><input type="text" name="account_code" id="acct_code" required placeholder="e.g. 1001" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Account Name *</label><input type="text" name="account_name" id="acct_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>

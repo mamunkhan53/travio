@@ -72,17 +72,17 @@ function ocrExpiryBadge($expiryDate) {
 
 <!-- Page Tabs -->
 <div class="flex items-center gap-2 mb-6 flex-wrap">
-    <a href="?route=app&page=ocr_scanner&tab=documents"
+    <a href="/app/ocr_scanner?tab=documents"
        class="px-4 py-2 rounded-xl text-sm font-bold transition-all <?= $ocr_tab==='documents' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600' ?>">
         <i class="fa-solid fa-table-list mr-1.5"></i>Documents
         <?php if ($totalDocs): ?><span class="ml-1 bg-white/20 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full <?= $ocr_tab!=='documents' ? 'bg-indigo-100 text-indigo-700' : '' ?>"><?= $totalDocs ?></span><?php endif; ?>
     </a>
-    <a href="?route=app&page=ocr_scanner&tab=upload"
+    <a href="/app/ocr_scanner?tab=upload"
        class="px-4 py-2 rounded-xl text-sm font-bold transition-all <?= $ocr_tab==='upload' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600' ?>">
         <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i><?= $editDoc ? 'Edit Document' : 'Upload & Scan' ?>
     </a>
     <?php if (!$_SESSION['is_staff']): ?>
-    <a href="?route=app&page=ocr_scanner&tab=settings"
+    <a href="/app/ocr_scanner?tab=settings"
        class="px-4 py-2 rounded-xl text-sm font-bold transition-all <?= $ocr_tab==='settings' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600' ?>">
         <i class="fa-solid fa-gear mr-1.5"></i>Settings
     </a>
@@ -142,10 +142,10 @@ function ocrExpiryBadge($expiryDate) {
         </select>
         <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition">Filter</button>
         <?php if ($ocr_search || $ocr_type_filter): ?>
-        <a href="?route=app&page=ocr_scanner" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition">Clear</a>
+        <a href="/app/ocr_scanner" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition">Clear</a>
         <?php endif; ?>
     </form>
-    <a href="?route=app&page=ocr_scanner&tab=upload" class="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 flex-shrink-0">
+    <a href="/app/ocr_scanner?tab=upload" class="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 flex-shrink-0">
         <i class="fa-solid fa-plus"></i> Scan Document
     </a>
 </div>
@@ -156,7 +156,7 @@ function ocrExpiryBadge($expiryDate) {
     <div class="py-16 text-center">
         <i class="fa-solid fa-id-card-clip text-slate-200 text-5xl mb-4 block"></i>
         <p class="text-slate-400 font-semibold text-sm">No documents scanned yet.</p>
-        <a href="?route=app&page=ocr_scanner&tab=upload" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition">
+        <a href="/app/ocr_scanner?tab=upload" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition">
             <i class="fa-solid fa-cloud-arrow-up"></i> Upload First Document
         </a>
     </div>
@@ -223,7 +223,7 @@ function ocrExpiryBadge($expiryDate) {
                                     class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 flex items-center justify-center text-slate-500 transition" title="View">
                                 <i class="fa-solid fa-eye text-xs"></i>
                             </button>
-                            <a href="?route=app&page=ocr_scanner&tab=upload&edit=<?= $doc['id'] ?>"
+                            <a href="/app/ocr_scanner?tab=upload&edit=<?= $doc['id'] ?>"
                                class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center text-slate-500 transition" title="Edit">
                                 <i class="fa-solid fa-pen text-xs"></i>
                             </a>
@@ -262,7 +262,7 @@ function ocrExpiryBadge($expiryDate) {
             <p class="font-bold">OCR API key not configured — extraction unavailable</p>
             <p class="mt-0.5 font-medium opacity-80">You can still upload documents and fill in the fields manually.
             <?php if (!$_SESSION['is_staff']): ?>
-            <a href="?route=app&page=ocr_scanner&tab=settings" class="underline font-bold">Configure API key in Settings →</a>
+            <a href="/app/ocr_scanner?tab=settings" class="underline font-bold">Configure API key in Settings →</a>
             <?php endif; ?>
             </p>
         </div>
@@ -326,7 +326,7 @@ function ocrExpiryBadge($expiryDate) {
                         <i class="fa-solid fa-cloud-arrow-up"></i> Extract with <?= htmlspecialchars($ocrProviderShort) ?>
                     </button>
                     <?php else: ?>
-                    <p class="text-xs text-amber-600 font-semibold mt-2">API key not configured — <a href="?route=app&page=ocr_scanner&tab=settings" class="underline">add it in Settings</a> to enable OCR.</p>
+                    <p class="text-xs text-amber-600 font-semibold mt-2">API key not configured — <a href="/app/ocr_scanner?tab=settings" class="underline">add it in Settings</a> to enable OCR.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -537,7 +537,7 @@ function ocrExpiryBadge($expiryDate) {
 
         <!-- Save -->
         <div class="flex items-center justify-between gap-3">
-            <a href="?route=app&page=ocr_scanner" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition">
+            <a href="/app/ocr_scanner" class="px-5 py-2.5 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition">
                 Cancel
             </a>
             <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
@@ -850,7 +850,7 @@ function toggleCreateCustomer() {
 // ── View modal ─────────────────────────────────────────────────────────────────
 function viewOcrDoc(doc) {
     document.getElementById('viewModalTitle').textContent = (doc.document_type || 'Document') + ' — ' + (doc.full_name || '');
-    document.getElementById('viewEditLink').href = '?route=app&page=ocr_scanner&tab=upload&edit=' + doc.id;
+    document.getElementById('viewEditLink').href = '/app/ocr_scanner?tab=upload&edit=' + doc.id;
     const fields = [
         ['Document ID', doc.id], ['Type', doc.document_type], ['Doc Number', doc.document_number],
         ['NID Number', doc.nid_number], ['Full Name', doc.full_name], ['Date of Birth', doc.date_of_birth],

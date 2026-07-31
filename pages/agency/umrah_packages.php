@@ -58,7 +58,7 @@ $packages  = $packages->fetchAll(PDO::FETCH_ASSOC);
                         <?php if (!$_SESSION['is_staff']): ?>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <button onclick='openPkgModal(<?= htmlspecialchars(json_encode($p)) ?>)' class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 mx-1 transition"><i class="fa-solid fa-pen"></i></button>
-                            <form method="POST" action="?route=app" class="inline" onsubmit="return confirm('Delete this package?')">
+                            <form method="POST" action="" class="inline" onsubmit="return confirm('Delete this package?')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                 <input type="hidden" name="action" value="umrah_delete_package">
                                 <input type="hidden" name="id" value="<?= htmlspecialchars($p['id']) ?>">
@@ -84,7 +84,7 @@ $packages  = $packages->fetchAll(PDO::FETCH_ASSOC);
             <h3 class="font-extrabold text-slate-800 text-lg" id="pkgModalTitle"><i class="fa-solid fa-box-open text-indigo-500 mr-2"></i> Package</h3>
             <button onclick="closePkgModal()" class="w-8 h-8 rounded-full bg-slate-200/50 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4">
+        <form method="POST" action="" class="p-6 space-y-4">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="action" value="umrah_save_package">
             <input type="hidden" name="id" id="pkg_id" value="">

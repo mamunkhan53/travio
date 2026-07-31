@@ -74,7 +74,7 @@ $monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div><h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-line text-indigo-500"></i> Profit & Loss</h2><p class="text-sm text-slate-500 mt-1">Income statement for <?= $periodLabel ?>.</p></div>
     <div class="flex gap-2">
-        <a href="?route=app&page=acc_pl&year=<?= $accYear ?>&month=<?= $accMonth ?>&print=1" target="_blank" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-rose-100 transition flex items-center gap-2"><i class="fa-solid fa-print"></i> Print</a>
+        <a href="/app/acc_pl?year=<?= $accYear ?>&month=<?= $accMonth ?>&print=1" target="_blank" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-rose-100 transition flex items-center gap-2"><i class="fa-solid fa-print"></i> Print</a>
     </div>
 </div>
 

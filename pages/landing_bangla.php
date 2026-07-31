@@ -112,8 +112,8 @@ function renderBanglaLandingPage($conn) {
                 <a href="#faq" class="sz-bn text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition">সাধারণ প্রশ্ন</a>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="?route=login" class="sz-bn text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">লগইন</a>
-                <a href="?route=register" class="sz-glow-btn-filled sz-bn">বিনামূল্যে শুরু করুন</a>
+                <a href="/login" class="sz-bn text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">লগইন</a>
+                <a href="/register" class="sz-glow-btn-filled sz-bn">বিনামূল্যে শুরু করুন</a>
             </div>
         </div>
     </nav>
@@ -139,7 +139,7 @@ function renderBanglaLandingPage($conn) {
                         এয়ার টিকেটিং, ভিসা, ট্যুর প্যাকেজ, হোটেল বুকিং ও কাস্টমার ম্যানেজমেন্টের জন্য সম্পূর্ণ ট্রাভেল এজেন্সি ইআরপি সমাধান।
                     </p>
                     <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-8">
-                        <a href="?route=register" class="sz-glow-btn-filled w-full sm:w-auto px-8 py-4 text-lg sz-bn">বিনামূল্যে শুরু করুন</a>
+                        <a href="/register" class="sz-glow-btn-filled w-full sm:w-auto px-8 py-4 text-lg sz-bn">বিনামূল্যে শুরু করুন</a>
                         <a href="#" class="sz-ghost-btn w-full sm:w-auto px-8 py-4 text-lg rounded-xl flex items-center justify-center gap-2 sz-bn">
                             <i class="fa-solid fa-circle-play"></i> ডেমো দেখুন
                         </a>
@@ -276,9 +276,9 @@ function renderBanglaLandingPage($conn) {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <?php
                 $planDisplay = [
-                    'trial'   => ['icon'=>'fa-rocket',       'highlight'=>false,'cta'=>'বিনামূল্যে ট্রায়াল শুরু করুন','href'=>'?route=register'],
-                    'monthly' => ['icon'=>'fa-calendar-days','highlight'=>false,'cta'=>'শুরু করুন','href'=>'?route=register'],
-                    'yearly'  => ['icon'=>'fa-crown',        'highlight'=>true, 'cta'=>'শুরু করুন','href'=>'?route=register'],
+                    'trial'   => ['icon'=>'fa-rocket',       'highlight'=>false,'cta'=>'বিনামূল্যে ট্রায়াল শুরু করুন','href'=>'/register'],
+                    'monthly' => ['icon'=>'fa-calendar-days','highlight'=>false,'cta'=>'শুরু করুন','href'=>'/register'],
+                    'yearly'  => ['icon'=>'fa-crown',        'highlight'=>true, 'cta'=>'শুরু করুন','href'=>'/register'],
                 ];
                 foreach ($planDisplay as $key => $disp):
                     $p = $landingPlans[$key] ?? null;
@@ -370,7 +370,7 @@ function renderBanglaLandingPage($conn) {
                 ইতিমধ্যে শত শত ট্রাভেল এজেন্সি ট্রাভিও ব্যবহার করে তাদের কার্যক্রম সুবিন্যস্ত করছে, বিক্রয় বাড়াচ্ছে এবং ব্যবসা বৃদ্ধি করছে। আজই বিনামূল্যে ট্রায়াল শুরু করুন।
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="?route=register" class="sz-glow-btn-filled sz-bn text-lg px-10 py-4" style="height:auto;">
+                <a href="/register" class="sz-glow-btn-filled sz-bn text-lg px-10 py-4" style="height:auto;">
                     বিনামূল্যে ট্রায়াল শুরু করুন <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
                 <a href="#" class="sz-btn-outline-light sz-bn text-lg px-10 py-4" style="height:auto;">
@@ -419,8 +419,8 @@ function renderBanglaLandingPage($conn) {
                 <div>
                     <h4 class="sz-bn text-white font-bold mb-5 uppercase tracking-wider text-xs">পোর্টাল</h4>
                     <ul class="space-y-3 text-sm">
-                        <li><a href="?route=login" class="sz-bn text-[#9AA4B2] hover:text-[#2BC4B0] transition">এজেন্সি লগইন</a></li>
-                        <li><a href="?route=register" class="sz-bn text-[#9AA4B2] hover:text-[#2BC4B0] transition">এজেন্সি নিবন্ধন</a></li>
+                        <li><a href="/login" class="sz-bn text-[#9AA4B2] hover:text-[#2BC4B0] transition">এজেন্সি লগইন</a></li>
+                        <li><a href="/register" class="sz-bn text-[#9AA4B2] hover:text-[#2BC4B0] transition">এজেন্সি নিবন্ধন</a></li>
                         <li><a href="#" class="sz-bn text-[#9AA4B2] hover:text-[#2BC4B0] transition">ডকুমেন্টেশন</a></li>
                         <li><a href="/travio-bangla" class="sz-bn text-[#2BC4B0] hover:text-[#1FB8A4] transition font-semibold">বাংলা পোর্টাল</a></li>
                     </ul>

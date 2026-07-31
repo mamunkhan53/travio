@@ -43,9 +43,9 @@
                                         <tr class="hover:bg-slate-50 text-slate-700 transition-colors">
                                             <td class="px-6 py-4 font-extrabold text-indigo-600 whitespace-nowrap">
                                                 <?php if ($page === 'customers'): ?>
-                                                    <a href="?route=app&page=customer_profile&id=<?= $row['id'] ?>" class="hover:underline"><?= $row['id'] ?></a>
+                                                    <a href="/app/customer_profile?id=<?= $row['id'] ?>" class="hover:underline"><?= $row['id'] ?></a>
                                                 <?php elseif (in_array($page, ['enquiries', 'passports', 'visas', 'tickets', 'umrah', 'tours'])): ?>
-                                                    <a href="?route=app&page=query_history&table=<?= $page ?>&id=<?= $row['id'] ?>" class="hover:underline"><?= $row['id'] ?></a>
+                                                    <a href="/app/query_history?table=<?= $page ?>&id=<?= $row['id'] ?>" class="hover:underline"><?= $row['id'] ?></a>
                                                 <?php else: ?>
                                                     <?= $row['id'] ?>
                                                 <?php endif; ?>
@@ -57,7 +57,7 @@
                                                     <?php 
                                                         $val = xss_clean($row[$col]);
                                                         if ($page === 'customers' && $col === 'name'): ?>
-                                                            <a href="?route=app&page=customer_profile&id=<?= $row['id'] ?>" class="text-indigo-600 font-bold hover:underline"><?= $val ?></a>
+                                                            <a href="/app/customer_profile?id=<?= $row['id'] ?>" class="text-indigo-600 font-bold hover:underline"><?= $val ?></a>
                                                         <?php elseif ($config['type'] === 'select'): 
                                                             $color = ($val==='Completed'||$val==='Paid'||$val==='Confirmed') ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
                                                     ?>
@@ -87,14 +87,14 @@
                                                 ?>
                                                 
                                                 <?php if ($page === 'customers'): ?>
-                                                    <a href="?route=app&page=customer_profile&id=<?= $row['id'] ?>" class="text-emerald-600 bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-emerald-100 transition" title="View Profile"><i class="fa-solid fa-address-card"></i></a>
+                                                    <a href="/app/customer_profile?id=<?= $row['id'] ?>" class="text-emerald-600 bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-emerald-100 transition" title="View Profile"><i class="fa-solid fa-address-card"></i></a>
                                                 <?php endif; ?>
 
                                                 <?php if($can_edit): ?>
                                                     <button onclick="openModal('edit', '<?= rawurlencode(json_encode($row)) ?>')" class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 mx-1 transition"><i class="fa-solid fa-pen"></i></button>
                                                 <?php endif; ?>
                                                 <?php if($can_del): ?>
-                                                    <a href="?route=app&action=delete&table=<?= $page ?>&id=<?= $row['id'] ?>" onclick="return confirm('Delete this record?')" class="text-rose-600 bg-rose-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-rose-100 transition"><i class="fa-solid fa-trash"></i></a>
+                                                    <a href="/app?action=delete&table=<?= $page ?>&id=<?= $row['id'] ?>" onclick="return confirm('Delete this record?')" class="text-rose-600 bg-rose-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-rose-100 transition"><i class="fa-solid fa-trash"></i></a>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -114,7 +114,7 @@
                             <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2" id="modalTitle"><i class="fa-solid fa-database text-indigo-500"></i> Record Data</h3>
                             <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 bg-slate-200/50 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
                         </div>
-                        <form method="POST" action="?route=app" class="p-6 sm:p-8" id="crudForm">
+                        <form method="POST" action="" class="p-6 sm:p-8" id="crudForm">
                             <input type="hidden" name="action" id="formAction" value="add">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="table" value="<?= $page ?>">

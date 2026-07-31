@@ -2,7 +2,7 @@
         // ------------- 2FA: CONFIRM SETUP CODE AND ACTIVATE (Super Admin or Agency Admin) -------------
         if ($action === 'confirm_2fa' && !empty($_SESSION['user_id'])) {
             $pendingSecret = $_SESSION['pending_totp_secret'] ?? '';
-            $redirectTarget = $_SESSION['is_staff'] ? '?route=app&page=profile' : (($_SESSION['role'] === 'Super Admin') ? '?route=admin_dashboard&tab=settings' : '?route=app&page=profile');
+            $redirectTarget = $_SESSION['is_staff'] ? '/app/profile' : (($_SESSION['role'] === 'Super Admin') ? '/admin?tab=settings' : '/app/profile');
             $table = $_SESSION['is_staff'] ? 'staff' : 'users';
             $idToUpdate = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : $_SESSION['user_id'];
 
@@ -18,7 +18,7 @@
 
         // ------------- 2FA: DISABLE (requires current password, Super Admin, Agency Admin, or Staff) -------------
         if ($action === 'disable_2fa' && !empty($_SESSION['user_id'])) {
-            $redirectTarget = $_SESSION['is_staff'] ? '?route=app&page=profile' : (($_SESSION['role'] === 'Super Admin') ? '?route=admin_dashboard&tab=settings' : '?route=app&page=profile');
+            $redirectTarget = $_SESSION['is_staff'] ? '/app/profile' : (($_SESSION['role'] === 'Super Admin') ? '/admin?tab=settings' : '/app/profile');
             $table = $_SESSION['is_staff'] ? 'staff' : 'users';
             $idToUpdate = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : $_SESSION['user_id'];
 

@@ -11,7 +11,7 @@ function ocr_guard($conn) {
     if (!isset($_SESSION['agency_id'])) { http_response_code(403); die("Unauthorised."); }
     if (isAgencySubscriptionExpired($conn, $_SESSION['agency_id'])) {
         flash("Subscription expired. Renew to use this feature.", "error");
-        redirect("?route=app&page=dashboard");
+        redirect("/app/dashboard");
     }
 }
 
@@ -337,7 +337,7 @@ if ($action === 'ocr_save_document' && isset($_SESSION['agency_id'])) {
         $allowed  = ['jpg','jpeg','png','webp','gif','pdf','heic'];
         if (!in_array($ext, $allowed)) {
             flash("File type not allowed.", "error");
-            redirect("?route=app&page=ocr_scanner&tab=upload");
+            redirect("/app/ocr_scanner?tab=upload");
         }
         $fileName = 'ocr_' . uniqid() . '_' . time() . '.' . $ext;
         if (move_uploaded_file($_FILES['ocr_file']['tmp_name'], $uploadDir . $fileName)) {
@@ -422,7 +422,7 @@ if ($action === 'ocr_save_document' && isset($_SESSION['agency_id'])) {
         $conn->prepare("UPDATE ocr_documents SET $setClause WHERE agency_id=? AND id=?")->execute($vals);
         flash("Document updated successfully.");
     }
-    redirect("?route=app&page=ocr_scanner");
+    redirect("/app/ocr_scanner");
 }
 
 // =============================================================================
@@ -441,7 +441,7 @@ if ($action === 'ocr_delete_document' && isset($_SESSION['agency_id'])) {
         $conn->prepare("DELETE FROM ocr_documents WHERE id=? AND agency_id=?")->execute([$id, $agency_id]);
         flash("Document deleted.");
     }
-    redirect("?route=app&page=ocr_scanner");
+    redirect("/app/ocr_scanner");
 }
 
 // =============================================================================
@@ -463,5 +463,5 @@ if ($action === 'ocr_save_settings' && isset($_SESSION['agency_id']) && !$_SESSI
     $conn->prepare($upsert)->execute([$agency_id, 'ocr_api_key',  $apiKey]);
 
     flash($apiKey ? "OCR settings saved." : "OCR settings saved (API key cleared — OCR extraction disabled).");
-    redirect("?route=app&page=ocr_scanner&tab=settings");
+    redirect("/app/ocr_scanner?tab=settings");
 }

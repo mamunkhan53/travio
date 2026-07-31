@@ -8,7 +8,7 @@ if ($sc_student_id) {
     $profile_stmt = $conn->prepare("SELECT s.*, st.full_name as staff_name FROM sc_students s LEFT JOIN staff st ON s.reference_staff_id=st.id WHERE s.id=? AND s.agency_id=?");
     $profile_stmt->execute([$sc_student_id, $agency_id]);
     $sc_prof = $profile_stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$sc_prof) { flash("Student not found.", "error"); redirect("?route=app&page=sc_students"); }
+    if (!$sc_prof) { flash("Student not found.", "error"); redirect("/app/sc_students"); }
 
     $sc_apps    = $conn->prepare("SELECT * FROM sc_applications WHERE student_id=? AND agency_id=? ORDER BY created_at DESC");
     $sc_apps->execute([$sc_student_id,$agency_id]); $sc_apps = $sc_apps->fetchAll(PDO::FETCH_ASSOC);
@@ -49,7 +49,7 @@ if ($sc_student_id) {
 ?>
 <div class="space-y-5">
     <div class="flex items-center gap-3">
-        <a href="?route=app&page=sc_students" class="text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-arrow-left"></i></a>
+        <a href="/app/sc_students" class="text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-arrow-left"></i></a>
         <div class="flex-1">
             <h2 class="text-2xl font-extrabold text-slate-800"><?= xss_clean($sc_prof['student_name']) ?></h2>
             <p class="text-sm text-slate-500"><?= xss_clean($sc_prof['mobile']) ?> <?= $sc_prof['email'] ? '· '.xss_clean($sc_prof['email']) : '' ?> · ID: <?= $sc_student_id ?></p>
@@ -72,7 +72,7 @@ if ($sc_student_id) {
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
         <div class="flex border-b border-slate-100 overflow-x-auto">
             <?php foreach ($sc_tabs as $tk => $tl): ?>
-            <a href="?route=app&page=sc_students&id=<?= $sc_student_id ?>&tab=<?= $tk ?>"
+            <a href="/app/sc_students?id=<?= $sc_student_id ?>&tab=<?= $tk ?>"
                class="px-4 py-3 text-sm font-bold whitespace-nowrap transition <?= $sc_stab===$tk ? 'border-b-2 border-indigo-600 text-indigo-700' : 'text-slate-500 hover:text-indigo-600' ?>">
                <?= $tl ?>
             </a>
@@ -142,7 +142,7 @@ if ($sc_student_id) {
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full <?= $docStatColors[$doc['doc_status']] ?? 'bg-slate-100 text-slate-600' ?>"><?= xss_clean($doc['doc_status']) ?></span>
                         <?php if($doc['file_path']): ?><a href="/<?= xss_clean($doc['file_path']) ?>" target="_blank" class="text-xs font-bold text-indigo-600 hover:underline">Download</a><?php endif; ?>
                         <?php if(has_permission('can_manage_sc_students')): ?>
-                        <form method="POST" action="?route=app" onsubmit="return confirm('Delete?')">
+                        <form method="POST" action="" onsubmit="return confirm('Delete?')">
                             <input type="hidden" name="action" value="sc_delete_document">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="id" value="<?= $doc['id'] ?>">
@@ -189,13 +189,13 @@ if ($sc_student_id) {
                     <p class="text-xs text-emerald-600 font-bold">Paid: <?= number_format($pm['paid_amount'],2) ?></p>
                     <?php if($pm['due_amount']>0): ?><p class="text-xs text-rose-500 font-bold">Due: <?= number_format($pm['due_amount'],2) ?></p><?php endif; ?>
                 </div>
-                <a href="?route=app&page=invoices&prefill=<?= urlencode(json_encode(['customer_name'=>$sc_prof['student_name'],'mobile'=>$sc_prof['mobile'],'service_desc'=>$pm['payment_type'],'grand_total'=>$pm['total_amount'],'paid_amount'=>$pm['paid_amount'],'due_amount'=>$pm['due_amount']])) ?>"
+                <a href="/app/invoices?prefill=<?= urlencode(json_encode(['customer_name'=>$sc_prof['student_name'],'mobile'=>$sc_prof['mobile'],'service_desc'=>$pm['payment_type'],'grand_total'=>$pm['total_amount'],'paid_amount'=>$pm['paid_amount'],'due_amount'=>$pm['due_amount']])) ?>"
                    class="text-xs font-bold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-lg hover:bg-teal-100 transition">Invoice</a>
             </div>
             <?php endforeach; if(empty($sc_pmts)) echo '<p class="text-slate-400 text-sm py-8 text-center"><i class="fa-solid fa-coins text-3xl block mb-2"></i>No payment records.</p>'; ?>
 
         <?php elseif ($sc_stab === 'timeline'): ?>
-            <form method="POST" action="?route=app" class="mb-5 bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+            <form method="POST" action="" class="mb-5 bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
                 <input type="hidden" name="action" value="add_record_followup">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="table" value="sc_students">
@@ -231,7 +231,7 @@ if ($sc_student_id) {
         <h3 class="font-extrabold text-slate-800">Edit Student Profile</h3>
         <button onclick="document.getElementById('scEditStudentModal').classList.add('hidden');document.getElementById('scEditStudentModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button>
     </div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_student">
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <input type="hidden" name="id" value="<?= xss_clean($sc_student_id) ?>">
@@ -257,7 +257,7 @@ if ($sc_student_id) {
 <div id="scAppModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Add Application</h3><button onclick="document.getElementById('scAppModal').classList.add('hidden');document.getElementById('scAppModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_application"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="student_id" value="<?= $sc_student_id ?>">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="sm:col-span-2"><label class="block text-xs font-bold text-slate-700 mb-1">University</label><input list="sc_uni_list" name="university_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><datalist id="sc_uni_list"><?php foreach($sc_unis as $u): ?><option value="<?= xss_clean($u) ?>"><?php endforeach; ?></datalist></div>
@@ -278,7 +278,7 @@ if ($sc_student_id) {
 <div id="scDocModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Upload Document</h3><button onclick="document.getElementById('scDocModal').classList.add('hidden');document.getElementById('scDocModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" enctype="multipart/form-data" class="p-6 space-y-4">
+    <form method="POST" action="" enctype="multipart/form-data" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_upload_document"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="student_id" value="<?= $sc_student_id ?>">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Document Type</label><select name="doc_type" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="Other">Other</option><?php foreach($sc_doctypes as $dt): ?><option value="<?= xss_clean($dt) ?>"><?= xss_clean($dt) ?></option><?php endforeach; ?></select></div>
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Select File</label><input type="file" name="doc_file" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>
@@ -296,7 +296,7 @@ if ($sc_student_id) {
 <div id="scVisaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Add Visa Record</h3><button onclick="document.getElementById('scVisaModal').classList.add('hidden');document.getElementById('scVisaModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_visa"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="student_id" value="<?= $sc_student_id ?>">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Destination Country</label><select name="destination_country" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select —</option><?php foreach($sc_countries as $c): ?><option value="<?= xss_clean($c) ?>"><?= xss_clean($c) ?></option><?php endforeach; ?></select></div>
@@ -318,7 +318,7 @@ if ($sc_student_id) {
 <div id="scPmtModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Add Payment</h3><button onclick="document.getElementById('scPmtModal').classList.add('hidden');document.getElementById('scPmtModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_payment"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>"><input type="hidden" name="student_id" value="<?= $sc_student_id ?>">
         <div><label class="block text-xs font-bold text-slate-700 mb-1">Payment Type</label><select name="payment_type" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"><option value="">— Select —</option><?php foreach(array_merge($sc_pcats,['Consultancy Fee','Application Fee','Tuition Deposit','Visa Fee','Medical Fee','Service Charge','Other']) as $pc): ?><option><?= xss_clean($pc) ?></option><?php endforeach; ?></select></div>
         <div class="grid grid-cols-2 gap-4">
@@ -363,7 +363,7 @@ if ($sc_student_id) {
             <?php foreach(['Active','Enrolled','Graduated','Deferred','Cancelled'] as $st): ?><option value="<?= $st ?>" <?= $sc_rstatus===$st?'selected':'' ?>><?= $st ?></option><?php endforeach; ?>
         </select>
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Filter</button>
-        <a href="?route=app&page=sc_students" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
+        <a href="/app/sc_students" class="text-sm text-slate-500 hover:text-slate-700 font-bold">Reset</a>
     </form>
     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -382,14 +382,14 @@ if ($sc_student_id) {
                 <?php if (empty($students)): ?>
                     <tr><td colspan="6" class="text-center py-12 text-slate-400"><i class="fa-solid fa-id-card text-3xl mb-2 block"></i>No students yet.</td></tr>
                 <?php else: foreach ($students as $st): ?>
-                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="window.location='?route=app&page=sc_students&id=<?= $st['id'] ?>'">
+                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="window.location='/app/sc_students?id=<?= $st['id'] ?>'">
                         <td class="px-4 py-3"><p class="font-bold text-slate-800"><?= xss_clean($st['student_name']) ?></p><p class="text-xs text-slate-500"><?= xss_clean($st['mobile']) ?></p></td>
                         <td class="px-4 py-3 text-xs text-slate-600 font-bold"><?= xss_clean($st['passport_no']??'—') ?></td>
                         <td class="px-4 py-3"><span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full"><?= $st['app_count'] ?></span></td>
                         <td class="px-4 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full <?= $st['current_status']==='Active'?'bg-emerald-100 text-emerald-700':($st['current_status']==='Graduated'?'bg-violet-100 text-violet-700':'bg-slate-100 text-slate-600') ?>"><?= xss_clean($st['current_status']) ?></span></td>
                         <td class="px-4 py-3 text-xs text-slate-500 font-bold"><?= xss_clean($st['staff_name']??'—') ?></td>
                         <td class="px-4 py-3" onclick="event.stopPropagation()">
-                            <a href="?route=app&page=sc_students&id=<?= $st['id'] ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">View Profile</a>
+                            <a href="/app/sc_students?id=<?= $st['id'] ?>" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">View Profile</a>
                         </td>
                     </tr>
                 <?php endforeach; endif; ?>
@@ -403,7 +403,7 @@ if ($sc_student_id) {
 <div id="scAddStudentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
     <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white"><h3 class="font-extrabold text-slate-800">Add Student Profile</h3><button onclick="document.getElementById('scAddStudentModal').classList.add('hidden');document.getElementById('scAddStudentModal').classList.remove('flex')" class="text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-times"></i></button></div>
-    <form method="POST" action="?route=app" class="p-6 space-y-4">
+    <form method="POST" action="" class="p-6 space-y-4">
         <input type="hidden" name="action" value="sc_save_student"><input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label class="block text-xs font-bold text-slate-700 mb-1">Student Name *</label><input type="text" name="student_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></div>

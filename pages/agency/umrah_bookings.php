@@ -83,7 +83,7 @@ $statusColors = [
             <input type="date" name="to"   value="<?= htmlspecialchars($f_to) ?>"   class="px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-400 outline-none" title="Travel Date To">
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Filter</button>
             <?php if ($f_status||$f_pkg||$f_from||$f_to): ?>
-            <a href="?route=app&page=umrah_bookings" class="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-sm hover:bg-slate-50 transition">Clear</a>
+            <a href="/app/umrah_bookings" class="px-4 py-2 border border-slate-200 text-slate-500 rounded-xl text-sm hover:bg-slate-50 transition">Clear</a>
             <?php endif; ?>
         </form>
 
@@ -115,7 +115,7 @@ $statusColors = [
                         <td class="px-6 py-4">
                             <div class="font-semibold"><?= htmlspecialchars($b['customer_name'] ?: '—') ?></div>
                             <?php if ($b['customer_id']): ?>
-                            <a href="?route=app&page=customer_profile&id=<?= htmlspecialchars($b['customer_id']) ?>" class="text-xs text-indigo-500 hover:underline">View Profile</a>
+                            <a href="/app/customer_profile?id=<?= htmlspecialchars($b['customer_id']) ?>" class="text-xs text-indigo-500 hover:underline">View Profile</a>
                             <?php elseif ($b['customer_mobile']): ?>
                             <div class="text-xs text-slate-400"><?= htmlspecialchars($b['customer_mobile']) ?></div>
                             <?php endif; ?>
@@ -139,11 +139,11 @@ $statusColors = [
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <a href="?route=app&page=umrah_payments&booking_id=<?= urlencode($b['id']) ?>" class="text-emerald-600 bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-emerald-100 transition" title="Payments"><i class="fa-solid fa-coins text-xs"></i></a>
-                            <a href="?route=app&page=umrah_checklist&booking_id=<?= urlencode($b['id']) ?>" class="text-sky-600 bg-sky-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-sky-100 transition ml-1" title="Checklist"><i class="fa-solid fa-list-check text-xs"></i></a>
+                            <a href="/app/umrah_payments?booking_id=<?= urlencode($b['id']) ?>" class="text-emerald-600 bg-emerald-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-emerald-100 transition" title="Payments"><i class="fa-solid fa-coins text-xs"></i></a>
+                            <a href="/app/umrah_checklist?booking_id=<?= urlencode($b['id']) ?>" class="text-sky-600 bg-sky-50 w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-sky-100 transition ml-1" title="Checklist"><i class="fa-solid fa-list-check text-xs"></i></a>
                             <?php if (!$_SESSION['is_staff']): ?>
                             <button onclick='openBkModal(<?= htmlspecialchars(json_encode($b)) ?>)' class="text-indigo-600 bg-indigo-50 w-8 h-8 rounded-lg hover:bg-indigo-100 ml-1 transition"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <form method="POST" action="?route=app" class="inline ml-1" onsubmit="return confirm('Delete this booking and all its payments?')">
+                            <form method="POST" action="" class="inline ml-1" onsubmit="return confirm('Delete this booking and all its payments?')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                 <input type="hidden" name="action" value="umrah_delete_booking">
                                 <input type="hidden" name="id" value="<?= htmlspecialchars($b['id']) ?>">
@@ -168,7 +168,7 @@ $statusColors = [
             <h3 class="font-extrabold text-slate-800 text-lg" id="bkModalTitle"><i class="fa-solid fa-calendar-check text-indigo-500 mr-2"></i> Booking</h3>
             <button onclick="closeBkModal()" class="w-8 h-8 rounded-full bg-slate-200/50 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
         </div>
-        <form method="POST" action="?route=app" class="p-6 space-y-4">
+        <form method="POST" action="" class="p-6 space-y-4">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="action" value="umrah_save_booking">
             <input type="hidden" name="id" id="bk_id" value="">
