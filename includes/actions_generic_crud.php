@@ -68,25 +68,6 @@
                              ->execute([$agency_id, $table, $newId, $creatorFollowup, "$recordTypeLabel record created."]);
                     }
                     
-                    // Hook: Auto-Create Lead in CRM if it's a Service
-                    if (isset($modules[$table]['is_service'])) {
-                        $leadId = generateSerialId($conn, 'enquiries', 'LD', $agency_id);
-                        $leadCat = $modules[$table]['cat'];
-                        $leadName = $postData['name'] ?? 'Unknown';
-                        $leadMob = $postData['mobile'] ?? '';
-                        $leadService = "Auto-generated from $table: $newId";
-                        
-                        $sqlLd = "INSERT INTO enquiries (id, agency_id, date, customer, mobile, category, service, status, notes, reference_staff_id";
-                        $sqlLd .= $_SESSION['is_staff'] ? ", created_by_staff_id) VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?)" : ") VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?, ?, ?)";
-                        
-                        $ldVals = [$leadId, $agency_id, $leadName, $leadMob, $leadCat, $leadService, $status, 'System Generated', $ref_staff_id];
-                        if ($_SESSION['is_staff']) $ldVals[] = $_SESSION['staff_id'];
-                        
-                        $conn->prepare($sqlLd)->execute($ldVals);
-                        $creatorFollowup = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
-                        $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note) VALUES (?, 'enquiries', ?, ?, ?)")
-                             ->execute([$agency_id, $leadId, $creatorFollowup, "Query auto-created from {$modules[$table]['title']} sale: $newId."]);
-                    }
                     flash("Record added successfully!");
                 } 
                 elseif ($action === 'edit') {
