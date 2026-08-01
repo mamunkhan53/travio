@@ -143,3 +143,27 @@
             redirect("/admin?tab=settings");
         }
 
+        // ------------- SUPER ADMIN: CHANGE OWN PASSWORD (requires current password) -------------
+        if ($action === 'change_super_admin_password' && $_SESSION['role'] === 'Super Admin') {
+            $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $me = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $currentPassword = $_POST['current_password'] ?? '';
+            $newPassword     = $_POST['new_password'] ?? '';
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+
+            if (!$me || !password_verify($currentPassword, $me['password_hash'])) {
+                flash("Your current password is incorrect.", "error");
+            } elseif (strlen($newPassword) < 8) {
+                flash("New password must be at least 8 characters.", "error");
+            } elseif ($newPassword !== $confirmPassword) {
+                flash("New password and confirmation do not match.", "error");
+            } else {
+                $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?")
+                     ->execute([password_hash($newPassword, PASSWORD_DEFAULT), $_SESSION['user_id']]);
+                flash("Password changed successfully.");
+            }
+            redirect("/admin?tab=settings");
+        }
+

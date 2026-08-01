@@ -22,9 +22,9 @@ try {
     $conn = new PDO($dsn, $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Auto-reset Super Admin password to admin123
-    $defaultAdminHash = password_hash('admin123', PASSWORD_DEFAULT);
-    $conn->exec("UPDATE users SET password_hash = '$defaultAdminHash' WHERE email = 'admin@southzone.com'");
+    // NOTE: the line that force-reset the Super Admin password to 'admin123' on
+    // every single page load has been removed. It was silently undoing any
+    // password set from the Super Admin > Settings > Change Password form.
     
     // =========================================================================
     // AUTO-MIGRATE STAFF MODULE SCHEMA, FOLLOW UPS & NOTIFICATIONS

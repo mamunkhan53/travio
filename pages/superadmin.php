@@ -279,6 +279,29 @@ function renderSuperAdmin($conn) {
                     </div>
 
                     <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 lg:col-span-2">
+                        <h3 class="font-extrabold text-slate-800 text-lg mb-1"><i class="fa-solid fa-key text-indigo-500 mr-2"></i>Change Password</h3>
+                        <p class="text-sm text-slate-500 mb-5">Update the password for your own Super Admin login.</p>
+                        <form method="POST" action="/admin" class="max-w-lg space-y-4" onsubmit="return checkSuperAdminNewPass()">
+                            <input type="hidden" name="action" value="change_super_admin_password">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Current Password</label>
+                                <input type="password" name="current_password" required class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">New Password</label>
+                                <input type="password" id="sa_np1" name="new_password" required minlength="8" placeholder="Min. 8 characters" class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Confirm New Password</label>
+                                <input type="password" id="sa_np2" name="confirm_password" required class="w-full border border-slate-200 p-2.5 rounded-lg bg-slate-50">
+                                <p id="saNpErr" class="text-xs font-bold hidden mt-1.5 text-rose-500">Passwords do not match.</p>
+                            </div>
+                            <button type="submit" class="bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-700 shadow-lg transition"><i class="fa-solid fa-key mr-2"></i>Update Password</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl soft-shadow border border-slate-100 p-6 lg:col-span-2">
                         <h3 class="font-extrabold text-slate-800 text-lg mb-1"><i class="fa-solid fa-user-shield text-indigo-500 mr-2"></i>My Account Security</h3>
                         <p class="text-sm text-slate-500 mb-5">Secure your own Super Admin login with an authenticator app (Google Authenticator, Authy, etc).</p>
                         <?php if ($superAdminUser['totp_enabled']): ?>
@@ -344,6 +367,16 @@ function renderSuperAdmin($conn) {
                     }
                     function close2faModal() {
                         document.getElementById('setup2faModal').classList.add('hidden');
+                    }
+                    function checkSuperAdminNewPass() {
+                        const p1 = document.getElementById('sa_np1').value;
+                        const p2 = document.getElementById('sa_np2').value;
+                        if (p1 !== p2) {
+                            document.getElementById('saNpErr').classList.remove('hidden');
+                            return false;
+                        }
+                        document.getElementById('saNpErr').classList.add('hidden');
+                        return true;
                     }
                 </script>
 
