@@ -6,14 +6,14 @@
                     <div class="p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
                         <div class="relative w-full sm:w-72">
                             <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search invoices..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            <input type="text" id="invoiceSearchInput" onkeyup="searchTable()" placeholder="Search invoices..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                         </div>
                         <?php if (has_permission('can_add_sale')): ?>
                             <button onclick="document.getElementById('invModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center w-full sm:w-auto justify-center transition"><i class="fa-solid fa-plus mr-2"></i> Create Invoice</button>
                         <?php endif; ?>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-slate-600" id="dataTable">
+                        <table class="w-full text-left text-sm text-slate-600" id="invoiceDataTable">
                             <thead class="bg-white text-slate-400 uppercase tracking-wider text-xs border-b">
                                 <tr>
                                     <th class="px-6 py-4 font-bold">Invoice #</th>
@@ -222,8 +222,8 @@
                     }
 
                     function searchTable() {
-                        const filter = document.getElementById("searchInput").value.toLowerCase();
-                        const tr = document.getElementById("dataTable").getElementsByTagName("tr");
+                        const filter = document.getElementById("invoiceSearchInput").value.toLowerCase();
+                        const tr = document.getElementById("invoiceDataTable").getElementsByTagName("tr");
                         for (let i = 1; i < tr.length; i++) {
                             let visible = false;
                             const tds = tr[i].getElementsByTagName("td");

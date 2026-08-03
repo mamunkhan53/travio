@@ -4,7 +4,7 @@
                     <div class="p-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
                         <div class="relative w-full sm:w-72">
                             <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search records..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            <input type="text" id="crudSearchInput" onkeyup="searchTable()" placeholder="Search records..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                         </div>
                         <?php 
                         $can_add = true;
@@ -21,7 +21,7 @@
                     </div>
                     
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm" id="dataTable">
+                        <table class="w-full text-left text-sm" id="crudDataTable">
                             <thead class="bg-white text-slate-400 uppercase tracking-wider text-xs border-b">
                                 <tr>
                                     <th class="px-6 py-4 font-bold">ID</th>
@@ -197,8 +197,8 @@
                     }
 
                     function searchTable() {
-                        const filter = document.getElementById("searchInput").value.toLowerCase();
-                        const tr = document.getElementById("dataTable").getElementsByTagName("tr");
+                        const filter = document.getElementById("crudSearchInput").value.toLowerCase();
+                        const tr = document.getElementById("crudDataTable").getElementsByTagName("tr");
                         for (let i = 1; i < tr.length; i++) {
                             let visible = false;
                             const tds = tr[i].getElementsByTagName("td");
