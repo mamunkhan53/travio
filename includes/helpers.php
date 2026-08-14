@@ -497,7 +497,7 @@ function generateVerificationToken() {
 function sendAppEmail($to, $subject, $htmlBody) {
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: South Zone ERP <no-reply@" . ($_SERVER['HTTP_HOST'] ?? 'southzone.app') . ">\r\n";
+    $headers .= "From: Travio <no-reply@" . ($_SERVER['HTTP_HOST'] ?? 'travioerp.com') . ">\r\n";
     try {
         return @mail($to, $subject, $htmlBody, $headers);
     } catch (Exception $e) {
@@ -505,36 +505,121 @@ function sendAppEmail($to, $subject, $htmlBody) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// SHARED TRAVIO EMAIL TEMPLATE
+// Wraps any inner content block in the standard Travio header/footer shell
+// so every outgoing email (password reset, verification, and any future
+// ones) shares consistent, on-brand styling. Table-based layout with inline
+// styles for maximum compatibility across email clients (incl. Outlook).
+// ---------------------------------------------------------------------------
+function buildTravioEmailShell($innerHtml) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'travioerp.com');
+    $year = date('Y');
+
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body, table, td { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; }
+  body { margin:0; padding:0; background-color:#F4F6F8; }
+  img { border:0; display:block; }
+  a { text-decoration:none; }
+  @media only screen and (max-width:600px) {
+    .email-container { width:100% !important; }
+    .email-padding { padding-left:22px !important; padding-right:22px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4F6F8;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4F6F8;padding:32px 16px;">
+    <tr>
+      <td align="center">
+
+        <!-- Card -->
+        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background-color:#FFFFFF;border:1px solid #E4E7EC;border-radius:12px;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td class="email-padding" style="padding:26px 36px;border-bottom:1px solid #EEF0F3;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="width:38px;height:38px;">
+                    <img src="{$baseUrl}/assets/favicon.png" width="38" height="38" alt="Travio" style="display:block;border-radius:10px;">
+                  </td>
+                  <td style="padding-left:12px;">
+                    <div style="font-size:19px;font-weight:700;color:#1A202C;line-height:1.3;">Travio</div>
+                    <div style="font-size:10.5px;font-weight:600;color:#8A94A3;letter-spacing:0.4px;text-transform:uppercase;">Travel Agency Management</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Content -->
+          <tr>
+            <td class="email-padding" style="padding:36px;">
+              {$innerHtml}
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;margin-top:24px;">
+          <tr>
+            <td align="center" class="email-padding" style="padding:0 36px;">
+              <div style="font-size:13px;font-weight:700;color:#4A5568;margin:0 0 6px;">Travio - Travel Agency Management</div>
+              <div style="font-size:12px;color:#8A94A3;line-height:1.6;margin:0 0 18px;">
+                Diganta Khawja Shopping Centre (2nd Floor), Shop No-32,<br>Bahaddarhat, Chittagong, Bangladesh, 4212
+              </div>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 18px;">
+                <tr>
+                  <td style="padding:0 6px;"><a href="https://facebook.com/travioerp"><img src="{$baseUrl}/assets/icon-facebook.png" width="32" height="32" alt="Facebook"></a></td>
+                  <td style="padding:0 6px;"><a href="https://youtube.com/@travioerp"><img src="{$baseUrl}/assets/icon-youtube.png" width="32" height="32" alt="YouTube"></a></td>
+                  <td style="padding:0 6px;"><a href="https://instagram.com/travioerp"><img src="{$baseUrl}/assets/icon-instagram.png" width="32" height="32" alt="Instagram"></a></td>
+                </tr>
+              </table>
+              <div style="font-size:11px;color:#B0B7C3;margin:0 0 24px;">&copy; {$year} Travio. All rights reserved.</div>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+HTML;
+}
+
 function sendPasswordResetEmail($email, $name, $token) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/reset-password?token=' . $token;
-    $subject = "Reset Your Password - Travio ERP";
-    $body = "<!DOCTYPE html><html><body style='font-family:Inter,sans-serif;background:#0A0C11;color:#EAEDF3;padding:40px 20px;'>"
-          . "<div style='max-width:520px;margin:0 auto;background:rgba(22,26,35,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px;'>"
-          . "<div style='margin-bottom:28px;'>"
-          . "<div style='display:inline-flex;align-items:center;gap:10px;'>"
-          . "<div style='width:36px;height:36px;background:linear-gradient(135deg,#2BC4B0,#61DAFB);border-radius:10px;display:flex;align-items:center;justify-content:center;'>"
-          . "<span style='color:#fff;font-size:16px;'>✈</span></div>"
-          . "<span style='font-size:20px;font-weight:700;color:#fff;'>Travio</span></div></div>"
-          . "<h2 style='font-size:22px;font-weight:700;color:#fff;margin:0 0 12px;'>Password Reset Request</h2>"
-          . "<p style='color:#9AA4B2;margin:0 0 24px;line-height:1.6;'>Hi " . htmlspecialchars($name) . ", we received a request to reset your Travio ERP password. Click the button below to set a new password. This link expires in <strong style='color:#EAEDF3;'>1 hour</strong>.</p>"
-          . "<a href=\"$link\" style='display:inline-block;background:#2BC4B0;color:#fff;padding:13px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;margin-bottom:24px;'>Reset My Password</a>"
-          . "<p style='color:#68727F;font-size:12px;margin:0 0 8px;'>Or copy this link into your browser:</p>"
-          . "<p style='color:#68727F;font-size:12px;word-break:break-all;margin:0 0 28px;'>$link</p>"
-          . "<p style='color:#68727F;font-size:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;margin:0;'>If you didn't request this, you can safely ignore this email. Your password will not change.</p>"
-          . "</div></body></html>";
-    return sendAppEmail($email, $subject, $body);
+    $subject = "Reset Your Password - Travio";
+    $content = "<h2 style='margin:0 0 14px;font-size:20px;font-weight:700;color:#1A202C;'>Password Reset Request</h2>"
+          . "<p style='margin:0 0 24px;font-size:14px;line-height:1.7;color:#5A6472;'>Hi " . htmlspecialchars($name) . ", we received a request to reset your Travio password. Click the button below to set a new password. This link expires in <strong style='color:#1A202C;'>1 hour</strong>.</p>"
+          . "<table role='presentation' cellpadding='0' cellspacing='0' style='margin:0 0 28px;'><tr><td style='background-color:#2BC4B0;border-radius:8px;'>"
+          . "<a href=\"$link\" style='display:inline-block;padding:13px 28px;font-size:14px;font-weight:700;color:#ffffff;'>Reset My Password</a>"
+          . "</td></tr></table>"
+          . "<p style='margin:0 0 6px;font-size:12px;color:#8A94A3;'>Or copy this link into your browser:</p>"
+          . "<p style='margin:0 0 24px;font-size:12px;color:#8A94A3;word-break:break-all;'>$link</p>"
+          . "<p style='margin:0;padding-top:20px;border-top:1px solid #EEF0F3;font-size:12px;color:#8A94A3;'>If you didn't request this, you can safely ignore this email. Your password will not change.</p>";
+    return sendAppEmail($email, $subject, buildTravioEmailShell($content));
 }
 
 function sendVerificationEmail($email, $name, $token) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $link = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/verify-email?token=' . $token;
-    $subject = "Verify your email - South Zone ERP";
-    $body = "<p>Hi " . htmlspecialchars($name) . ",</p>"
-          . "<p>Thanks for registering with South Zone ERP. Please confirm your email address to activate your account:</p>"
-          . "<p><a href=\"$link\" style=\"background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;\">Verify Email</a></p>"
-          . "<p>Or copy this link into your browser:<br>$link</p>";
-    return sendAppEmail($email, $subject, $body);
+    $subject = "Verify Your Email - Travio";
+    $content = "<h2 style='margin:0 0 14px;font-size:20px;font-weight:700;color:#1A202C;'>Verify Your Email Address</h2>"
+          . "<p style='margin:0 0 24px;font-size:14px;line-height:1.7;color:#5A6472;'>Hi " . htmlspecialchars($name) . ", thanks for registering with Travio. Please confirm your email address to activate your account.</p>"
+          . "<table role='presentation' cellpadding='0' cellspacing='0' style='margin:0 0 28px;'><tr><td style='background-color:#2BC4B0;border-radius:8px;'>"
+          . "<a href=\"$link\" style='display:inline-block;padding:13px 28px;font-size:14px;font-weight:700;color:#ffffff;'>Verify Email</a>"
+          . "</td></tr></table>"
+          . "<p style='margin:0 0 6px;font-size:12px;color:#8A94A3;'>Or copy this link into your browser:</p>"
+          . "<p style='margin:0;font-size:12px;color:#8A94A3;word-break:break-all;'>$link</p>";
+    return sendAppEmail($email, $subject, buildTravioEmailShell($content));
 }
 
 // ---------------------------------------------------------------------------
