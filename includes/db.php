@@ -5,9 +5,9 @@
 // Replit (local MariaDB via Unix socket) and on Hostinger (TCP).
 // =========================================================================
 $host     = getenv('DB_HOST')   ?: '127.0.0.1';
-$db_name  = getenv('DB_NAME')   ?: 'southzone_erp';
-$username = getenv('DB_USER')   ?: 'southzone';
-$password = getenv('DB_PASS')   ?: 'southzone_local';
+$db_name  = getenv('DB_NAME')   ?: 'DB_NAME';
+$username = getenv('DB_USER')   ?: 'DB_USER';
+$password = getenv('DB_PASS')   ?: 'DB_PASSWORD';
 $socket   = getenv('DB_SOCKET') ?: '/home/runner/mysql.sock';
 
 // On Replit connect via Unix socket (faster, no TCP); on Hostinger use TCP.
@@ -75,7 +75,7 @@ try {
             follow_up_date DATE NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+            FOREIGN KEY (agency_id, customer_id) REFERENCES customers(agency_id, id) ON DELETE CASCADE,
             FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE SET NULL
         );
 
@@ -117,7 +117,7 @@ try {
     // =========================================================================
     $conn->exec("
         CREATE TABLE IF NOT EXISTS accounting_expenses (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             expense_date DATE NOT NULL,
             category VARCHAR(100),
@@ -132,7 +132,8 @@ try {
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             FOREIGN KEY (created_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
             FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
-            INDEX idx_accounting_expenses_agency_date (agency_id, expense_date)
+            INDEX idx_accounting_expenses_agency_date (agency_id, expense_date),
+            PRIMARY KEY (agency_id, id)
         );
     ");
 
@@ -331,7 +332,7 @@ try {
         );
 
         CREATE TABLE IF NOT EXISTS whatsapp_message_logs (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             provider_id INT NULL,
             message_body TEXT NOT NULL,
@@ -344,7 +345,8 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             FOREIGN KEY (sent_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
-            INDEX idx_wa_logs_agency (agency_id, created_at)
+            INDEX idx_wa_logs_agency (agency_id, created_at),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS whatsapp_message_recipients (
@@ -407,7 +409,7 @@ try {
         );
 
         CREATE TABLE IF NOT EXISTS sc_leads (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             created_date DATE,
             student_name VARCHAR(100) NOT NULL,
@@ -430,11 +432,12 @@ try {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             FOREIGN KEY (reference_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
-            INDEX idx_sc_leads_agency (agency_id, created_at)
+            INDEX idx_sc_leads_agency (agency_id, created_at),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS sc_students (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             lead_id VARCHAR(50) NULL,
             student_name VARCHAR(100) NOT NULL,
@@ -457,11 +460,12 @@ try {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             FOREIGN KEY (reference_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
-            INDEX idx_sc_students_agency (agency_id)
+            INDEX idx_sc_students_agency (agency_id),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS sc_applications (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             student_id VARCHAR(50) NOT NULL,
             university_name VARCHAR(200),
@@ -477,7 +481,8 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_sc_apps_student (student_id)
+            INDEX idx_sc_apps_student (student_id),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS sc_documents (
@@ -497,7 +502,7 @@ try {
         );
 
         CREATE TABLE IF NOT EXISTS sc_visa (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             student_id VARCHAR(50) NOT NULL,
             destination_country VARCHAR(100),
@@ -515,11 +520,12 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_sc_visa_student (student_id)
+            INDEX idx_sc_visa_student (student_id),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS sc_payments (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             student_id VARCHAR(50) NOT NULL,
             payment_type VARCHAR(100),
@@ -533,7 +539,8 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_sc_payments_student (student_id)
+            INDEX idx_sc_payments_student (student_id),
+            PRIMARY KEY (agency_id, id)
         );
     ");
 
@@ -566,7 +573,7 @@ try {
         );
 
         CREATE TABLE IF NOT EXISTS acc_income (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             income_date DATE NOT NULL,
             category VARCHAR(100),
@@ -581,11 +588,12 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_income_agency (agency_id, income_date)
+            INDEX idx_acc_income_agency (agency_id, income_date),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_payables (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             vendor_name VARCHAR(150) NOT NULL,
             vendor_type VARCHAR(100),
@@ -602,11 +610,12 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_payables_agency (agency_id, status)
+            INDEX idx_acc_payables_agency (agency_id, status),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_journals (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             journal_date DATE NOT NULL,
             reference VARCHAR(100),
@@ -616,7 +625,8 @@ try {
             created_by_staff_id INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_journals_agency (agency_id, journal_date)
+            INDEX idx_acc_journals_agency (agency_id, journal_date),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_journal_lines (
@@ -628,12 +638,12 @@ try {
             debit DECIMAL(14,2) DEFAULT 0,
             credit DECIMAL(14,2) DEFAULT 0,
             description VARCHAR(300),
-            FOREIGN KEY (journal_id) REFERENCES acc_journals(id) ON DELETE CASCADE,
+            FOREIGN KEY (agency_id, journal_id) REFERENCES acc_journals(agency_id, id) ON DELETE CASCADE,
             INDEX idx_acc_jl_journal (journal_id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_vouchers (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             voucher_type ENUM('payment','receipt') NOT NULL,
             voucher_number VARCHAR(50),
@@ -647,11 +657,12 @@ try {
             created_by_staff_id INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_vouchers_agency (agency_id, voucher_type, voucher_date)
+            INDEX idx_acc_vouchers_agency (agency_id, voucher_type, voucher_date),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_cash_transactions (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             transaction_date DATE NOT NULL,
             transaction_type ENUM('in','out') NOT NULL,
@@ -662,11 +673,12 @@ try {
             created_by_staff_id INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_cash_agency (agency_id, transaction_date)
+            INDEX idx_acc_cash_agency (agency_id, transaction_date),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_bank_transactions (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             bank_account_name VARCHAR(150) DEFAULT 'Main Account',
             transaction_date DATE NOT NULL,
@@ -678,7 +690,8 @@ try {
             created_by_staff_id INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_acc_bank_agency (agency_id, transaction_date)
+            INDEX idx_acc_bank_agency (agency_id, transaction_date),
+            PRIMARY KEY (agency_id, id)
         );
 
         CREATE TABLE IF NOT EXISTS acc_settings (
@@ -703,7 +716,7 @@ try {
     // ── OCR Document Scanner table ──────────────────────────────────────────
     $conn->exec("
         CREATE TABLE IF NOT EXISTS ocr_documents (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             customer_id VARCHAR(50) NULL,
             document_type VARCHAR(50) NOT NULL DEFAULT 'Other',
@@ -732,7 +745,8 @@ try {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             INDEX idx_ocr_docs_agency (agency_id),
-            INDEX idx_ocr_docs_type (agency_id, document_type)
+            INDEX idx_ocr_docs_type (agency_id, document_type),
+            PRIMARY KEY (agency_id, id)
         )
     ");
 
@@ -767,7 +781,7 @@ try {
     // ── Hajj & Umrah — Packages ────────────────────────────────────────────────
     $conn->exec("
         CREATE TABLE IF NOT EXISTS umrah_packages (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             package_type VARCHAR(20) NOT NULL DEFAULT 'Umrah',
             package_name VARCHAR(200) NOT NULL,
@@ -778,14 +792,15 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-            INDEX idx_up_agency (agency_id)
+            INDEX idx_up_agency (agency_id),
+            PRIMARY KEY (agency_id, id)
         )
     ");
 
     // ── Hajj & Umrah — Bookings ─────────────────────────────────────────────
     $conn->exec("
         CREATE TABLE IF NOT EXISTS umrah_bookings (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             customer_id VARCHAR(50) NULL,
             customer_name VARCHAR(150),
@@ -806,7 +821,8 @@ try {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             INDEX idx_ub_agency (agency_id),
-            INDEX idx_ub_status (agency_id, booking_status)
+            INDEX idx_ub_status (agency_id, booking_status),
+            PRIMARY KEY (agency_id, id)
         )
     ");
     // Add booking_date column (migration for existing installs)
@@ -856,7 +872,7 @@ try {
     // ── Hajj & Umrah — Payments ─────────────────────────────────────────────
     $conn->exec("
         CREATE TABLE IF NOT EXISTS umrah_payments (
-            id VARCHAR(50) PRIMARY KEY,
+            id VARCHAR(50) NOT NULL,
             agency_id INT NOT NULL,
             booking_id VARCHAR(50) NOT NULL,
             amount DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -867,7 +883,8 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
             INDEX idx_upy_agency (agency_id),
-            INDEX idx_upy_booking (booking_id)
+            INDEX idx_upy_booking (booking_id),
+            PRIMARY KEY (agency_id, id)
         )
     ");
 

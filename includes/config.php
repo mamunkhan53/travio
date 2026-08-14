@@ -124,7 +124,7 @@ $modules = [
     'sc_settings'     => ['title' => 'Settings',                 'icon' => 'fa-solid fa-gear',              'hidden' => true, 'sc_module' => true, 'admin_only' => true],
     'whatsapp' => ['title' => 'WhatsApp', 'icon' => 'fa-brands fa-whatsapp'],
     'invoices' => ['title' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
-    'ocr_scanner' => ['title' => 'Document Scanner', 'icon' => 'fa-solid fa-id-card-clip'],
+    // 'ocr_scanner' => ['title' => 'Document Scanner', 'icon' => 'fa-solid fa-id-card-clip'],
     // Accounting group sentinel — sub-pages are acc_* with hidden+acc_module flags
     'acc'                    => ['title' => 'Accounting', 'icon' => 'fa-solid fa-calculator'],
     'accounting'             => ['title' => 'Accounting (legacy redirect)', 'icon' => 'fa-solid fa-calculator', 'hidden' => true, 'acc_module' => true],
@@ -145,7 +145,7 @@ $modules = [
     'acc_vat'                => ['title' => 'VAT / Tax Reports',   'icon' => 'fa-solid fa-percent',             'hidden' => true, 'acc_module' => true],
     'acc_financial_reports'  => ['title' => 'Financial Reports',   'icon' => 'fa-solid fa-chart-pie',           'hidden' => true, 'acc_module' => true],
     'acc_settings'           => ['title' => 'Settings',            'icon' => 'fa-solid fa-gear',                'hidden' => true, 'acc_module' => true, 'admin_only' => true],
-    'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download', 'hidden' => true, 'travel_module' => true],
+    'download' => ['title' => 'Download Reports', 'icon' => 'fa-solid fa-download'],
     // Staff Management group sentinel — sub-pages carry 'staff_module' => true
     'staff_mgmt'       => ['title' => 'Staff Management', 'icon' => 'fa-solid fa-user-tie',            'admin_only' => true],
     'staff'            => ['title' => 'Staff',             'icon' => 'fa-solid fa-users',               'admin_only' => true, 'hidden' => true, 'staff_module' => true],

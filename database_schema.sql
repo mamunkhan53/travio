@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS staff_permissions (
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS customers (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -148,7 +148,8 @@ CREATE TABLE IF NOT EXISTS customers (
     category VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+    FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+    PRIMARY KEY (agency_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS customer_followups (
@@ -160,7 +161,7 @@ CREATE TABLE IF NOT EXISTS customer_followups (
     follow_up_date DATE NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
-    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+    FOREIGN KEY (agency_id, customer_id) REFERENCES customers(agency_id, id) ON DELETE CASCADE,
     FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE SET NULL
 );
 
@@ -179,7 +180,7 @@ CREATE TABLE IF NOT EXISTS record_followups (
 );
 
 CREATE TABLE IF NOT EXISTS enquiries (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     date DATE,
     customer VARCHAR(100),
@@ -198,7 +199,8 @@ CREATE TABLE IF NOT EXISTS enquiries (
     FOREIGN KEY (created_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_enquiries_ref (reference_staff_id),
-    INDEX idx_enquiries_agency_date (agency_id, date)
+    INDEX idx_enquiries_agency_date (agency_id, date),
+    PRIMARY KEY (agency_id, id)
 );
 
 -- =============================================================================
@@ -206,7 +208,7 @@ CREATE TABLE IF NOT EXISTS enquiries (
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS passports (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -227,11 +229,12 @@ CREATE TABLE IF NOT EXISTS passports (
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_passports_ref (reference_staff_id),
     INDEX idx_passports_agency_date (agency_id, created_at),
-    INDEX idx_passports_transaction_date (agency_id, transaction_date)
+    INDEX idx_passports_transaction_date (agency_id, transaction_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS visas (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -252,11 +255,12 @@ CREATE TABLE IF NOT EXISTS visas (
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_visas_ref (reference_staff_id),
     INDEX idx_visas_agency_date (agency_id, created_at),
-    INDEX idx_visas_transaction_date (agency_id, transaction_date)
+    INDEX idx_visas_transaction_date (agency_id, transaction_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS tickets (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -278,11 +282,12 @@ CREATE TABLE IF NOT EXISTS tickets (
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_tickets_ref (reference_staff_id),
     INDEX idx_tickets_agency_date (agency_id, created_at),
-    INDEX idx_tickets_transaction_date (agency_id, transaction_date)
+    INDEX idx_tickets_transaction_date (agency_id, transaction_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS umrah (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -303,11 +308,12 @@ CREATE TABLE IF NOT EXISTS umrah (
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_umrah_ref (reference_staff_id),
     INDEX idx_umrah_agency_date (agency_id, created_at),
-    INDEX idx_umrah_transaction_date (agency_id, transaction_date)
+    INDEX idx_umrah_transaction_date (agency_id, transaction_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 CREATE TABLE IF NOT EXISTS tours (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     name VARCHAR(100),
     mobile VARCHAR(20) NOT NULL,
@@ -328,7 +334,8 @@ CREATE TABLE IF NOT EXISTS tours (
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     INDEX idx_tours_ref (reference_staff_id),
     INDEX idx_tours_agency_date (agency_id, created_at),
-    INDEX idx_tours_transaction_date (agency_id, transaction_date)
+    INDEX idx_tours_transaction_date (agency_id, transaction_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 -- =============================================================================
@@ -448,7 +455,7 @@ ON DUPLICATE KEY UPDATE method_key = method_key;
 -- Manual expense entries for the Accounting module (Income side is read-only,
 -- pulled live from the existing Sales Net Profit calculation - not stored here)
 CREATE TABLE IF NOT EXISTS accounting_expenses (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) NOT NULL,
     agency_id INT NOT NULL,
     expense_date DATE NOT NULL,
     category VARCHAR(100),
@@ -463,7 +470,8 @@ CREATE TABLE IF NOT EXISTS accounting_expenses (
     FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
-    INDEX idx_accounting_expenses_agency_date (agency_id, expense_date)
+    INDEX idx_accounting_expenses_agency_date (agency_id, expense_date),
+    PRIMARY KEY (agency_id, id)
 );
 
 -- Platform-wide feature flags controlled by the Super Admin (Settings tab)

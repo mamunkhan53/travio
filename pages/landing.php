@@ -478,7 +478,7 @@ function renderLandingPage($conn) {
                     <div class="ml-4 w-64 h-6 bg-[rgba(255,255,255,0.06)] rounded-md"></div>
                 </div>
                 <div class="border-x border-b border-[rgba(255,255,255,0.06)] rounded-b-2xl overflow-hidden shadow-2xl" style="background: var(--sz-dark-surface);">
-                    <img src="image_2ddf80.png" alt="Travel ERP Dashboard" class="w-full object-cover" onerror="this.src='https://placehold.co/1200x800/161A23/9AA4B2?text=Dashboard+Screenshot'">
+                    <img src="image_2ddf80.png" alt="Travel ERP Dashboard" class="w-full object-cover" onerror="this.src='https://travioerp.com/assets/dash.jpg'">
                 </div>
             </div>
         </div>
@@ -748,7 +748,7 @@ function renderLandingPage($conn) {
                     </div>
                     <p class="text-[#68727F] text-sm leading-relaxed mb-6">The premium ERP designed exclusively to help travel agencies automate and scale their operations.</p>
                     <div class="flex items-center gap-4">
-                        <a href="https://facebook.com" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(24,119,242,0.2)';this.style.color='#4F9EF7'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
+                        <a href="https://facebook.com/travioerp" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(24,119,242,0.2)';this.style.color='#4F9EF7'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
                             <i class="fa-brands fa-facebook-f text-sm"></i>
                         </a>
                         <a href="https://youtube.com" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl flex items-center justify-center transition" style="background: rgba(255,255,255,0.06); color: #9AA4B2;" onmouseover="this.style.background='rgba(255,0,0,0.2)';this.style.color='#FF4444'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#9AA4B2'">
@@ -787,21 +787,21 @@ function renderLandingPage($conn) {
                     <h4 class="text-white font-bold mb-5 uppercase tracking-wider text-xs">Contact Us</h4>
                     <ul class="space-y-4 text-sm">
                         <li>
-                            <a href="https://wa.me/8801XXXXXXXXX" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#25D366] transition group">
+                            <a href="https://wa.me/8801883130142" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#25D366] transition group">
                                 <i class="fa-brands fa-whatsapp text-base mt-0.5 text-[#25D366]"></i>
-                                <span>+880 1XXX-XXXXXX</span>
+                                <span>+880 1883-130142</span>
                             </a>
                         </li>
                         <li>
-                            <a href="mailto:support@travioerp.com" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#2BC4B0] transition">
+                            <a href="mailto:info@travioerp.com" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#2BC4B0] transition">
                                 <i class="fa-solid fa-envelope text-base mt-0.5" style="color: var(--sz-teal);"></i>
-                                <span>support@travioerp.com</span>
+                                <span>info@travioerp.com</span>
                             </a>
                         </li>
                         <li>
-                            <a href="https://facebook.com" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#4F9EF7] transition">
+                            <a href="https://facebook.com/travioerp" target="_blank" rel="noopener" class="flex items-start gap-3 text-[#9AA4B2] hover:text-[#4F9EF7] transition">
                                 <i class="fa-brands fa-facebook-f text-base mt-0.5 text-[#4F9EF7]"></i>
-                                <span>Travel Agency Solution - Travio</span>
+                                <span>Travio - Travel Agency Management</span>
                             </a>
                         </li>
                     </ul>

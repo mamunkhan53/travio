@@ -1,6 +1,6 @@
 <!-- ── Payment Method Icons ──────────────────────────────────────────────── -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-6 border-b border-[rgba(255,255,255,0.06)]">
-    <p class="text-center text-xs font-bold uppercase tracking-widest text-[#68727F] mb-5">গ্রহণযোগ্য পেমেন্ট মাধ্যম · Accepted Payments</p>
+    <p class="text-center text-xs font-bold uppercase tracking-widest text-[#68727F] mb-5">Accepted Payments Method</p>
     <div class="flex flex-wrap items-center justify-center gap-4">
 
         <!-- bKash -->

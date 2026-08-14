@@ -205,7 +205,7 @@
                                     </div>
                                 </div>
                                 <div style="margin-top: 60px; text-align: center; color: #9ca3af; font-size: 12px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                                    Thank you for your business. Generated securely by South Zone SaaS.
+                                    Thank you for your business. Have a nice Trip.
                                 </div>
                             </div>
                         `;
