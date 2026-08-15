@@ -1,0 +1,4 @@
+# Real database credentials for the live server - never commit secrets.
+# Create this file once directly on Hostinger; it survives every future
+# git pull/deploy since git never tracks or touches it.
+includes/env.local.php

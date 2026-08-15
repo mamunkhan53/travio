@@ -3,7 +3,15 @@
 // 1. DATABASE CONFIGURATION
 // Credentials come from environment variables so the same code works on
 // Replit (local MariaDB via Unix socket) and on Hostinger (TCP).
+//
+// On Hostinger, real credentials are loaded from includes/env.local.php if
+// present. That file is git-ignored (see .gitignore) so it is never part
+// of the GitHub repo and is never touched by a git pull/deploy - set it
+// up once on the server and it survives every future push permanently.
 // =========================================================================
+if (file_exists(__DIR__ . '/env.local.php')) {
+    require_once __DIR__ . '/env.local.php';
+}
 $host     = getenv('DB_HOST')   ?: '127.0.0.1';
 $db_name  = getenv('DB_NAME')   ?: 'DB_NAME';
 $username = getenv('DB_USER')   ?: 'DB_USER';
