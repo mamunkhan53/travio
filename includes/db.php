@@ -41,7 +41,7 @@ try {
             role VARCHAR(50) NOT NULL,
             status ENUM('Active', 'Inactive') DEFAULT 'Active',
             profile_photo LONGTEXT,
-            commission_rate DECIMAL(5,2) DEFAULT 20.00,
+            commission_rate DECIMAL(5,2) DEFAULT 0.00,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             last_login TIMESTAMP NULL,

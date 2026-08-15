@@ -118,7 +118,7 @@
                                                     <option>Accountant</option><option>Sales Executive</option><option>Marketing Executive</option><option>Ticketing Officer</option><option>Visa Executive</option><option>Manager</option>
                                                 </select>
                                             </div>
-                                            <div><label class="block text-xs font-bold text-slate-700 mb-1">Commission (%)</label><input type="number" step="0.01" name="commission_rate" id="st_comm" value="20" class="w-full border border-slate-200 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-bold"></div>
+                                            <div><label class="block text-xs font-bold text-slate-700 mb-1">Commission (%)</label><input type="number" step="0.01" min="0" name="commission_rate" id="st_comm" value="0" class="w-full border border-slate-200 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-bold"></div>
                                             <div>
                                                 <label class="block text-xs font-bold text-slate-700 mb-1">Status</label>
                                                 <select name="status" id="st_status" class="w-full border border-slate-200 p-2.5 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-slate-50">
@@ -172,7 +172,7 @@
                             document.getElementById('staffModalTitle').innerHTML = '<i class="fa-solid fa-user-plus text-indigo-500 mr-2"></i> Add New Staff';
                             document.getElementById('st_id').value = '';
                             ['st_name','st_email','st_phone','st_user','st_pass'].forEach(id => document.getElementById(id).value = '');
-                            document.getElementById('st_comm').value = '20';
+                            document.getElementById('st_comm').value = '0';
                             document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
                         } else {
                             document.getElementById('staffModalTitle').innerHTML = '<i class="fa-solid fa-user-pen text-indigo-500 mr-2"></i> Edit Staff';

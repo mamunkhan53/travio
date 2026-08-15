@@ -169,7 +169,7 @@
             $phone = $_POST['phone'];
             $username = $_POST['username'];
             $role = $_POST['role'];
-            $commission_rate = $_POST['commission_rate'] ?: 20.00;
+            $commission_rate = (isset($_POST['commission_rate']) && $_POST['commission_rate'] !== '') ? (float)$_POST['commission_rate'] : 0.00;
             $status = $_POST['status'];
             
             // Permissions mapping

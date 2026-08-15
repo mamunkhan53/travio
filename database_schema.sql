@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS staff (
     role VARCHAR(50) NOT NULL,
     status ENUM('Active', 'Inactive') DEFAULT 'Active',
     profile_photo LONGTEXT,
-    commission_rate DECIMAL(5,2) DEFAULT 20.00,
+    commission_rate DECIMAL(5,2) DEFAULT 0.00,
 
     -- Two-Factor Authentication (TOTP) - same mechanism as Agency Admin / Super Admin
     totp_secret VARCHAR(32) NULL,
