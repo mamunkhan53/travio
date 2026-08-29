@@ -381,7 +381,8 @@ function renderLandingPage($conn) {
             </div>
             <div class="flex items-center space-x-4">
                 <a href="/login" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">Login</a>
-                <a href="/register" class="sz-glow-btn-filled">Start Free Trial</a>
+                <a href="/login" class="sz-glow-btn-filled sm:hidden">Login</a>
+                <a href="/register" class="sz-glow-btn-filled hidden sm:inline-flex">Start Free Trial</a>
             </div>
         </div>
     </nav>
