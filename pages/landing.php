@@ -131,6 +131,17 @@ function renderLandingPage($conn) {
             color: #FFFFFF;
         }
 
+        /* Nav login/trial visibility - explicit rules so they can't lose a
+           specificity fight against the .sz-glow-btn-filled display rule above */
+        #sz-home .sz-nav-login-text { display: none; }
+        #sz-home .sz-nav-login-btn { display: inline-flex; }
+        #sz-home .sz-nav-trial-btn { display: none; }
+        @media (min-width: 640px) {
+            #sz-home .sz-nav-login-text { display: block; }
+            #sz-home .sz-nav-login-btn { display: none; }
+            #sz-home .sz-nav-trial-btn { display: inline-flex; }
+        }
+
         #sz-home .sz-ghost-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--sz-border-subtle);
@@ -380,9 +391,9 @@ function renderLandingPage($conn) {
                 <a href="#faq" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition">FAQ</a>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="/login" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition hidden sm:block">Login</a>
-                <a href="/login" class="sz-glow-btn-filled sm:hidden">Login</a>
-                <a href="/register" class="sz-glow-btn-filled hidden sm:inline-flex">Start Free Trial</a>
+                <a href="/login" class="text-sm font-medium text-[#9AA4B2] hover:text-[#2BC4B0] transition sz-nav-login-text">Login</a>
+                <a href="/login" class="sz-glow-btn-filled sz-nav-login-btn">Login</a>
+                <a href="/register" class="sz-glow-btn-filled sz-nav-trial-btn">Start Free Trial</a>
             </div>
         </div>
     </nav>
