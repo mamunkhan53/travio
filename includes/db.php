@@ -758,6 +758,24 @@ try {
         )
     ");
 
+    // ── Structured payment history for invoices (see database_schema.sql for details) ──
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS invoice_payments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            agency_id INT NOT NULL,
+            invoice_id VARCHAR(50) NOT NULL,
+            amount DECIMAL(10, 2) NOT NULL,
+            payment_date DATE NOT NULL,
+            method VARCHAR(50) NULL,
+            note VARCHAR(255) NULL,
+            recorded_by_staff_id INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+            FOREIGN KEY (recorded_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+            INDEX idx_invoice_payments_invoice (agency_id, invoice_id)
+        )
+    ");
+
     // ── Add ocr_raw_text column to ocr_documents (additive only) ────────────
     $ocrCols = $conn->query("SHOW COLUMNS FROM ocr_documents")->fetchAll(PDO::FETCH_COLUMN);
     if (!in_array('ocr_raw_text', $ocrCols))

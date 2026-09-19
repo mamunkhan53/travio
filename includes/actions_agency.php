@@ -288,6 +288,57 @@
             redirect("/app/invoices");
         }
 
+        // ------------- RECORD A PAYMENT AGAINST AN EXISTING INVOICE (same invoice number, no new invoice) -------------
+        if ($action === 'record_invoice_payment' && isset($_SESSION['agency_id'])) {
+            if (!has_permission('can_edit_sale')) die("403 Access Denied");
+            $agency_id = $_SESSION['agency_id'];
+            $invoice_id = trim($_POST['invoice_id'] ?? '');
+            $amount = (float)($_POST['amount'] ?? 0);
+            $payment_date = trim($_POST['payment_date'] ?? '') ?: date('Y-m-d');
+            $method = trim($_POST['method'] ?? '');
+            $note = trim($_POST['note'] ?? '');
+
+            // Confirm the invoice belongs to this agency and pull its current running totals
+            $stmt = $conn->prepare("SELECT invoice_number, grand_total, paid_amount, due_amount FROM invoices WHERE id = ? AND agency_id = ? LIMIT 1");
+            $stmt->execute([$invoice_id, $agency_id]);
+            $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$inv) {
+                flash("Invoice not found.", "error");
+                redirect("/app/invoices");
+            }
+            if ($amount <= 0) {
+                flash("Enter a valid payment amount.", "error");
+                redirect("/app/invoices");
+            }
+            if ($amount > (float)$inv['due_amount'] + 0.01) { // small epsilon for float rounding
+                flash("Payment amount cannot exceed the remaining due amount (" . number_format((float)$inv['due_amount'], 2) . ").", "error");
+                redirect("/app/invoices");
+            }
+
+            $creator_id = $_SESSION['is_staff'] ? $_SESSION['staff_id'] : null;
+
+            // 1. Log the individual payment (structured history - source of truth for paid_amount)
+            $conn->prepare("INSERT INTO invoice_payments (agency_id, invoice_id, amount, payment_date, method, note, recorded_by_staff_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
+                 ->execute([$agency_id, $invoice_id, $amount, $payment_date, $method ?: null, $note ?: null, $creator_id]);
+
+            // 2. Recalculate the SAME invoice's paid/due amounts - no new invoice number is ever generated here
+            $newPaid = round((float)$inv['paid_amount'] + $amount, 2);
+            $newDue  = max(0, round((float)$inv['grand_total'] - $newPaid, 2));
+            $conn->prepare("UPDATE invoices SET paid_amount = ?, due_amount = ? WHERE id = ? AND agency_id = ?")
+                 ->execute([$newPaid, $newDue, $invoice_id, $agency_id]);
+
+            // 3. Log a follow-up note too, so it shows in the existing invoice history timeline automatically
+            $statusNote = $newDue <= 0 ? "Invoice is now fully paid." : ("Remaining due: " . number_format($newDue, 2) . ".");
+            $methodTxt = $method ? " via $method" : "";
+            $noteTxt = "Payment of " . number_format($amount, 2) . " received{$methodTxt}. $statusNote" . ($note ? " Note: $note" : '');
+            $conn->prepare("INSERT INTO record_followups (agency_id, module_name, record_id, staff_id, note) VALUES (?, 'invoices', ?, ?, ?)")
+                 ->execute([$agency_id, $invoice_id, $creator_id, $noteTxt]);
+
+            flash("Payment of " . number_format($amount, 2) . " recorded for invoice {$inv['invoice_number']}.");
+            redirect("/app/invoices");
+        }
+
         // ------------- ACCOUNTING: SAVE (ADD/EDIT) MANUAL EXPENSE -------------
         // Additive-only module. Does NOT touch the existing Sales Net Profit logic anywhere else in the app;
         // this only inserts/updates rows in the new accounting_expenses table.

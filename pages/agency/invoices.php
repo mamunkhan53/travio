@@ -22,6 +22,7 @@
                                     <th class="px-6 py-4 font-bold">Grand Total</th>
                                     <th class="px-6 py-4 font-bold text-emerald-500">Paid</th>
                                     <th class="px-6 py-4 font-bold text-rose-500">Due</th>
+                                    <th class="px-6 py-4 font-bold">Status</th>
                                     <th class="px-6 py-4 font-bold text-indigo-500">Reference</th>
                                     <th class="px-6 py-4 font-bold text-right">Actions</th>
                                 </tr>
@@ -37,11 +38,23 @@
                                         <td class="px-6 py-4 font-extrabold text-slate-800"><?= $currencySymbol ?> <?= number_format($row['grand_total'], 2) ?></td>
                                         <td class="px-6 py-4 font-bold text-emerald-500"><?= $currencySymbol ?> <?= number_format($row['paid_amount'], 2) ?></td>
                                         <td class="px-6 py-4 font-bold text-rose-500"><?= $currencySymbol ?> <?= number_format($row['due_amount'], 2) ?></td>
+                                        <td class="px-6 py-4">
+                                            <?php if ((float)$row['due_amount'] <= 0): ?>
+                                                <span class="text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">Paid</span>
+                                            <?php elseif ((float)$row['paid_amount'] > 0): ?>
+                                                <span class="text-[11px] font-bold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full">Partial</span>
+                                            <?php else: ?>
+                                                <span class="text-[11px] font-bold bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full">Due</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="px-6 py-4 font-bold text-slate-800">
                                             <?= $row['reference_staff_id'] ? '<i class="fa-solid fa-user-tie text-indigo-400 mr-1"></i> '.xss_clean($row['reference_name']) : '<span class="text-slate-400 text-xs">System / None</span>' ?>
                                         </td>
                                         <td class="px-6 py-4 text-right whitespace-nowrap">
                                             <button onclick="generatePDF('<?= base64_encode(json_encode($row)) ?>')" class="text-indigo-600 bg-indigo-50 px-4 py-2 rounded-lg hover:bg-indigo-100 font-bold mr-2 transition"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                                            <?php if (has_permission('can_edit_sale') && (float)$row['due_amount'] > 0): ?>
+                                                <button onclick="openPayModal('<?= $row['id'] ?>', '<?= xss_clean($row['invoice_number']) ?>', '<?= number_format((float)$row['due_amount'], 2, '.', '') ?>')" class="text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold mr-2 transition"><i class="fa-solid fa-money-bill-wave mr-1"></i> Record Payment</button>
+                                            <?php endif; ?>
                                             <?php if (has_permission('can_delete_sale')): ?>
                                                 <a href="/app?action=delete&table=invoices&id=<?= $row['id'] ?>" onclick="return confirm('Delete this invoice?')" class="text-rose-500 bg-rose-50 px-4 py-2 rounded-lg hover:bg-rose-100 font-bold transition"><i class="fa-solid fa-trash"></i></a>
                                             <?php endif; ?>
@@ -49,7 +62,7 @@
                                     </tr>
                                 <?php endforeach; ?>
                                 <?php if(empty($records)): ?>
-                                    <tr><td colspan="8" class="p-12 text-center text-slate-400 font-medium">No invoices generated yet.</td></tr>
+                                    <tr><td colspan="9" class="p-12 text-center text-slate-400 font-medium">No invoices generated yet.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -106,8 +119,65 @@
                         </form>
                     </div>
                 </div>
-                
+
+                <!-- Record Payment Modal (updates the SAME invoice - no new invoice number is created) -->
+                <div id="payModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+                    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                            <h2 class="text-xl font-extrabold text-slate-800 flex items-center"><i class="fa-solid fa-money-bill-wave text-emerald-500 mr-3"></i> Record Payment</h2>
+                            <button type="button" onclick="document.getElementById('payModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                        <form method="POST" action="" class="space-y-5">
+                            <input type="hidden" name="action" value="record_invoice_payment">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="invoice_id" id="pay_invoice_id">
+
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Invoice</p>
+                                    <p id="pay_invoice_number" class="font-extrabold text-slate-800"></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-bold text-rose-400 uppercase tracking-wider">Due Amount</p>
+                                    <p class="font-extrabold text-rose-600"><?= $currencySymbol ?> <span id="pay_due_display"></span></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Payment Amount (<?= $currencySymbol ?>)</label>
+                                <input type="number" name="amount" id="pay_amount" step="0.01" min="0.01" required class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Payment Date</label>
+                                <input type="date" name="payment_date" required value="<?= date('Y-m-d') ?>" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Payment Method (optional)</label>
+                                <input type="text" name="method" placeholder="e.g. Cash, Bank Transfer, bKash" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Note (optional)</label>
+                                <input type="text" name="note" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                                <button type="button" onclick="document.getElementById('payModal').classList.add('hidden')" class="px-5 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition">Cancel</button>
+                                <button type="submit" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-extrabold hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition">Save Payment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <script>
+                    function openPayModal(invoiceId, invoiceNumber, dueAmount) {
+                        document.getElementById('pay_invoice_id').value = invoiceId;
+                        document.getElementById('pay_invoice_number').textContent = invoiceNumber;
+                        document.getElementById('pay_due_display').textContent = dueAmount;
+                        const amountInput = document.getElementById('pay_amount');
+                        amountInput.max = dueAmount;
+                        amountInput.value = dueAmount;
+                        document.getElementById('payModal').classList.remove('hidden');
+                    }
                     function calcInv() {
                         const p = parseFloat(document.getElementById('iprice').value) || 0;
                         const q = parseFloat(document.getElementById('iqty').value) || 0;

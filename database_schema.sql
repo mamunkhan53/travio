@@ -372,6 +372,26 @@ CREATE TABLE IF NOT EXISTS invoices (
     INDEX idx_invoices_agency_date (agency_id, created_at)
 );
 
+-- Structured payment history for invoices - each row is one payment received
+-- against an invoice. invoices.paid_amount/due_amount are recalculated from
+-- the SUM of these rows whenever a new payment is recorded, so the invoice
+-- itself always reflects the running total without ever needing a new
+-- invoice number for the same transaction.
+CREATE TABLE IF NOT EXISTS invoice_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    agency_id INT NOT NULL,
+    invoice_id VARCHAR(50) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    method VARCHAR(50) NULL,
+    note VARCHAR(255) NULL,
+    recorded_by_staff_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE,
+    FOREIGN KEY (recorded_by_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+    INDEX idx_invoice_payments_invoice (agency_id, invoice_id)
+);
+
 -- =============================================================================
 -- 6. DEADLINE NOTIFICATIONS
 -- =============================================================================
