@@ -789,7 +789,7 @@ function renderLandingPage($conn) {
                     <ul class="space-y-3 text-sm">
                         <li><a href="/login" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Login</a></li>
                         <li><a href="/register" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Agency Register</a></li>
-                        <li><a href="#" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Documentation</a></li>
+                        <li><a href="https://www.youtube.com/playlist?list=PLGCOmn2q1r2E" target="_blank" rel="noopener" class="text-[#9AA4B2] hover:text-[#2BC4B0] transition">Documentation</a></li>
                         <li><a href="/travio-bangla" class="text-[#2BC4B0] hover:text-[#1FB8A4] transition font-semibold">Bangla Portal</a></li>
                     </ul>
                 </div>
